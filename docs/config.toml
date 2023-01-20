@@ -1,6 +1,6 @@
 
 # 站点配置
-baseURL = "https://acm.rogery.dev"
+baseURL = "https://algo.rogery.dev"
 languageCode = "zh"
 title = "Roger Young"
 theme = "hugo-pure"
@@ -8,7 +8,7 @@ theme = "hugo-pure"
 # 可以删除用不到的配置，不建议移动顺序
 
 # 底部版权信息，支持 md
-Copyright = "© 2023 [Roger Young](https://acm.rogery.dev)"
+Copyright = "© 2023 [Roger Young](https://rogery.dev)"
 
 # Git Info
 [build]

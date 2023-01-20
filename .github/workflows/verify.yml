@@ -15,9 +15,15 @@ jobs:
     - name: Install dependencies
       run: pip3 install -U online-judge-verify-helper
 
-    - name: Run tests
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        YUKICODER_TOKEN: ${{ secrets.YUKICODER_TOKEN }}
-        GH_PAT: ${{ secrets.GH_PAT }}
-      run: oj-verify all
+    - name: Verify
+      run: oj-verify run
+
+    - name: Hugo
+      run: bash ./scripts/setup-hugo.sh
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/public
