@@ -10,4 +10,4 @@
 
 ## 文档
 
-还在施工。[文档](https://algo.rogery.dev/)。
+还在施工。[文档](https://algo-cpp.rogery.dev/)。
