@@ -1,0 +1,70 @@
+
+# 站点配置
+baseURL = "https://acm.rogery.dev"
+languageCode = "zh"
+title = "Roger Young"
+theme = "hugo-pure"
+
+# 可以删除用不到的配置，不建议移动顺序
+
+# 底部版权信息，支持 md
+Copyright = "© 2023 [Roger Young](https://acm.rogery.dev)"
+
+# Git Info
+[build]
+enableGitInfo = true
+
+
+[markup.tableOfContents]
+# <ol> 目录
+ordered = true
+[markup.highlight]
+# 不内置 chroma 的 css
+noClasses = true
+# 关闭 chroma 高亮
+codeFences = false
+[markup.goldmark.render]
+# 允许 md 插入 html 标签
+unsafe = true
+[markup.goldmark.extensions]
+# 魔改的 hugo, 见 https://github.com/rogeryoungh/hugo-patch
+LaTeX = true
+
+
+# 标题栏
+[params.header]
+avatar = "https://rogery.dev/img/logo.png"
+name = "rogeryoungh"
+link = "https://rogery.dev/"
+
+
+[[params.menu]]
+name = "Home"
+url = "/"
+
+[[params.menu]]
+name = "List"
+url = "/post/base/"
+
+[[params.menu]]
+name = "Post"
+url = "/post"
+
+
+# KaTeX 公式渲染
+[params.katex]
+enable = true
+
+
+# Prism 代码高亮
+[params.prism]
+enable = true
+
+
+# 目录
+[params.toc]
+enable = true
+
+
+[outputs]
+home = ["HTML", "RSS", "JSON"]
