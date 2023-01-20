@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html><head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta name="generator" content="Hugo 0.110.0-DEV">
+
+  
+  
+  <link rel="stylesheet" href="/scss/index.min.95ba81376e079da48068412714d3b5b407c6cec0c5edbf6ebc255278b7938d7c.css">
+
+</head>
+<body>
+  <div id="app"><header class="py-5 text-4 flex justify-center shadow print:hidden color-primary">
+  <nav class="mx-20 w-full max-w-240 flex flex-wrap justify-center items-center whitespace-nowrap sm:flex-nowrap sm:justify-between">
+    <div class="flex basis-full items-stretch justify-center sm:basis-auto">
+      <img class="w-12 h-12 self-center" src="https://rogery.dev/img/logo.png">
+      <a class="pl-5 font-bold flex self-center text-5" href="/"> Roger Young </a>
+    </div>
+    <ul class="pl-0 flex mt-5 self-center sm:mt-0">
+      <button class="m-3 self-center" id="theme-switcher">
+        <i class="i-carbon-automatic text-4">Sun</i>
+      </button>
+      
+        <li class="flex"><a class="m-3" href="/">Home</a></li>
+      
+        <li class="flex"><a class="m-3" href="/post/base/">List</a></li>
+      
+        <li class="flex"><a class="m-3" href="/post">Post</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+
+<div class="flex w-full justify-center">
+  <div class="max-w-210 mb-20 w-full m-4">
+      <h1>404</h1>
+  </div>
+</div>
+
+<footer class="my-10 color-secondary text-3 flex items-end justify-center a-underline">
+  <span>
+    © 2023 <a href="https://rogery.dev">Roger Young</a>
+  </span>
+  <i class="i-carbon-lighting inline-block px-1"></i>
+  <span>Powered by <a href="https://gohugo.io/">Hugo</a> &
+    <a href="https://github.com/rogeryoungh/hugo-pure">pure</a>
+  </span>
+</footer>
+</div>
+  <div>
+    
+  <link
+  crossorigin="anonymous"
+  integrity="sha512-mQwom8Ns4op+H29oDkD/LXO/OsXPvCFfkgZkFAVrhhePzRLU8NUI3Nkm43NhWUSmj3p5Cca2HTEkMQmXQRwDQQ=="
+  href="https://lib.baomitu.com/KaTeX/0.16.4/katex.min.css" rel="stylesheet">
+<script
+  crossorigin="anonymous"
+  integrity="sha512-sHSNLECRJSK+BFs7E8DiFc6pf6n90bLI85Emiw1jhreduZhK3VXgq9l4kAt9eTIHYAcuQBKHL01QKs4/3Xgl8g=="
+  src="https://lib.baomitu.com/KaTeX/0.16.4/katex.min.js"></script>
+<script
+  crossorigin="anonymous"
+  integrity="sha512-iWiuBS5nt6r60fCz26Nd0Zqe0nbk1ZTIQbl3Kv7kYsX+yKMUFHzjaH2+AnM6vp2Xs+gNmaBAVWJjSmuPw76Efg=="
+  src="https://lib.baomitu.com/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true },
+    ],
+    globalGroup: true,
+    throwOnError: false
+  });
+});
+</script>
+
+
+
+
+  <script
+  crossorigin="anonymous"
+  src="https://lib.baomitu.com/prism/1.29.0/prism.min.js"></script>
+<script
+  crossorigin="anonymous"
+  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+
+
+<script>
+let themeSwitch = document.getElementById("theme-switcher");
+var icon = themeSwitch.children[0];
+let currentPref = localStorage.getItem('pref-theme') || 'auto';
+let html = document.documentElement;
+let windowPref = window.matchMedia('(prefers-color-scheme: dark)');
+function isCurrentDark() {
+  let isDark = false;
+  if (currentPref === 'light') {
+    isDark = false;
+  } else if (currentPref === 'dark') {
+    isDark = true;
+  } else {
+    isDark = windowPref.matches;
+  }
+  return isDark;
+}
+let reloadTheme = () => {
+  icon.classList.remove('i-carbon-moon');
+  icon.classList.remove('i-carbon-sun');
+  icon.classList.remove('i-carbon-automatic');
+  if (currentPref === 'light') {
+    icon.classList.add('i-carbon-sun');
+  } else if (currentPref === 'dark') {
+    icon.classList.add('i-carbon-moon');
+  } else {
+    icon.classList.add('i-carbon-automatic');
+  }
+  if (isCurrentDark()) {
+    html.classList.add('dark');
+  } else {
+    html.classList.remove('dark');
+  }
+  
+};
+themeSwitch.addEventListener("click", () => {
+  icon.classList.remove('i-carbon-moon');
+  icon.classList.remove('i-carbon-sun');
+  icon.classList.remove('i-carbon-automatic');
+  if (currentPref === 'auto') {
+    currentPref = 'dark';
+    icon.classList.add('i-carbon-moon');
+  } else if (currentPref === 'dark') {
+    currentPref = 'light';
+    icon.classList.add('i-carbon-sun');
+  } else {
+    currentPref = 'auto';
+    icon.classList.add('i-carbon-automatic');
+  }
+  localStorage.setItem("pref-theme", currentPref);
+  reloadTheme();
+});
+reloadTheme();
+</script>
+
+
+  </div>
+</body>
+
+</html>
