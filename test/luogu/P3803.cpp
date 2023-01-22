@@ -21,6 +21,6 @@ i32 main() {
     fin >> i;
   for (auto i : f *g)
     fout << i << ' ';
-  std::cerr << std::endl << ntt_size << std::endl;
+  std::cerr << std::endl << detail::ntt_size << std::endl;
   return 0;
 }

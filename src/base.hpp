@@ -19,6 +19,4 @@ using u128 = __uint128_t;
 
 #define self (*this)
 
-u32 ntt_size = 0;
-
 #endif // ALGO_BASE

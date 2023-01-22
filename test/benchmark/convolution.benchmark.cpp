@@ -24,9 +24,9 @@ struct BM_MUL : TEST_BASE {
   }
   int run(int) {
     FPS tf = f, tg = g;
-    ntt_size = 0;
+    detail::ntt_size = 0;
     benchmark::DoNotOptimize(tf * tg);
-    return ntt_size;
+    return detail::ntt_size;
   }
   FPS f, g;
 };
