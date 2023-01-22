@@ -2,10 +2,10 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on Roger Young</title>
-    <link>https://algo.rogery.dev/categories/</link>
+    <link>https://algo-cpp.rogery.dev/categories/</link>
     <description>Recent content in Categories on Roger Young</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh</language>
-    <copyright>© 2023 [Roger Young](https://rogery.dev)</copyright><atom:link href="https://algo.rogery.dev/categories/index.xml" rel="self" type="application/rss+xml" />
+    <copyright>© 2023 [Roger Young](https://rogery.dev)</copyright><atom:link href="https://algo-cpp.rogery.dev/categories/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>

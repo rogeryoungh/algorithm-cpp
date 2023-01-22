@@ -3,7 +3,7 @@
 
 #include "../base.hpp"
 
-#include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <array>
@@ -17,7 +17,8 @@ struct BasicBuffer {
   char *p = s.data(), *beg = p, *end = p + s.size();
   inline char getc() {
     if (p == end) {
-      std::fread(beg, 1, end - beg, f);
+      u32 r = std::fread(beg, 1, end - beg, f);
+      std::memset(beg + r, 0, s.size() - r);
       p = s.data();
     }
     return *p++;
@@ -39,6 +40,9 @@ struct BasicBuffer {
 
 struct FastI : BasicBuffer {
   using BasicBuffer::BasicBuffer;
+  FastI(FILE *f, u32 sz = 1 << 18) : BasicBuffer(f, sz) {
+    std::fread(beg, 1, end - beg, f);
+  }
   FastI &operator>>(char &x) {
     return x = getc(), self;
   }
@@ -46,7 +50,7 @@ struct FastI : BasicBuffer {
   FastI &operator>>(T &x) {
     x = 0;
     char c = getc();
-    while (!std::isdigit(c))
+    while (!std::isdigit(c) && c != 0)
       c = getc();
     while (std::isdigit(c))
       x = x * 10 + c - '0', c = getc();
@@ -57,7 +61,7 @@ struct FastI : BasicBuffer {
     x = 0;
     char c = getc();
     bool sgn = true;
-    while (!std::isdigit(c))
+    while (!std::isdigit(c) && c != 0)
       sgn = sgn && c != '-', c = getc();
     while (std::isdigit(c))
       x = x * 10 + c - '0', c = getc();

@@ -37,7 +37,7 @@
 <main class="px-5 flex justify-center">
   <article class="article w-full max-w-210 my-10">
     <header class="my-20">
-      <h1 class="text-8 text-center folt-bold"> 算法库 </h1>
+      <h1 class="text-8 text-center folt-bold"> Lucas 素性测试 </h1>
       <a
         class="text-center-my-6 hidden print:block"
         href="https://rogery.dev/">
@@ -46,35 +46,123 @@
       <div class="text-center">
         
         
-        2023 年 1 月 20 日
+        2023 年 1 月 21 日
         
       </div>
     </header>
     
       <h1> 目录 </h1><nav id="TableOfContents">
   <ol>
-    <li><a href="#数学相关">数学相关</a>
-      <ol>
-        <li><a href="#基础数论">基础数论</a></li>
-        <li><a href="#poly">Poly</a></li>
-      </ol>
-    </li>
+    <li><a href="#理论">理论</a></li>
+    <li><a href="#算法描述">算法描述</a></li>
+    <li><a href="#备注">备注</a></li>
+    <li><a href="#参考">参考</a></li>
+    <li><a href="#代码">代码</a></li>
   </ol>
 </nav>
     <section class="content-frame my-10">
-      <p>实现的算法列表。</p>
-<h2 id="数学相关">数学相关</h2>
-<h3 id="基础数论">基础数论</h3>
+      <h2 id="理论">理论</h2>
+<p>设  $D$  为无平方整数，记  $O$  为二次域  $\mathbb{Q}(\sqrt{D})$  上的 <a href="https://www.bananaspace.org/wiki/%E4%BB%A3%E6%95%B0%E6%95%B4%E6%95%B0">代数整数环</a>，有类比的定理：</p>
+<p>【二次域中的 Fermat 小定理】设  $a \in O$ ， $p$  为奇素数，且  $p \nmid d$ ，则</p>
+<p> $$
+a^p = \begin{cases} a, &\text{若 } \left(\frac{D}{p}\right) = 1 \\ \overline{a}, &\text{若 } \left(\frac{D}{p}\right) = -1\end{cases} \pmod p
+$$ </p>
+<p>由于乘幂并不容易计算，引入一类特殊的二阶递推序列：设  $P, Q \in \mathbb{Z}$ ，特征方程  $x^2 - Px+ Q = 0$  的两根分别为  $a, b$ ，定义  $P, Q$  对应的 Lucas 序列为</p>
+<p> $$
+U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n
+$$ </p>
+<blockquote>
+<p>我没理解乘幂计算的在哪里有困难，不能快速幂吗？猜测是那个除  $2$  比较头疼。</p>
+</blockquote>
+<p>其与二次域的关系是</p>
+<p> $$
+\left(\frac{P + \sqrt{D}}{2}\right)^n = \frac{V_n + U_n \sqrt{D}}{2}, \quad D = P^2 - 4Q
+$$ </p>
+<p>首先我们限定  $\gcd(QD, p) = 1$ ，保证  $a,b,a-b$  在模  $p$  下可逆。再记  $\varepsilon = \left(\frac{D}{p}\right)$ ，不难根据 Fermat 小定理证明  $U_{p - \varepsilon} \equiv 0 \pmod p$ 。</p>
+<h2 id="算法描述">算法描述</h2>
+<p>输入奇数  $N$ ，选取  $P, Q$  作为 Lucas 序列参数，使得  $\varepsilon = \left(\frac{D}{N}\right) \neq 0$ 。</p>
+<ol>
+<li>若  $U_{N - \varepsilon} \equiv 0 \pmod N$ ，则输出  $N$  可能为奇素数。</li>
+<li>若  $U_{N - \varepsilon} \not\equiv 0 \pmod N$ ，则输出  $N$  为合数。</li>
+</ol>
+<p>由于  $2$  在奇数下的逆元总是存在的，我们可以使用矩阵快速幂计算上式。</p>
+<p>对于  $P,Q$  的选取，有两种建议：</p>
+<ol>
+<li>Selfridge 建议：取  $D$  为  $5, -7, 9, -11,13,\cdots$  中使得  $\left(\frac{D}{N}\right) = -1$  的第一个数，选择  $P = 1, Q = \frac{1-D}{2}$ 。</li>
+<li>Baillie 建议：取  $D$  为  $5, 9, 13, 17, 21, \cdots$  中使得使得  $\left(\frac{D}{N}\right) = -1$  的第一个数，选择  $P$  为大于  $\sqrt{D}$  的最小奇数， $Q = \frac{P^2 - D}{4}$ 。</li>
+</ol>
+<p>论文中提到，取到合适的  $D$  的期望次数为  $2$ 。若尝试次数过多，则说明  $N$  很可能是平方数，需要检测下。</p>
+<h2 id="备注">备注</h2>
+<p>网上找到的很多 Lucas 检测代码都是关于  $n+1$  的因式分解，我要是能分解还判素数干嘛。。</p>
+<p>似乎大家都建议固定  $D$ ，然后  $(p, q) \to (p + 2, p + q + 1)$  这样，但是通不过 <a href="https://loj.ac/p/143">LOJ143</a>，而且反例很多的样子。。。反正计算 Jacobi 的复杂度是  $O(\log^2 n)$  的，不如换  $D$ 。</p>
+<h2 id="参考">参考</h2>
 <ul>
-<li><a href="../math/primality-test/miller-rabin">Miller Rabin 素性测试</a>，<code>math/primality-test/miller-rabin.hpp</code>。</li>
-<li><a href="../math/primality-test/lucas">Lucas 素性测试</a>，<code>math/primality-test/lucas.hpp</code>。</li>
-<li><a href="../math/primality-test/baillie-psw">Baillie PSW 素性测试</a>，<code>math/primality-test/baillie-psw.hpp</code>。</li>
+<li><a href="http://mathmu.github.io/MTCAS/doc/PrimeTest.html">素数判定 - mathmu</a></li>
+<li><a href="https://www.zhihu.com/question/308322307/answer/574767625">如何编程判断一个数是否是质数？ - Wiener ES的回答</a></li>
+<li><a href="https://primes.utm.edu/prove/prove3_2.html">Primality Proving 3.2 n+1 tests and the Lucas-Lehmer test</a></li>
 </ul>
-<h3 id="poly">Poly</h3>
-<ul>
-<li><a href="../math/poly/poly">Poly 骨架</a>，<code>math/poly/poly-base.hpp</code>。</li>
-<li><a href="../math/poly/ntt">NTT</a>，<code>math/poly/ntt.hpp</code>。</li>
-</ul>
+<h2 id="代码">代码</h2>
+
+
+
+<pre><code class="language-cpp">#ifndef ALGO_MATH_LUCAS_TEST
+#define ALGO_MATH_LUCAS_TEST
+
+#include &quot;../../base.hpp&quot;
+#include &quot;../qpow/u64.hpp&quot;
+#include &quot;../jacobi.hpp&quot;
+#include &quot;../square-test.hpp&quot;
+
+#include &lt;functional&gt;
+
+bool lucas_test_pd(u64 N, u64 P, u64 D) { // jacobi(D, N) == -1
+  using pii = std::pair&lt;u64, u64&gt;;
+  auto shift2 = [N](u64 n) {
+    return n % 2 == 0 ? n / 2 : (N + n) / 2;
+  };
+  std::function&lt;pii(u64)&gt; calc = [&amp;](u64 n) {
+    if (n == 1)
+      return pii{P, 1};
+    auto [v, u] = calc(n / 2);
+    u64 u2 = u128(u) * v % N;
+    u64 v2 = (u128(v) * v + u128(u) * u % N * D) % N;
+    v2 = shift2(v2);
+    if (n % 2 == 1) {
+      u64 u21 = (u128(P) * u2 + v2) % N;
+      u64 v21 = (u128(D) * u2 + u128(P) * v2) % N;
+      u2 = shift2(u21), v2 = shift2(v21);
+    }
+    return pii{v2, u2};
+  };
+  auto [v, u] = calc(N + 1);
+  return u == 0;
+}
+
+bool lucas_test(u64 n) {
+  if (n &lt;= 6)
+    return n == 2 || n == 3 || n == 5;
+  if (n % 6 != 1 &amp;&amp; n % 6 != 5)
+    return false;
+  if (square_test(n))
+    return false;
+  for (u64 d = 5, c = 0; d &lt; n &amp;&amp; c &lt; 4; d += 4) {
+    i32 j = jacobi(d, n);
+    if (j == 0)
+      return false;
+    if (j == 1)
+      continue;
+    if (!lucas_test_pd(n, d, d))
+      return false;
+    c++;
+  }
+  return true;
+}
+
+#endif // ALGO_MATH_LUCAS_TEST
+
+</code></pre>
+
+
 
     </section>
     <hr />

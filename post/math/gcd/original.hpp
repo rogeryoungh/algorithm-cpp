@@ -22,4 +22,4 @@ constexpr u64 lcm(u64 x, u64 y) {
 
 std::tuple<i64, i64, i64> exgcd(i64 a, i64 b);
 
-#endif // ALGO_OTHER_MODINT_BASIC
+#endif // ALGO_MATH_GCD_ORIGINAL

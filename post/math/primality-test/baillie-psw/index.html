@@ -35,50 +35,90 @@
 
 
 <main class="px-5 flex justify-center">
-  <article class="w-full max-w-210">
-    <header class="my-30">
-      <h1 class="text-8 text-center font-bold"> 目录 </h1>
+  <article class="article w-full max-w-210 my-10">
+    <header class="my-20">
+      <h1 class="text-8 text-center folt-bold"> Baillie PSW 素性测试 </h1>
+      <a
+        class="text-center-my-6 hidden print:block"
+        href="https://rogery.dev/">
+        rogeryoungh
+      </a>
+      <div class="text-center">
+        
+        
+        2023 年 1 月 22 日
+        
+      </div>
     </header>
     
-    <h2 class="text-7 font-bold pt-4">2023
-      <sup class="text-4 color-secondary"> 6</sup>
-    </h2>
-    <ul class="py-4">
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/primality-test/miller-rabin/"> Miller Rabin 素性测试</a>
-        <div class="color-secondary"> 01-22 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/primality-test/baillie-psw/"> Baillie PSW 素性测试</a>
-        <div class="color-secondary"> 01-22 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/primality-test/lucas/"> Lucas 素性测试</a>
-        <div class="color-secondary"> 01-21 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/base/"> 算法库</a>
-        <div class="color-secondary"> 01-20 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/poly/"> Poly</a>
-        <div class="color-secondary"> 01-20 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/ntt/"> NTT</a>
-        <div class="color-secondary"> 01-20 </div>
-      </li>
-      
-    </ul>
-    
+      <h1> 目录 </h1><nav id="TableOfContents">
+  <ol>
+    <li><a href="#理论">理论</a></li>
+    <li><a href="#算法描述">算法描述</a></li>
+    <li><a href="#备注">备注</a></li>
+    <li><a href="#参考">参考</a></li>
+    <li><a href="#代码">代码</a></li>
+  </ol>
+</nav>
+    <section class="content-frame my-10">
+      <h2 id="理论">理论</h2>
+<p>理论我也讲不出啥。</p>
+<p>一个显然的观察是，Fermat 反素数和 Lucas 反素数的从计算过程来看就很不一样，换基不如换算法。把两个算法糅到一块就行了。</p>
+<h2 id="算法描述">算法描述</h2>
+<p>输入整数  $N$ 。</p>
+<ol>
+<li>试除小素数，若能整除则输出  $N$  为合数。</li>
+<li>使用基为  $2$  的 Miller Rabin 算法</li>
+<li>进行一次 Lucas 素性测试判断。</li>
+</ol>
+<p> $2^{64}$  内无反例。</p>
+<h2 id="备注">备注</h2>
+<p>在 LOJ143 上跑起来没 Miller Rabin 算法快，也可能是数据有所针对。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="http://mathmu.github.io/MTCAS/doc/PrimeTest.html">素数判定 - mathmu</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Baillie%E2%80%93PSW_primality_test">Baillie–PSW primality test - Wikipedia</a></li>
+</ul>
+<h2 id="代码">代码</h2>
 
+
+
+<pre><code class="language-cpp">#ifndef ALGO_MATH_BAILLIE_PSW
+#define ALGO_MATH_BAILLIE_PSW
+
+#include &quot;../../base.hpp&quot;
+#include &quot;miller-rabin.hpp&quot;
+#include &quot;lucas.hpp&quot;
+
+bool baillie_psw_test(u64 n) {
+  if (n &lt;= 6)
+    return n == 2 || n == 3 || n == 5;
+  if (n % 6 != 1 &amp;&amp; n % 6 != 5)
+    return false;
+  if (!miller_rabbin_base(n, 2))
+    return false;
+  u64 d = 5;
+  while (jacobi(d, n) != -1)
+    d += 4;
+  return lucas_test_pd(n, d, d);
+}
+
+#endif // ALGO_MATH_BAILLIE_PSW
+
+</code></pre>
+
+
+
+    </section>
+    <hr />
+    <section class="comment-frame my-10">
+      
+
+
+
+    </section>
   </article>
-</div>
+</main>
 
 
 <footer class="my-10 color-secondary text-3 flex items-end justify-center a-underline">

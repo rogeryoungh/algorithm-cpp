@@ -2,38 +2,76 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Roger Young</title>
-    <link>https://algo.rogery.dev/post/</link>
+    <link>https://algo-cpp.rogery.dev/post/</link>
     <description>Recent content in Posts on Roger Young</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh</language>
     <copyright>© 2023 [Roger Young](https://rogery.dev)</copyright>
-    <lastBuildDate>Fri, 20 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://algo.rogery.dev/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 22 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://algo-cpp.rogery.dev/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Baillie PSW 素性测试</title>
+      <link>https://algo-cpp.rogery.dev/post/math/primality-test/baillie-psw/</link>
+      <pubDate>Sun, 22 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/primality-test/baillie-psw/</guid>
+      <description>理论 理论我也讲不出啥。
+一个显然的观察是，Fermat 反素数和 Lucas 反素数的从计算过程来看就很不一样，换基不如换算法。把两个算法糅到一块就行了。
+算法描述 输入整数 $N$ 。
+试除小素数，若能整除则输出 $N$ 为合数。 使用基为 $2$ 的 Miller Rabin 算法 进行一次 Lucas 素性测试判断。 $2^{64}$ 内无反例。
+备注 在 LOJ143 上跑起来没 Miller Rabin 算法快，也可能是数据有所针对。
+参考 素数判定 - mathmu Baillie–PSW primality test - Wikipedia 代码 #ifndef ALGO_MATH_BAILLIE_PSW #define ALGO_MATH_BAILLIE_PSW #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;miller-rabin.hpp&amp;quot; #include &amp;quot;lucas.hpp&amp;quot; bool baillie_psw_test(u64 n) { if (n &amp;lt;= 6) return n == 2 || n == 3 || n == 5; if (n % 6 !</description>
+    </item>
+    
+    <item>
+      <title>Miller Rabin 素性测试</title>
+      <link>https://algo-cpp.rogery.dev/post/math/primality-test/miller-rabin/</link>
+      <pubDate>Sun, 22 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/primality-test/miller-rabin/</guid>
+      <description>理论 TODO。
+算法描述 TODO。
+备注 需要 Montgomery 算法，u64 取模的开销过大。
+参考 素数判定 - mathmu 代码 #ifndef ALGO_MATH_MILLER_RABIN #define ALGO_MATH_MILLER_RABIN #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;../qpow/u64.hpp&amp;quot; #include &amp;lt;bit&amp;gt; #include &amp;lt;array&amp;gt; bool miller_rabbin_base(u64 n, u64 a) { u32 s = std::countr_zero(n - 1); u64 d = n &amp;gt;&amp;gt; s; u64 ad = qpow64(a, d, n); if (ad == 1 || ad == n - 1 || ad == 0) return true; for (u32 i = 1; i &amp;lt;= s - 1; ++i) { ad = u128(ad) * ad % n; if (ad == n - 1) return true; if (ad == 1) break; } return false; } bool miller_rabbin_test(u64 n) { if (n &amp;lt;= 6) return n == 2 || n == 3 || n == 5; if (n % 6 !</description>
+    </item>
+    
+    <item>
+      <title>Lucas 素性测试</title>
+      <link>https://algo-cpp.rogery.dev/post/math/primality-test/lucas/</link>
+      <pubDate>Sat, 21 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/primality-test/lucas/</guid>
+      <description>理论 设 $D$ 为无平方整数，记 $O$ 为二次域 $\mathbb{Q}(\sqrt{D})$ 上的 代数整数环，有类比的定理：
+【二次域中的 Fermat 小定理】设 $a \in O$ ， $p$ 为奇素数，且 $p \nmid d$ ，则
+$$ a^p = \begin{cases} a, &amp;\text{若 } \left(\frac{D}{p}\right) = 1 \\ \overline{a}, &amp;\text{若 } \left(\frac{D}{p}\right) = -1\end{cases} \pmod p $$ 由于乘幂并不容易计算，引入一类特殊的二阶递推序列：设 $P, Q \in \mathbb{Z}$ ，特征方程 $x^2 - Px+ Q = 0$ 的两根分别为 $a, b$ ，定义 $P, Q$ 对应的 Lucas 序列为
+$$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计算的在哪里有困难，不能快速幂吗？猜测是那个除 $2$ 比较头疼。</description>
+    </item>
+    
     <item>
       <title>NTT</title>
-      <link>https://algo.rogery.dev/post/math/poly/ntt/</link>
+      <link>https://algo-cpp.rogery.dev/post/math/poly/ntt/</link>
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
-      <guid>https://algo.rogery.dev/post/math/poly/ntt/</guid>
+      <guid>https://algo-cpp.rogery.dev/post/math/poly/ntt/</guid>
       <description>多项式 NTT #ifndef ALGO_MATH_POLY_NTT #define ALGO_MATH_POLY_NTT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;bit&amp;gt; #include &amp;lt;cassert&amp;gt; #include &amp;lt;span&amp;gt; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class NttInfo { protected: enum : typename ModT::value_type { P = ModT::get_mod(), g = 3, // 原根 max_bit = (P - 1) &amp;amp; -(P - 1), iv2 = (P + 1) / 2 }; inline static std::vector&amp;lt;ModT&amp;gt; rt{1, 1}; inline static std::array&amp;lt;ModT, 32&amp;gt; ivn{1, iv2}; static ModT get_ivn(u32 n) { return ivn[std::countr_zero(n)]; } static void prepare_root(u32 m) { assert(m &amp;lt;= max_bit); while (rt.</description>
     </item>
     
     <item>
       <title>Poly</title>
-      <link>https://algo.rogery.dev/post/math/poly/poly/</link>
+      <link>https://algo-cpp.rogery.dev/post/math/poly/poly/</link>
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
-      <guid>https://algo.rogery.dev/post/math/poly/poly/</guid>
+      <guid>https://algo-cpp.rogery.dev/post/math/poly/poly/</guid>
       <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) { self.resize(len); } Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v.begin(), v.end()) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v.begin(), v.end()) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (self.</description>
     </item>
     
     <item>
       <title>算法库</title>
-      <link>https://algo.rogery.dev/post/base/</link>
+      <link>https://algo-cpp.rogery.dev/post/base/</link>
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
-      <guid>https://algo.rogery.dev/post/base/</guid>
+      <guid>https://algo-cpp.rogery.dev/post/base/</guid>
       <description>实现的算法列表。
-Math Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 </description>
+数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 </description>
     </item>
     
   </channel>
