@@ -1,6 +1,6 @@
 
 # 站点配置
-baseURL = "https://algo.rogery.dev"
+baseURL = "https://algo-cpp.rogery.dev"
 languageCode = "zh"
 title = "Roger Young"
 theme = "hugo-pure"

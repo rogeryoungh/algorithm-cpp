@@ -6,7 +6,13 @@ date: "2023-01-20"
 
 实现的算法列表。
 
-## Math
+## 数学相关
+
+### 基础数论
+
+- [Miller Rabin 素性测试](../math/primality-test/miller-rabin)，`math/primality-test/miller-rabin.hpp`。
+- [Lucas 素性测试](../math/primality-test/lucas)，`math/primality-test/lucas.hpp`。
+- [Baillie PSW 素性测试](../math/primality-test/baillie-psw)，`math/primality-test/baillie-psw.hpp`。
 
 ### Poly
 
