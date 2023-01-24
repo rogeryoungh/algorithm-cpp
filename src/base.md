@@ -18,3 +18,5 @@ date: "2023-01-20"
 
 - [Poly 骨架](../math/poly/poly)，`math/poly/poly-base.hpp`。
 - [NTT](../math/poly/ntt)，`math/poly/ntt.hpp`。
+- [多项式乘法逆 10E](../math/poly/inv-10e-nt)，`math/poly/inv-10E-nt.hpp`。
+- [多项式乘法逆 12E](../math/poly/inv-12e-nt)，`math/poly/inv-12E-nt.hpp`。

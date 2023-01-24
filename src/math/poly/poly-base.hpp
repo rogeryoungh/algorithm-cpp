@@ -4,6 +4,7 @@
 #include "../../other/modint/modint-concept.hpp"
 #include "ntt.hpp"
 #include "vec-dots.hpp"
+#include "inv-10E-nt.hpp"
 
 #include <vector>
 
@@ -28,6 +29,8 @@ public:
 
   Poly(const std::vector<u32> &v) : Vec(v) {}
 
+  Poly(const std::vector<ModT> &v) : Vec(v) {}
+
   Poly &operator*=(const Poly &rhs) {
     if (self.empty() || rhs.empty()) {
       return self.resize(0), self;
@@ -51,6 +54,10 @@ public:
 
   friend Poly operator*(const Poly &lhs, const Poly &rhs) {
     return Poly(lhs) *= rhs;
+  }
+
+  Poly inv(u32 m) const {
+    return poly_inv_10E<ModT>(self, m);
   }
 
   template <class U = u32>
