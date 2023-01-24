@@ -68,6 +68,10 @@
 #include &quot;ntt.hpp&quot;
 #include &quot;vec-dots.hpp&quot;
 #include &quot;inv-10E-nt.hpp&quot;
+#include &quot;div-13E-nt.hpp&quot;
+#include &quot;ln-13E-nt.hpp&quot;
+#include &quot;deriv.hpp&quot;
+#include &quot;integr.hpp&quot;
 
 #include &lt;vector&gt;
 
@@ -121,6 +125,22 @@ public:
 
   Poly inv(u32 m) const {
     return poly_inv_10E&lt;ModT&gt;(self, m);
+  }
+
+  Poly deriv(u32 m) const {
+    return poly_deriv&lt;ModT&gt;(self, m);
+  }
+
+  Poly integr(u32 m, u32 C = 0) const {
+    return poly_integr&lt;ModT&gt;(self, m, C);
+  }
+
+  Poly div(const Poly &amp;rhs, u32 m) {
+    return poly_div_13E&lt;ModT&gt;(self, rhs, m);
+  }
+
+  Poly ln(u32 m) {
+    return poly_ln_13E&lt;ModT&gt;(self, m);
   }
 
   template &lt;class U = u32&gt;

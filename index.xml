@@ -27,6 +27,15 @@
     </item>
     
     <item>
+      <title>多项式除法 13E</title>
+      <link>https://algo-cpp.rogery.dev/post/math/poly/div-13e-nt/</link>
+      <pubDate>Tue, 24 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/poly/div-13e-nt/</guid>
+      <description>多项式除法 13E #ifndef ALGO_MATH_POLY_DIV13ENT #define ALGO_MATH_POLY_DIV13ENT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;vector&amp;gt; #include &amp;lt;iostream&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; std::vector&amp;lt;ModT&amp;gt; poly_div_13E(std::span&amp;lt;const ModT&amp;gt; lhs, std::span&amp;lt;const ModT&amp;gt; rhs, u32 m) { if (lhs.empty() || rhs.empty()) return {}; if (m == 1) return {lhs[0] / rhs[0]}; u32 t = std::bit_ceil(m); std::vector&amp;lt;ModT&amp;gt; g(t), x(t), q(t); std::vector&amp;lt;ModT&amp;gt; u = poly_inv_10E&amp;lt;ModT&amp;gt;(rhs, t / 2); // 5E std::copy(rhs.begin(), std::min(rhs.begin() + t, rhs.end()), g.begin()); std::copy(lhs.begin(), std::min(lhs.begin() + t / 2, lhs.</description>
+    </item>
+    
+    <item>
       <title>Baillie PSW 素性测试</title>
       <link>https://algo-cpp.rogery.dev/post/math/primality-test/baillie-psw/</link>
       <pubDate>Sun, 22 Jan 2023 00:00:00 +0000</pubDate>
@@ -79,7 +88,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://algo-cpp.rogery.dev/post/math/poly/poly/</guid>
-      <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) { self.resize(len); } Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (self.</description>
+      <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;quot;div-13E-nt.hpp&amp;quot; #include &amp;quot;ln-13E-nt.hpp&amp;quot; #include &amp;quot;deriv.hpp&amp;quot; #include &amp;quot;integr.hpp&amp;quot; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) { self.resize(len); } Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (self.</description>
     </item>
     
     <item>
@@ -89,7 +98,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       
       <guid>https://algo-cpp.rogery.dev/post/base/</guid>
       <description>实现的算法列表。
-数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 多项式乘法逆 10E，math/poly/inv-10E-nt.hpp。 多项式乘法逆 12E，math/poly/inv-12E-nt.hpp。 </description>
+数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 多项式乘法逆 10E，math/poly/inv-10E-nt.hpp。 多项式乘法逆 12E，math/poly/inv-12E-nt.hpp。 多项式除法 13E，math/poly/div-13E-nt.hpp。 </description>
     </item>
     
   </channel>
