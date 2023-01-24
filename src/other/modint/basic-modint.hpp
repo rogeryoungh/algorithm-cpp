@@ -57,33 +57,33 @@ public:
 
   constexpr Self &operator+=(const Self &rhs) {
     v = reduce_neg(v + rhs.v - MOD);
-    return self;
+    return *this;
   }
 
   constexpr Self &operator-=(const Self &rhs) {
     v = reduce_neg(v - rhs.v);
-    return self;
+    return *this;
   }
 
   constexpr Self &operator*=(const Self &rhs) {
     v = u64(v) * rhs.v % MOD;
-    return self;
+    return *this;
   }
 
   constexpr Self operator+(const Self &b) const {
-    return Self(self) += b;
+    return Self(*this) += b;
   }
 
   constexpr Self operator-(const Self &b) const {
-    return Self(self) -= b;
+    return Self(*this) -= b;
   }
 
   constexpr Self operator*(const Self &b) const {
-    return Self(self) *= b;
+    return Self(*this) *= b;
   }
 
   constexpr Self pow(u64 n) const {
-    Self r(1), a(self);
+    Self r(1), a(*this);
     for (; n > 0; n /= 2) {
       if (n % 2 == 1)
         r *= a;
@@ -97,11 +97,11 @@ public:
   }
 
   constexpr Self &operator/=(const Self &rhs) {
-    return self *= rhs.inv();
+    return *this *= rhs.inv();
   }
 
   constexpr Self operator/(const Self &b) const {
-    return Self(self) /= b;
+    return Self(*this) /= b;
   }
 
   constexpr Self operator-() const {
