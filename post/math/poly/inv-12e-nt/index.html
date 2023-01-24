@@ -37,7 +37,7 @@
 <main class="px-5 flex justify-center">
   <article class="article w-full max-w-210 my-10">
     <header class="my-20">
-      <h1 class="text-8 text-center folt-bold"> 算法库 </h1>
+      <h1 class="text-8 text-center folt-bold"> 多项式乘法逆 12E </h1>
       <a
         class="text-center-my-6 hidden print:block"
         href="https://rogery.dev/">
@@ -46,37 +46,56 @@
       <div class="text-center">
         
         
-        2023 年 1 月 20 日
+        2023 年 1 月 24 日
         
       </div>
     </header>
     
       <h1> 目录 </h1><nav id="TableOfContents">
   <ol>
-    <li><a href="#数学相关">数学相关</a>
-      <ol>
-        <li><a href="#基础数论">基础数论</a></li>
-        <li><a href="#poly">Poly</a></li>
-      </ol>
-    </li>
+    <li><a href="#多项式乘法逆-12e">多项式乘法逆 12E</a></li>
   </ol>
 </nav>
     <section class="content-frame my-10">
-      <p>实现的算法列表。</p>
-<h2 id="数学相关">数学相关</h2>
-<h3 id="基础数论">基础数论</h3>
-<ul>
-<li><a href="../math/primality-test/miller-rabin">Miller Rabin 素性测试</a>，<code>math/primality-test/miller-rabin.hpp</code>。</li>
-<li><a href="../math/primality-test/lucas">Lucas 素性测试</a>，<code>math/primality-test/lucas.hpp</code>。</li>
-<li><a href="../math/primality-test/baillie-psw">Baillie PSW 素性测试</a>，<code>math/primality-test/baillie-psw.hpp</code>。</li>
-</ul>
-<h3 id="poly">Poly</h3>
-<ul>
-<li><a href="../math/poly/poly">Poly 骨架</a>，<code>math/poly/poly-base.hpp</code>。</li>
-<li><a href="../math/poly/ntt">NTT</a>，<code>math/poly/ntt.hpp</code>。</li>
-<li><a href="../math/poly/inv-10e-nt">多项式乘法逆 10E</a>，<code>math/poly/inv-10E-nt.hpp</code>。</li>
-<li><a href="../math/poly/inv-12e-nt">多项式乘法逆 12E</a>，<code>math/poly/inv-12E-nt.hpp</code>。</li>
-</ul>
+      <h2 id="多项式乘法逆-12e">多项式乘法逆 12E</h2>
+
+
+
+<pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_INV12ENT
+#define ALGO_MATH_POLY_INV12ENT
+
+#include &quot;../../base.hpp&quot;
+#include &quot;../../other/modint/modint-concept.hpp&quot;
+#include &quot;ntt.hpp&quot;
+
+#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+
+template &lt;static_modint_concept ModT&gt;
+auto poly_inv_12E(std::span&lt;const ModT&gt; f, u32 m) {
+  u32 n = std::bit_ceil(m);
+  std::vector&lt;ModT&gt; x(n * 2);
+  x[0] = f[0].inv();
+  for (u32 t = 1; t &lt; n; t *= 2) {
+    std::span xt{x.begin(), x.begin() + t * 4};
+    std::vector&lt;ModT&gt; u(t * 4);
+    std::copy(f.begin(), std::min(f.begin() + t * 2, f.end()), u.begin());
+    ntt&lt;ModT&gt;(u);  // 4E
+    ntt&lt;ModT&gt;(xt); // 4E
+    for (u32 i = 0; i &lt; t * 4; ++i) {
+      x[i] = (ModT(2) + -u[i] * x[i]) * x[i];
+    }
+    intt&lt;ModT&gt;(xt); // 4E
+    std::fill_n(x.begin() + t * 2, t * 2, 0);
+  }
+  return x.resize(m), x;
+}
+
+#endif // ALGO_MATH_POLY_INV12ENT
+
+</code></pre>
+
+
 
     </section>
     <hr />

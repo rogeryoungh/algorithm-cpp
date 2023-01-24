@@ -7,7 +7,25 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh</language>
     <copyright>© 2023 [Roger Young](https://rogery.dev)</copyright>
-    <lastBuildDate>Sun, 22 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://algo-cpp.rogery.dev/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 24 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://algo-cpp.rogery.dev/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>多项式乘法逆 10E</title>
+      <link>https://algo-cpp.rogery.dev/post/math/poly/inv-10e-nt/</link>
+      <pubDate>Tue, 24 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/poly/inv-10e-nt/</guid>
+      <description>多项式乘法逆 10E #ifndef ALGO_MATH_POLY_INV10ENT #define ALGO_MATH_POLY_INV10ENT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; auto poly_inv_10E(std::span&amp;lt;const ModT&amp;gt; f, u32 m) { u32 n = std::bit_ceil(m); std::vector&amp;lt;ModT&amp;gt; x(n); x[0] = f[0].inv(); for (u32 t = 1; t &amp;lt; n; t *= 2) { std::vector&amp;lt;ModT&amp;gt; f2(t * 2), nx(t * 2); std::copy(f.begin(), std::min(f.begin() + t * 2, f.end()), f2.begin()); std::copy_n(x.begin(), t * 2, nx.begin()); ntt&amp;lt;ModT&amp;gt;(f2); // 2E ntt&amp;lt;ModT&amp;gt;(nx); // 2E dot&amp;lt;ModT&amp;gt;(f2, nx); intt&amp;lt;ModT&amp;gt;(f2); // 2E std::fill_n(f2.</description>
+    </item>
+    
+    <item>
+      <title>多项式乘法逆 12E</title>
+      <link>https://algo-cpp.rogery.dev/post/math/poly/inv-12e-nt/</link>
+      <pubDate>Tue, 24 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/poly/inv-12e-nt/</guid>
+      <description>多项式乘法逆 12E #ifndef ALGO_MATH_POLY_INV12ENT #define ALGO_MATH_POLY_INV12ENT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; auto poly_inv_12E(std::span&amp;lt;const ModT&amp;gt; f, u32 m) { u32 n = std::bit_ceil(m); std::vector&amp;lt;ModT&amp;gt; x(n * 2); x[0] = f[0].inv(); for (u32 t = 1; t &amp;lt; n; t *= 2) { std::span xt{x.begin(), x.begin() + t * 4}; std::vector&amp;lt;ModT&amp;gt; u(t * 4); std::copy(f.begin(), std::min(f.begin() + t * 2, f.end()), u.begin()); ntt&amp;lt;ModT&amp;gt;(u); // 4E ntt&amp;lt;ModT&amp;gt;(xt); // 4E for (u32 i = 0; i &amp;lt; t * 4; ++i) { x[i] = (ModT(2) + -u[i] * x[i]) * x[i]; } intt&amp;lt;ModT&amp;gt;(xt); // 4E std::fill_n(x.</description>
+    </item>
+    
     <item>
       <title>Baillie PSW 素性测试</title>
       <link>https://algo-cpp.rogery.dev/post/math/primality-test/baillie-psw/</link>
@@ -52,7 +70,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://algo-cpp.rogery.dev/post/math/poly/ntt/</guid>
-      <description>多项式 NTT #ifndef ALGO_MATH_POLY_NTT #define ALGO_MATH_POLY_NTT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;bit&amp;gt; #include &amp;lt;cassert&amp;gt; #include &amp;lt;span&amp;gt; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class NttInfo { protected: enum : typename ModT::value_type { P = ModT::get_mod(), g = 3, // 原根 max_bit = (P - 1) &amp;amp; -(P - 1), iv2 = (P + 1) / 2 }; inline static std::vector&amp;lt;ModT&amp;gt; rt{1, 1}; inline static std::array&amp;lt;ModT, 32&amp;gt; ivn{1, iv2}; static ModT get_ivn(u32 n) { return ivn[std::countr_zero(n)]; } static void prepare_root(u32 m) { assert(m &amp;lt;= max_bit); while (rt.</description>
+      <description>多项式 NTT #ifndef ALGO_MATH_POLY_NTT #define ALGO_MATH_POLY_NTT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;bit&amp;gt; #include &amp;lt;cassert&amp;gt; #include &amp;lt;span&amp;gt; #include &amp;lt;vector&amp;gt; namespace detail { u32 ntt_size = 0; } template &amp;lt;static_modint_concept ModT&amp;gt; auto &amp;amp;prepare_root(u32 m) { enum : typename ModT::value_type { P = ModT::get_mod(), g = 3, // 原根 max_bit = (P - 1) &amp;amp; -(P - 1) }; static std::vector&amp;lt;ModT&amp;gt; rt{1, 1}; assert(m &amp;lt;= max_bit); while (rt.size() &amp;lt; m) { u32 n = rt.</description>
     </item>
     
     <item>
@@ -61,7 +79,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://algo-cpp.rogery.dev/post/math/poly/poly/</guid>
-      <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) { self.resize(len); } Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v.begin(), v.end()) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v.begin(), v.end()) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (self.</description>
+      <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) { self.resize(len); } Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (self.</description>
     </item>
     
     <item>
@@ -71,7 +89,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       
       <guid>https://algo-cpp.rogery.dev/post/base/</guid>
       <description>实现的算法列表。
-数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 </description>
+数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 多项式乘法逆 10E，math/poly/inv-10E-nt.hpp。 多项式乘法逆 12E，math/poly/inv-12E-nt.hpp。 </description>
     </item>
     
   </channel>

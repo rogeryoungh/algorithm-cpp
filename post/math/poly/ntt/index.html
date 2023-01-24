@@ -73,70 +73,74 @@
 #include &lt;span&gt;
 #include &lt;vector&gt;
 
+namespace detail {
+u32 ntt_size = 0;
+}
+
 template &lt;static_modint_concept ModT&gt;
-class NttInfo {
-protected:
+auto &amp;prepare_root(u32 m) {
   enum : typename ModT::value_type {
     P = ModT::get_mod(),
     g = 3, // 原根
-    max_bit = (P - 1) &amp; -(P - 1),
-    iv2 = (P + 1) / 2
+    max_bit = (P - 1) &amp; -(P - 1)
   };
-  inline static std::vector&lt;ModT&gt; rt{1, 1};
-  inline static std::array&lt;ModT, 32&gt; ivn{1, iv2};
-
-  static ModT get_ivn(u32 n) {
-    return ivn[std::countr_zero(n)];
-  }
-
-  static void prepare_root(u32 m) {
-    assert(m &lt;= max_bit);
-    while (rt.size() &lt; m) {
-      u32 n = rt.size();
-      rt.resize(n * 2);
-      ModT p = ModT(g).pow((P - 1) / n / 2);
-      for (u32 i = n; i &lt; n * 2; i += 2) {
-        rt[i] = rt[i / 2], rt[i + 1] = p * rt[i];
-      }
-      ivn[std::countr_zero(n * 2)] = P - (P - 1) / n / 2;
+  static std::vector&lt;ModT&gt; rt{1, 1};
+  assert(m &lt;= max_bit);
+  while (rt.size() &lt; m) {
+    u32 n = rt.size();
+    rt.resize(n * 2);
+    ModT p = ModT(g).pow((P - 1) / n / 2);
+    for (u32 i = n; i &lt; n * 2; i += 2) {
+      rt[i] = rt[i / 2], rt[i + 1] = p * rt[i];
     }
   }
-
-public:
-  static void ntt(std::span&lt;ModT&gt; f) { // dif
-    u32 n = f.size();
-    assert(std::has_single_bit(n));
-    prepare_root(n), ntt_size += n;
-    for (u32 l = n / 2; l &gt; 0; l /= 2) {
-      for (u32 i = 0; i &lt; n; i += l * 2) {
-        for (u32 j = 0; j &lt; l; ++j) {
-          ModT x = f[i + j], y = f[i + j + l];
-          f[i + j + l] = (x - y) * rt[j + l];
-          f[i + j] = x + y;
-        }
-      }
-    }
-  }
-
-  static void intt(std::span&lt;ModT&gt; f) { // dit
-    u32 n = f.size();
-    assert(std::has_single_bit(n));
-    prepare_root(n), ntt_size += n;
-    f[n] = 1;
-    for (u32 l = 1; l &lt; n; l *= 2) {
-      for (u32 i = 0; i &lt; n; i += l * 2) {
-        for (u32 j = 0; j &lt; l; ++j) {
-          ModT x = f[i + j], y = rt[j + l] * f[i + j + l];
-          f[i + j] = x + y, f[i + j + l] = x - y;
-        }
-      }
-    }
-    const ModT ivn = get_ivn(n);
-    for (u32 i = 0; i &lt; n; i++)
-      f[i] *= ivn;
-    std::reverse(f.begin() + 1, f.end());
-  }
+  return rt;
 };
+
+template &lt;static_modint_concept ModT&gt;
+constexpr inline ModT gen_ivn(u32 n) {
+  enum : typename ModT::value_type {
+    P = ModT::get_mod(),
+  };
+  return P - (P - 1) / n;
+}
+
+template &lt;static_modint_concept ModT&gt;
+static void ntt(std::span&lt;ModT&gt; f) { // dif
+  u32 n = f.size();
+  assert(std::has_single_bit(n));
+  auto &amp;rt = prepare_root&lt;ModT&gt;(n);
+  detail::ntt_size += n;
+  for (u32 l = n / 2; l &gt; 0; l /= 2) {
+    for (u32 i = 0; i &lt; n; i += l * 2) {
+      for (u32 j = 0; j &lt; l; ++j) {
+        ModT x = f[i + j], y = f[i + j + l];
+        f[i + j + l] = (x - y) * rt[j + l];
+        f[i + j] = x + y;
+      }
+    }
+  }
+}
+
+template &lt;static_modint_concept ModT&gt;
+static void intt(std::span&lt;ModT&gt; f) { // dit
+  u32 n = f.size();
+  assert(std::has_single_bit(n));
+  auto &amp;rt = prepare_root&lt;ModT&gt;(n);
+  detail::ntt_size += n;
+  for (u32 l = 1; l &lt; n; l *= 2) {
+    for (u32 i = 0; i &lt; n; i += l * 2) {
+      for (u32 j = 0; j &lt; l; ++j) {
+        ModT x = f[i + j], y = rt[j + l] * f[i + j + l];
+        f[i + j] = x + y, f[i + j + l] = x - y;
+      }
+    }
+  }
+  const ModT ivn = gen_ivn&lt;ModT&gt;(n);
+  for (u32 i = 0; i &lt; n; i++)
+    f[i] *= ivn;
+  std::reverse(f.begin() + 1, f.end());
+}
 
 #endif // ALGO_MATH_POLY_NTT
 

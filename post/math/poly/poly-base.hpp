@@ -4,6 +4,7 @@
 #include "../../other/modint/modint-concept.hpp"
 #include "ntt.hpp"
 #include "vec-dots.hpp"
+#include "inv-10E-nt.hpp"
 
 #include <vector>
 
@@ -26,9 +27,9 @@ public:
     self.resize(len);
   }
 
-  Poly(const std::vector<u32> &v) : Vec(v.begin(), v.end()) {}
+  Poly(const std::vector<u32> &v) : Vec(v) {}
 
-  Poly(const std::vector<ModT> &v) : Vec(v.begin(), v.end()) {}
+  Poly(const std::vector<ModT> &v) : Vec(v) {}
 
   Poly &operator*=(const Poly &rhs) {
     if (self.empty() || rhs.empty()) {
@@ -37,22 +38,26 @@ public:
       u32 m = self.size() + rhs.size() - 1;
       u32 n = std::bit_ceil(m);
       self.resize(n);
-      NttInfo<ModT>::ntt(self);
+      ntt<ModT>(self);
       if (self.data() == rhs.data()) {
-        VecDots<ModT>::dot(self, self);
+        dot<ModT>(self, self);
       } else {
         Vec vr(n);
         std::copy(rhs.cbegin(), rhs.cend(), vr.begin());
-        NttInfo<ModT>::ntt(vr);
-        VecDots<ModT>::dot(self, vr);
+        ntt<ModT>(vr);
+        dot<ModT>(self, vr);
       }
-      NttInfo<ModT>::intt(self);
+      intt<ModT>(self);
       return self.resize(m), self;
     }
   }
 
   friend Poly operator*(const Poly &lhs, const Poly &rhs) {
     return Poly(lhs) *= rhs;
+  }
+
+  Poly inv(u32 m) const {
+    return poly_inv_10E<ModT>(self, m);
   }
 
   template <class U = u32>
