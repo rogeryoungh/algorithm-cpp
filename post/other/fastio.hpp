@@ -41,10 +41,10 @@ struct BasicBuffer {
 struct FastI : BasicBuffer {
   using BasicBuffer::BasicBuffer;
   FastI(FILE *f, u32 sz = 1 << 18) : BasicBuffer(f, sz) {
-    std::fread(beg, 1, end - beg, f);
+    p = end;
   }
   FastI &operator>>(char &x) {
-    return x = getc(), self;
+    return x = getc(), *this;
   }
   template <std::unsigned_integral T>
   FastI &operator>>(T &x) {
@@ -54,7 +54,7 @@ struct FastI : BasicBuffer {
       c = getc();
     while (std::isdigit(c))
       x = x * 10 + c - '0', c = getc();
-    return self;
+    return *this;
   }
   template <std::signed_integral T>
   FastI &operator>>(T &x) {
@@ -66,7 +66,7 @@ struct FastI : BasicBuffer {
     while (std::isdigit(c))
       x = x * 10 + c - '0', c = getc();
     x = sgn ? x : -x;
-    return self;
+    return *this;
   }
 };
 
@@ -80,7 +80,7 @@ struct FastO : BasicBuffer {
   FastO &operator<<(T x) {
     if (x < 0)
       putc('-'), x = -x;
-    return self << std::make_unsigned(x);
+    return *this << std::make_unsigned(x);
   }
   template <std::unsigned_integral T>
   FastO &operator<<(T x) {
@@ -89,16 +89,16 @@ struct FastO : BasicBuffer {
       *--i = x % 10 + '0', x /= 10;
     while (x > 0);
     puts(i);
-    return self;
+    return *this;
   }
   FastO &operator<<(char x) {
-    return putc(x), self;
+    return putc(x), *this;
   }
   FastO &operator<<(const char *x) {
-    return puts(x), self;
+    return puts(x), *this;
   }
   FastO &operator<<(const std::string &x) {
-    return puts(x.c_str()), self;
+    return puts(x.c_str()), *this;
   }
 };
 
