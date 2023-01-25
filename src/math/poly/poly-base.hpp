@@ -7,6 +7,7 @@
 #include "inv-10E-nt.hpp"
 #include "div-13E-nt.hpp"
 #include "ln-13E-nt.hpp"
+#include "exp-17E-nt.hpp"
 #include "deriv.hpp"
 #include "integr.hpp"
 
@@ -77,6 +78,10 @@ public:
 
   Poly ln(u32 m) {
     return poly_ln_13E<ModT>(*this, m);
+  }
+
+  Poly exp(u32 m) {
+    return poly_exp_17E<ModT>(*this, m);
   }
 
   template <class U = u32>

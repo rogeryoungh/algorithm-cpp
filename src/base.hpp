@@ -1,7 +1,7 @@
 #ifndef ALGO_BASE
 #define ALGO_BASE
 
-// GENERATE FROM: https://github.com/rogeryoungh/code-of-acm
+// GENERATE FROM: https://github.com/rogeryoungh/algorithm-cpp
 
 #include <cstdint>
 
