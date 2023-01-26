@@ -2,6 +2,7 @@
 #define ALGO_MODINT_BASIC_MODINT
 
 #include "../../base.hpp"
+#include "../../math/cipolla.hpp"
 #include <iostream>
 
 #ifdef DEBUG
@@ -108,6 +109,14 @@ public:
     return Self{v == 0 ? 0 : MOD - v};
   }
 
+  constexpr std::optional<Self> sqrt() const {
+    return cipola(val(), get_mod());
+  }
+
+  constexpr Self shift2() const {
+    return (v + (v % 2 == 0 ? 0 : get_mod())) / 2;
+  }
+
   friend inline std::istream &operator>>(std::istream &is, Self &m) {
     i64 x;
     is >> x;
@@ -117,6 +126,14 @@ public:
 
   friend inline std::ostream &operator<<(std::ostream &os, const Self &m) {
     return os << m.val();
+  }
+
+  friend inline bool operator==(const Self &lhs, const Self &rhs) {
+    return lhs.val() == rhs.val();
+  }
+
+  friend inline bool operator!=(const Self &lhs, const Self &rhs) {
+    return !(lhs == rhs);
   }
 };
 

@@ -71,9 +71,11 @@
 #include &quot;div-13E-nt.hpp&quot;
 #include &quot;ln-13E-nt.hpp&quot;
 #include &quot;exp-17E-nt.hpp&quot;
+#include &quot;sqrt-11E-nt.hpp&quot;
 #include &quot;deriv.hpp&quot;
 #include &quot;integr.hpp&quot;
 
+#include &lt;optional&gt;
 #include &lt;vector&gt;
 
 template &lt;static_modint_concept ModT&gt;
@@ -139,12 +141,31 @@ public:
     return poly_div_13E&lt;ModT&gt;(*this, rhs, m);
   }
 
-  Poly ln(u32 m) {
+  Poly ln(u32 m) const {
     return poly_ln_13E&lt;ModT&gt;(*this, m);
   }
 
-  Poly exp(u32 m) {
+  Poly exp(u32 m) const {
     return poly_exp_17E&lt;ModT&gt;(*this, m);
+  }
+
+  Poly sqrt(u32 m) const {
+    return poly_sqrt_11E&lt;ModT&gt;(*this, m);
+  }
+
+  std::optional&lt;Poly&gt; sqrt_safe(u32 m) const {
+    auto it = begin();
+    while (it != end() &amp;&amp; *it == 0)
+      ++it;
+    if (it == end())
+      return Poly(m);
+    auto sq = cipola(it-&gt;val(), ModT::get_mod());
+    u32 len = it - begin();
+    if (len % 2 == 1 || !sq.has_value())
+      return std::nullopt;
+    auto x = poly_sqrt_11E&lt;ModT&gt;({it, end()}, m - len / 2);
+    x.insert(x.begin(), len / 2, 0);
+    return x;
   }
 
   template &lt;class U = u32&gt;
