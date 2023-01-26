@@ -22,3 +22,4 @@ date: "2023-01-20"
 - [多项式乘法逆 12E](../math/poly/inv-12e-nt)，`math/poly/inv-12E-nt.hpp`。
 - [多项式除法 13E](../math/poly/div-13e-nt)，`math/poly/div-13E-nt.hpp`。
 - [多项式 EXP 17E](../math/poly/exp-17e-nt)，`math/poly/exp-17E-nt.hpp`。
+- [多项式开根 17E](../math/poly/sqrt-11e-nt)，`math/poly/sqrt-11E-nt.hpp`。
