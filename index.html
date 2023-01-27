@@ -29,6 +29,8 @@
       
         <li class="flex"><a class="m-3" href="/post">Post</a></li>
       
+        <li class="flex"><a class="m-3" href="https://github.com/rogeryoungh/algorithm-cpp">🤩 GitHub</a></li>
+      
     </ul>
   </nav>
 </header>
@@ -39,13 +41,21 @@
     <section class="mt-20">
       <h2 id="算法库">算法库</h2>
 <blockquote>
-<p>正在编写中……</p>
+<p>正在编写中……这里是项目地址：<a href="https://github.com/rogeryoungh/algorithm-cpp">rogeryoungh/algorithm-cpp</a>，感兴趣不妨来点个 star 哦！</p>
 </blockquote>
 <p>我的算法库，计划包含算法竞赛的<del>常见</del>（我会的）算法。</p>
 <p>本仓库的代码侧重于常数和易用性，封装较重。</p>
 <p>如果你需要轻封装的代码，可以看看 <a href="https://github.com/rogeryoungh/code-of-acm">rogeryoungh/code-of-acm</a>。</p>
 <h2 id="文档">文档</h2>
 <p>还在施工。<a href="./post/base">文档</a>。</p>
+<h2 id="使用方式">使用方式</h2>
+<blockquote>
+<p>TODO！</p>
+</blockquote>
+<p>如果需要合并成但文件提交到 OJ，我提供了 <code>just</code> 的 <code>shell</code> 脚本，例如 <code>test/luogu/P3803.cpp</code>：</p>
+<pre><code class="language-bash">just expand test/luogu/P3803.cpp &gt; P3803.full.cpp
+</code></pre>
+<p>已知问题：由于解析依赖 <code>gcc -E</code>，编译器会对所有 <code>include</code> 尝试展开，但又通过特殊方式排除了系统头文件，总之在 test 中引入系统头文件会导致错误。</p>
 
     </section>
   </article>
