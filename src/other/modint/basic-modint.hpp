@@ -16,9 +16,7 @@ template <u32 MOD>
 class BasicModint {
 protected:
   u32 v;
-  enum : u32 { r2 = u64(1) << 32 / MOD };
   static_assert(0 < MOD && MOD < u32(1) << 31, "mod must in [1, 2^31)");
-  constexpr inline BasicModint(u32 v_, u32) : v(v_) {}
 
 public:
   using value_type = u32;
@@ -37,19 +35,19 @@ public:
   }
 
   using Self = BasicModint;
-  constexpr BasicModint() : Self(0, u32()) {}
-  constexpr BasicModint(i64 v_) : BasicModint(reduce_neg(v_ % MOD), u32()) {}
+  constexpr BasicModint(u32 v_ = 0) : v(v_) {}
 
   explicit operator u32() const {
     return val();
   }
 
-  constexpr static Self from_raw(u32 v) {
-    return Self(v, u32());
+  constexpr static Self safe(i64 v) {
+    return Self(reduce_neg(v % MOD));
   }
 
-  constexpr u32 val() const {
-    return v;
+  template <class U = u32>
+  constexpr inline U val() const {
+    return U(v);
   }
 
   constexpr static u32 get_mod() {
@@ -71,16 +69,16 @@ public:
     return *this;
   }
 
-  constexpr Self operator+(const Self &b) const {
-    return Self(*this) += b;
+  friend constexpr inline Self operator+(const Self &lhs, const Self &rhs) {
+    return Self(lhs) += rhs;
   }
 
-  constexpr Self operator-(const Self &b) const {
-    return Self(*this) -= b;
+  friend constexpr inline Self operator-(const Self &lhs, const Self &rhs) {
+    return Self(lhs) -= rhs;
   }
 
-  constexpr Self operator*(const Self &b) const {
-    return Self(*this) *= b;
+  friend constexpr inline Self operator*(const Self &lhs, const Self &rhs) {
+    return Self(lhs) *= rhs;
   }
 
   constexpr Self pow(u64 n) const {
@@ -101,8 +99,8 @@ public:
     return *this *= rhs.inv();
   }
 
-  constexpr Self operator/(const Self &b) const {
-    return Self(*this) /= b;
+  friend constexpr inline Self operator/(const Self &lhs, const Self &rhs) {
+    return Self(lhs) /= rhs;
   }
 
   constexpr Self operator-() const {
@@ -120,7 +118,7 @@ public:
   friend inline std::istream &operator>>(std::istream &is, Self &m) {
     i64 x;
     is >> x;
-    m = Self(x);
+    m = Self::safe(x);
     return is;
   }
 
