@@ -50,6 +50,10 @@ url = "/post/base/"
 name = "Post"
 url = "/post"
 
+[[params.menu]]
+name = "🤩 GitHub"
+url = "https://github.com/rogeryoungh/algorithm-cpp"
+
 
 # KaTeX 公式渲染
 [params.katex]
