@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh</language>
     <copyright>© 2023 [Roger Young](https://rogery.dev)</copyright>
-    <lastBuildDate>Wed, 25 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://algo-cpp.rogery.dev/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 27 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://algo-cpp.rogery.dev/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>多项式开根 8E</title>
+      <link>https://algo-cpp.rogery.dev/post/math/poly/sqrt-8e-nt-block/</link>
+      <pubDate>Fri, 27 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/poly/sqrt-8e-nt-block/</guid>
+      <description>多项式开根 8E #ifndef ALGO_MATH_POLY_SQRT8E_NTBLOCK #define ALGO_MATH_POLY_SQRT8E_NTBLOCK #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;quot;nt-block-helper.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;vector&amp;gt; #include &amp;lt;iostream&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; std::vector&amp;lt;ModT&amp;gt; poly_sqrt_8E_block(std::span&amp;lt;const ModT&amp;gt; self, u32 m) { if (m == 1) return {self[0].sqrt().value()}; auto [n, u] = detail::nt_block_len(m); std::vector&amp;lt;ModT&amp;gt; x = poly_sqrt_8E_block(self, n), h = poly_inv_10E&amp;lt;ModT&amp;gt;(x, n); x.resize(n * u), h.resize(n * 2); std::vector&amp;lt;ModT&amp;gt; ng0(n * u * 2); auto ng = detail::nt_block_split(ng0, n * 2); auto xk = detail::nt_block_split(x, n); ntt&amp;lt;ModT&amp;gt;(h); for (u32 k = 1; k &amp;lt; u; ++k) { std::copy(xk[k - 1].</description>
+    </item>
+    
     <item>
       <title>多项式 EXP 17E</title>
       <link>https://algo-cpp.rogery.dev/post/math/poly/exp-17e-nt/</link>
@@ -106,7 +115,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://algo-cpp.rogery.dev/post/math/poly/poly/</guid>
-      <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;quot;div-13E-nt.hpp&amp;quot; #include &amp;quot;ln-13E-nt.hpp&amp;quot; #include &amp;quot;exp-17E-nt.hpp&amp;quot; #include &amp;quot;sqrt-11E-nt.hpp&amp;quot; #include &amp;quot;deriv.hpp&amp;quot; #include &amp;quot;integr.hpp&amp;quot; #include &amp;lt;optional&amp;gt; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::empty; using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) {} Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (empty() || rhs.</description>
+      <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;quot;div-13E-nt.hpp&amp;quot; #include &amp;quot;ln-13E-nt.hpp&amp;quot; #include &amp;quot;exp-17E-nt.hpp&amp;quot; #include &amp;quot;sqrt-8E-nt-block.hpp&amp;quot; #include &amp;quot;deriv.hpp&amp;quot; #include &amp;quot;integr.hpp&amp;quot; #include &amp;lt;optional&amp;gt; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::empty; using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) {} Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (empty() || rhs.</description>
     </item>
     
     <item>
@@ -116,7 +125,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       
       <guid>https://algo-cpp.rogery.dev/post/base/</guid>
       <description>实现的算法列表。
-数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 多项式乘法逆 10E，math/poly/inv-10E-nt.hpp。 多项式乘法逆 12E，math/poly/inv-12E-nt.hpp。 多项式除法 13E，math/poly/div-13E-nt.hpp。 多项式 EXP 17E，math/poly/exp-17E-nt.hpp。 多项式开根 17E，math/poly/sqrt-11E-nt.hpp。 </description>
+数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 多项式乘法逆 10E，math/poly/inv-10E-nt.hpp。 多项式乘法逆 12E，math/poly/inv-12E-nt.hpp。 多项式除法 13E，math/poly/div-13E-nt.hpp。 多项式 EXP 17E，math/poly/exp-17E-nt.hpp。 多项式开根 11E，math/poly/sqrt-11E-nt.hpp。 多项式开根 8E，math/poly/sqrt-8E-nt-block.hpp。 </description>
     </item>
     
   </channel>

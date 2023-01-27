@@ -8,7 +8,7 @@
 #include "div-13E-nt.hpp"
 #include "ln-13E-nt.hpp"
 #include "exp-17E-nt.hpp"
-#include "sqrt-11E-nt.hpp"
+#include "sqrt-8E-nt-block.hpp"
 #include "deriv.hpp"
 #include "integr.hpp"
 
@@ -87,7 +87,7 @@ public:
   }
 
   Poly sqrt(u32 m) const {
-    return poly_sqrt_11E<ModT>(*this, m);
+    return poly_sqrt_8E_block<ModT>(*this, m);
   }
 
   std::optional<Poly> sqrt_safe(u32 m) const {
@@ -100,7 +100,7 @@ public:
     u32 len = it - begin();
     if (len % 2 == 1 || !sq.has_value())
       return std::nullopt;
-    auto x = poly_sqrt_11E<ModT>({it, end()}, m - len / 2);
+    auto x = poly_sqrt_8E_block<ModT>({it, end()}, m - len / 2);
     x.insert(x.begin(), len / 2, 0);
     return x;
   }

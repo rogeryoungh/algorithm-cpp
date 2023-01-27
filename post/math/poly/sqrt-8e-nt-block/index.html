@@ -37,7 +37,7 @@
 <main class="px-5 flex justify-center">
   <article class="article w-full max-w-210 my-10">
     <header class="my-20">
-      <h1 class="text-8 text-center folt-bold"> Poly </h1>
+      <h1 class="text-8 text-center folt-bold"> 多项式开根 8E </h1>
       <a
         class="text-center-my-6 hidden print:block"
         href="https://rogery.dev/">
@@ -46,135 +46,75 @@
       <div class="text-center">
         
         
-        2023 年 1 月 20 日
+        2023 年 1 月 27 日
         
       </div>
     </header>
     
       <h1> 目录 </h1><nav id="TableOfContents">
   <ol>
-    <li><a href="#多项式-ntt">多项式 NTT</a></li>
+    <li><a href="#多项式开根-8e">多项式开根 8E</a></li>
   </ol>
 </nav>
     <section class="content-frame my-10">
-      <h2 id="多项式-ntt">多项式 NTT</h2>
+      <h2 id="多项式开根-8e">多项式开根 8E</h2>
 
 
 
-<pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_BASE
-#define ALGO_MATH_POLY_BASE
+<pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_SQRT8E_NTBLOCK
+#define ALGO_MATH_POLY_SQRT8E_NTBLOCK
 
-#include &quot;../../other/modint/modint-concept.hpp&quot;
+#include &quot;../../base.hpp&quot;
 #include &quot;ntt.hpp&quot;
-#include &quot;vec-dots.hpp&quot;
 #include &quot;inv-10E-nt.hpp&quot;
-#include &quot;div-13E-nt.hpp&quot;
-#include &quot;ln-13E-nt.hpp&quot;
-#include &quot;exp-17E-nt.hpp&quot;
-#include &quot;sqrt-8E-nt-block.hpp&quot;
-#include &quot;deriv.hpp&quot;
-#include &quot;integr.hpp&quot;
+#include &quot;nt-block-helper.hpp&quot;
 
-#include &lt;optional&gt;
+#include &lt;algorithm&gt;
 #include &lt;vector&gt;
+#include &lt;iostream&gt;
 
 template &lt;static_modint_concept ModT&gt;
-class Poly : public std::vector&lt;ModT&gt; {
-  using Vec = typename std::vector&lt;ModT&gt;;
+std::vector&lt;ModT&gt; poly_sqrt_8E_block(std::span&lt;const ModT&gt; self, u32 m) {
+  if (m == 1)
+    return {self[0].sqrt().value()};
+  auto [n, u] = detail::nt_block_len(m);
+  std::vector&lt;ModT&gt; x = poly_sqrt_8E_block(self, n), h = poly_inv_10E&lt;ModT&gt;(x, n);
+  x.resize(n * u), h.resize(n * 2);
+  std::vector&lt;ModT&gt; ng0(n * u * 2);
+  auto ng = detail::nt_block_split(ng0, n * 2);
+  auto xk = detail::nt_block_split(x, n);
 
-public:
-  using Vec::empty;
-  using Vec::resize;
-  using Vec::size;
-  using Vec::operator[];
-  using Vec::begin;
-  using Vec::cbegin;
-  using Vec::cend;
-  using Vec::end;
-
-  Poly() = default;
-
-  Poly(u32 len) : Vec(len) {}
-
-  Poly(const std::vector&lt;u32&gt; &amp;v) : Vec(v) {}
-
-  Poly(const std::vector&lt;ModT&gt; &amp;v) : Vec(v) {}
-
-  Poly &amp;operator*=(const Poly &amp;rhs) {
-    if (empty() || rhs.empty()) {
-      return resize(0), *this;
-    } else {
-      u32 m = size() + rhs.size() - 1;
-      u32 n = std::bit_ceil(m);
-      resize(n);
-      ntt&lt;ModT&gt;(*this);
-      if (this-&gt;data() == rhs.data()) {
-        dot&lt;ModT&gt;(*this, *this);
+  ntt&lt;ModT&gt;(h);
+  for (u32 k = 1; k &lt; u; ++k) {
+    std::copy(xk[k - 1].begin(), xk[k - 1].end(), ng[k - 1].begin());
+    ntt&lt;ModT&gt;(ng[k - 1]);
+    std::vector&lt;ModT&gt; psi(n * 2);
+    for (u32 j = 0; j &lt; k; ++j) {
+      if (j == 0) {
+        for (u32 i = 0; i &lt; n; i++)
+          psi[i] += ng[k - 1 - j][i] * ng[j][i];
+        for (u32 i = n; i &lt; n * 2; i++)
+          psi[i] -= ng[k - 1 - j][i] * ng[j][i];
       } else {
-        Vec vr(n);
-        std::copy(rhs.cbegin(), rhs.cend(), vr.begin());
-        ntt&lt;ModT&gt;(vr);
-        dot&lt;ModT&gt;(*this, vr);
+        for (u32 i = 0; i &lt; n; i++)
+          psi[i] += (ng[k - 1 - j][i] + ng[k - j][i]) * ng[j][i];
+        for (u32 i = n; i &lt; n * 2; i++)
+          psi[i] -= (ng[k - 1 - j][i] - ng[k - j][i]) * ng[j][i];
       }
-      intt&lt;ModT&gt;(*this);
-      return resize(m), *this;
     }
+    intt&lt;ModT&gt;(psi);
+    std::fill_n(psi.begin() + n, n, 0);
+    for (u32 j = 0; j &lt; std::min&lt;u32&gt;(n, self.size() - n * k); j++)
+      psi[j] = (self[n * k + j] - psi[j]).shift2();
+    ntt&lt;ModT&gt;(psi);
+    dot&lt;ModT&gt;(psi, h);
+    intt&lt;ModT&gt;(psi);
+    std::copy_n(psi.begin(), n, xk[k].begin());
   }
+  return x.resize(m), x;
+}
 
-  friend Poly operator*(const Poly &amp;lhs, const Poly &amp;rhs) {
-    return Poly(lhs) *= rhs;
-  }
-
-  Poly inv(u32 m) const {
-    return poly_inv_10E&lt;ModT&gt;(*this, m);
-  }
-
-  Poly deriv(u32 m) const {
-    return poly_deriv&lt;ModT&gt;(*this, m);
-  }
-
-  Poly integr(u32 m, u32 C = 0) const {
-    return poly_integr&lt;ModT&gt;(*this, m, C);
-  }
-
-  Poly div(const Poly &amp;rhs, u32 m) {
-    return poly_div_13E&lt;ModT&gt;(*this, rhs, m);
-  }
-
-  Poly ln(u32 m) const {
-    return poly_ln_13E&lt;ModT&gt;(*this, m);
-  }
-
-  Poly exp(u32 m) const {
-    return poly_exp_17E&lt;ModT&gt;(*this, m);
-  }
-
-  Poly sqrt(u32 m) const {
-    return poly_sqrt_8E_block&lt;ModT&gt;(*this, m);
-  }
-
-  std::optional&lt;Poly&gt; sqrt_safe(u32 m) const {
-    auto it = begin();
-    while (it != end() &amp;&amp; *it == 0)
-      ++it;
-    if (it == end())
-      return Poly(m);
-    auto sq = cipola(it-&gt;val(), ModT::get_mod());
-    u32 len = it - begin();
-    if (len % 2 == 1 || !sq.has_value())
-      return std::nullopt;
-    auto x = poly_sqrt_8E_block&lt;ModT&gt;({it, end()}, m - len / 2);
-    x.insert(x.begin(), len / 2, 0);
-    return x;
-  }
-
-  template &lt;class U = u32&gt;
-  auto to_vec() const {
-    return std::vector&lt;U&gt;{begin(), end()};
-  }
-};
-
-#endif // ALGO_MATH_POLY_BASE
+#endif // ALGO_MATH_POLY_SQRT8E_NTBLOCK
 
 </code></pre>
 
