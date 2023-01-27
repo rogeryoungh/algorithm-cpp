@@ -13,7 +13,7 @@ using FPS = Poly<ModT>;
 #include "../benchmark-snippet.hpp"
 #include <random>
 
-struct BM_INV : TEST_BASE {
+struct BM_LN : TEST_BASE {
   void init(int n) {
     std::mt19937 rng(58);
     f.resize(n);
@@ -25,10 +25,11 @@ struct BM_INV : TEST_BASE {
   int run(int n) {
     FPS tf = f;
     detail::ntt_size = 0;
-    benchmark::DoNotOptimize(tf.ln(n));
+    poly_ln<ModT>(tf, n, poly_div_13E<ModT>);
+    benchmark::DoNotOptimize(tf[0]);
     return detail::ntt_size;
   }
   FPS f;
 };
 
-BM_DEF(BM_INV)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->Repetitions(5);
+BM_DEF(BM_LN)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->MinTime(3);

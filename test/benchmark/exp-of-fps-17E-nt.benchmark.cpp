@@ -25,10 +25,11 @@ struct BM_EXP : TEST_BASE {
   int run(int n) {
     FPS tf = f;
     detail::ntt_size = 0;
-    benchmark::DoNotOptimize(tf.exp(n));
+    poly_exp_17E<ModT>(f, n);
+    benchmark::DoNotOptimize(f[0]);
     return detail::ntt_size;
   }
   FPS f;
 };
 
-BM_DEF(BM_EXP)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->Repetitions(5);
+BM_DEF(BM_EXP)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->MinTime(3);

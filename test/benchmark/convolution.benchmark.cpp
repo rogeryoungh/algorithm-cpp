@@ -31,4 +31,4 @@ struct BM_MUL : TEST_BASE {
   FPS f, g;
 };
 
-BM_DEF(BM_MUL)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->Repetitions(5);
+BM_DEF(BM_MUL)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->MinTime(3);

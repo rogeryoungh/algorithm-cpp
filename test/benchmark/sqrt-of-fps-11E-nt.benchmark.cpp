@@ -12,7 +12,7 @@ using ModT = BasicModint<P>;
 #include "../benchmark-snippet.hpp"
 #include <random>
 
-struct BM_EXP : TEST_BASE {
+struct BM_SQRT : TEST_BASE {
   void init(int n) {
     std::mt19937 rng(58);
     f.resize(n);
@@ -31,4 +31,4 @@ struct BM_EXP : TEST_BASE {
   std::vector<ModT> f;
 };
 
-BM_DEF(BM_EXP)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->MinTime(3);
+BM_DEF(BM_SQRT)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->MinTime(3);
