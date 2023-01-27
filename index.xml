@@ -36,6 +36,15 @@
     </item>
     
     <item>
+      <title>多项式乘法逆 10E 分块</title>
+      <link>https://algo-cpp.rogery.dev/post/math/poly/inv-10e-nt-block/</link>
+      <pubDate>Tue, 24 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/poly/inv-10e-nt-block/</guid>
+      <description>多项式乘法逆 10E #ifndef ALGO_MATH_POLY_INV10E_NTBLOCK #define ALGO_MATH_POLY_INV10E_NTBLOCK #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;nt-block-helper.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;vector&amp;gt; #include &amp;lt;iostream&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; std::vector&amp;lt;ModT&amp;gt; poly_inv_10E_block(std::span&amp;lt;const ModT&amp;gt; self, u32 m) { if (m == 1) return {self[0].inv()}; auto [n, u] = detail::nt_block_len(m); std::vector&amp;lt;ModT&amp;gt; x = poly_inv_10E_block(self, n); x.resize(n * u); std::vector&amp;lt;ModT&amp;gt; nf0(n * u * 2), ng0(n * u * 2); auto nf = detail::nt_block_split(nf0, n * 2); auto ng = detail::nt_block_split(ng0, n * 2); auto xk = detail::nt_block_split(x, n); for (u32 k = 0; k &amp;lt; u; ++k) { std::copy(self.</description>
+    </item>
+    
+    <item>
       <title>多项式乘法逆 12E</title>
       <link>https://algo-cpp.rogery.dev/post/math/poly/inv-12e-nt/</link>
       <pubDate>Tue, 24 Jan 2023 00:00:00 +0000</pubDate>
@@ -51,6 +60,15 @@
       
       <guid>https://algo-cpp.rogery.dev/post/math/poly/sqrt-11e-nt/</guid>
       <description>多项式开根 11E #ifndef ALGO_MATH_POLY_SQRT11ENT #define ALGO_MATH_POLY_SQRT11ENT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;vector&amp;gt; #include &amp;lt;iostream&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; std::vector&amp;lt;ModT&amp;gt; poly_sqrt_11E(std::span&amp;lt;const ModT&amp;gt; self, u32 m) { u32 n = std::bit_ceil(m); std::vector&amp;lt;ModT&amp;gt; x(n), g(n), ng(n); x[0] = self[0].sqrt().value(); if (n == 1) return x; ng[0] = g[0] = x[0].inv(); x[1] = (self[1] * g[0]).shift2(); ntt&amp;lt;ModT&amp;gt;({ng.begin(), 2}); for (u32 t = 2; t &amp;lt; n; t *= 2) { std::vector&amp;lt;ModT&amp;gt; f(t * 2), nf(t); std::copy_n(x.</description>
+    </item>
+    
+    <item>
+      <title>多项式除法 10E 分块</title>
+      <link>https://algo-cpp.rogery.dev/post/math/poly/div-10e-nt-block/</link>
+      <pubDate>Tue, 24 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://algo-cpp.rogery.dev/post/math/poly/div-10e-nt-block/</guid>
+      <description>多项式除法 10E #ifndef ALGO_MATH_POLY_DIV10E_NTBLOCK #define ALGO_MATH_POLY_DIV10E_NTBLOCK #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;inv-10E-nt-block.hpp&amp;quot; #include &amp;quot;nt-block-helper.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;vector&amp;gt; #include &amp;lt;iostream&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; std::vector&amp;lt;ModT&amp;gt; poly_div_10E_block(std::span&amp;lt;const ModT&amp;gt; lhs, std::span&amp;lt;const ModT&amp;gt; rhs, u32 m) { if (lhs.empty() || rhs.empty()) return {}; if (m == 1) return {lhs[0] / rhs[0]}; auto [n, u] = detail::nt_block_len(m); std::vector&amp;lt;ModT&amp;gt; x = poly_div_10E_block(lhs, rhs, n), h = poly_inv_10E_block(rhs, n); x.resize(n * u), h.resize(n * 2); std::vector&amp;lt;ModT&amp;gt; nf0(n * u * 2), ng0(n * u * 2); auto nf = detail::nt_block_split(nf0, n * 2); auto ng = detail::nt_block_split(ng0, n * 2); auto xk = detail::nt_block_split(x, n); ntt&amp;lt;ModT&amp;gt;(h); for (u32 k = 0; k &amp;lt; u; ++k) { std::copy(rhs.</description>
     </item>
     
     <item>
@@ -106,7 +124,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://algo-cpp.rogery.dev/post/math/poly/ntt/</guid>
-      <description>多项式 NTT #ifndef ALGO_MATH_POLY_NTT #define ALGO_MATH_POLY_NTT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;bit&amp;gt; #include &amp;lt;cassert&amp;gt; #include &amp;lt;span&amp;gt; #include &amp;lt;vector&amp;gt; namespace detail { u32 ntt_size = 0; template &amp;lt;u32 M&amp;gt; inline u32 mo(u32 x) { return x &amp;gt;= M ? x - M : x; } } // namespace detail template &amp;lt;static_modint_concept ModT&amp;gt; auto &amp;amp;prepare_root(u32 m) { using value = typename ModT::value_type; constexpr value P = ModT::get_mod(); constexpr value g = 3; constexpr u64 max_bit = (P - 1) &amp;amp; -(P - 1); static std::vector&amp;lt;ModT&amp;gt; rt{1, 1}; assert(m &amp;lt;= max_bit); while (rt.</description>
+      <description>多项式 NTT #ifndef ALGO_MATH_POLY_NTT #define ALGO_MATH_POLY_NTT #include &amp;quot;../../base.hpp&amp;quot; #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;lt;algorithm&amp;gt; #include &amp;lt;bit&amp;gt; #include &amp;lt;cassert&amp;gt; #include &amp;lt;span&amp;gt; #include &amp;lt;vector&amp;gt; namespace detail { u32 ntt_size = 0; template &amp;lt;u32 M&amp;gt; inline u32 mo(u32 x) { return x &amp;gt;= M ? x - M : x; } } // namespace detail template &amp;lt;static_modint_concept ModT&amp;gt; auto &amp;amp;prepare_root(u32 m) { using value = typename ModT::value_type; static constexpr value P = ModT::get_mod(); static constexpr value g = 3; static constexpr u64 max_bit = (P - 1) &amp;amp; -(P - 1); static std::vector&amp;lt;ModT&amp;gt; rt{1, 1}; assert(m &amp;lt;= max_bit); while (rt.</description>
     </item>
     
     <item>
@@ -115,7 +133,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://algo-cpp.rogery.dev/post/math/poly/poly/</guid>
-      <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;quot;inv-10E-nt.hpp&amp;quot; #include &amp;quot;div-13E-nt.hpp&amp;quot; #include &amp;quot;ln-13E-nt.hpp&amp;quot; #include &amp;quot;exp-17E-nt.hpp&amp;quot; #include &amp;quot;sqrt-8E-nt-block.hpp&amp;quot; #include &amp;quot;deriv.hpp&amp;quot; #include &amp;quot;integr.hpp&amp;quot; #include &amp;lt;optional&amp;gt; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::empty; using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) {} Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (empty() || rhs.</description>
+      <description>多项式 NTT #ifndef ALGO_MATH_POLY_BASE #define ALGO_MATH_POLY_BASE #include &amp;quot;../../other/modint/modint-concept.hpp&amp;quot; #include &amp;quot;ntt.hpp&amp;quot; #include &amp;quot;vec-dots.hpp&amp;quot; #include &amp;quot;inv-10E-nt-block.hpp&amp;quot; #include &amp;quot;div-10E-nt-block.hpp&amp;quot; #include &amp;quot;ln.hpp&amp;quot; #include &amp;quot;exp-17E-nt.hpp&amp;quot; #include &amp;quot;sqrt-8E-nt-block.hpp&amp;quot; #include &amp;quot;deriv.hpp&amp;quot; #include &amp;quot;integr.hpp&amp;quot; #include &amp;lt;optional&amp;gt; #include &amp;lt;vector&amp;gt; template &amp;lt;static_modint_concept ModT&amp;gt; class Poly : public std::vector&amp;lt;ModT&amp;gt; { using Vec = typename std::vector&amp;lt;ModT&amp;gt;; public: using Vec::empty; using Vec::resize; using Vec::size; using Vec::operator[]; using Vec::begin; using Vec::cbegin; using Vec::cend; using Vec::end; Poly() = default; Poly(u32 len) : Vec(len) {} Poly(const std::vector&amp;lt;u32&amp;gt; &amp;amp;v) : Vec(v) {} Poly(const std::vector&amp;lt;ModT&amp;gt; &amp;amp;v) : Vec(v) {} Poly &amp;amp;operator*=(const Poly &amp;amp;rhs) { if (empty() || rhs.</description>
     </item>
     
     <item>
@@ -125,7 +143,7 @@ $$ U_n = \frac{a^n - b^n}{a - b},\quad V_n = a^n + b^n $$ 我没理解乘幂计�
       
       <guid>https://algo-cpp.rogery.dev/post/base/</guid>
       <description>实现的算法列表。
-数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 多项式乘法逆 10E，math/poly/inv-10E-nt.hpp。 多项式乘法逆 12E，math/poly/inv-12E-nt.hpp。 多项式除法 13E，math/poly/div-13E-nt.hpp。 多项式 EXP 17E，math/poly/exp-17E-nt.hpp。 多项式开根 11E，math/poly/sqrt-11E-nt.hpp。 多项式开根 8E，math/poly/sqrt-8E-nt-block.hpp。 </description>
+数学相关 基础数论 Miller Rabin 素性测试，math/primality-test/miller-rabin.hpp。 Lucas 素性测试，math/primality-test/lucas.hpp。 Baillie PSW 素性测试，math/primality-test/baillie-psw.hpp。 Poly Poly 骨架，math/poly/poly-base.hpp。 NTT，math/poly/ntt.hpp。 牛顿迭代 多项式乘法逆 10E，math/poly/inv-10E-nt.hpp。 多项式乘法逆 12E，math/poly/inv-12E-nt.hpp。 多项式除法 13E，math/poly/div-13E-nt.hpp。 多项式 EXP 17E，math/poly/exp-17E-nt.hpp。 多项式开根 11E，math/poly/sqrt-11E-nt.hpp。 分块牛顿迭代 多项式乘法逆 10E 分块，math/poly/inv-10E-block.hpp。 多项式除法 10E 分块，math/poly/div-10E-nt-block.hpp。 多项式开根 8E 分块，math/poly/sqrt-8E-nt-block.hpp。 </description>
     </item>
     
   </channel>

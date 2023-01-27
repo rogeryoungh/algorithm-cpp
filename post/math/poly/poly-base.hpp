@@ -4,9 +4,9 @@
 #include "../../other/modint/modint-concept.hpp"
 #include "ntt.hpp"
 #include "vec-dots.hpp"
-#include "inv-10E-nt.hpp"
-#include "div-13E-nt.hpp"
-#include "ln-13E-nt.hpp"
+#include "inv-10E-nt-block.hpp"
+#include "div-10E-nt-block.hpp"
+#include "ln.hpp"
 #include "exp-17E-nt.hpp"
 #include "sqrt-8E-nt-block.hpp"
 #include "deriv.hpp"
@@ -75,11 +75,11 @@ public:
   }
 
   Poly div(const Poly &rhs, u32 m) {
-    return poly_div_13E<ModT>(*this, rhs, m);
+    return poly_div_10E_block<ModT>(*this, rhs, m);
   }
 
   Poly ln(u32 m) const {
-    return poly_ln_13E<ModT>(*this, m);
+    return poly_ln<ModT>(*this, m, poly_div_10E_block<ModT>);
   }
 
   Poly exp(u32 m) const {

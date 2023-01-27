@@ -35,90 +35,95 @@
 
 
 <main class="px-5 flex justify-center">
-  <article class="w-full max-w-210">
-    <header class="my-30">
-      <h1 class="text-8 text-center font-bold"> 目录 </h1>
+  <article class="article w-full max-w-210 my-10">
+    <header class="my-20">
+      <h1 class="text-8 text-center folt-bold"> 多项式乘法逆 10E 分块 </h1>
+      <a
+        class="text-center-my-6 hidden print:block"
+        href="https://rogery.dev/">
+        rogeryoungh
+      </a>
+      <div class="text-center">
+        
+        
+        2023 年 1 月 24 日
+        
+      </div>
     </header>
     
-    <h2 class="text-7 font-bold pt-4">2023
-      <sup class="text-4 color-secondary"> 14</sup>
-    </h2>
-    <ul class="py-4">
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/sqrt-8e-nt-block/"> 多项式开根 8E</a>
-        <div class="color-secondary"> 01-27 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/exp-17e-nt/"> 多项式 EXP 17E</a>
-        <div class="color-secondary"> 01-25 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/div-13e-nt/"> 多项式除法 13E</a>
-        <div class="color-secondary"> 01-24 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/div-10e-nt-block/"> 多项式除法 10E 分块</a>
-        <div class="color-secondary"> 01-24 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/sqrt-11e-nt/"> 多项式开根 11E</a>
-        <div class="color-secondary"> 01-24 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/inv-12e-nt/"> 多项式乘法逆 12E</a>
-        <div class="color-secondary"> 01-24 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/inv-10e-nt-block/"> 多项式乘法逆 10E 分块</a>
-        <div class="color-secondary"> 01-24 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/inv-10e-nt/"> 多项式乘法逆 10E</a>
-        <div class="color-secondary"> 01-24 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/primality-test/miller-rabin/"> Miller Rabin 素性测试</a>
-        <div class="color-secondary"> 01-22 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/primality-test/baillie-psw/"> Baillie PSW 素性测试</a>
-        <div class="color-secondary"> 01-22 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/primality-test/lucas/"> Lucas 素性测试</a>
-        <div class="color-secondary"> 01-21 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/base/"> 算法库</a>
-        <div class="color-secondary"> 01-20 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/poly/"> Poly</a>
-        <div class="color-secondary"> 01-20 </div>
-      </li>
-      
-      <li class="flex justify-between px-8 py-3 hover-bg">
-        <a href="/post/math/poly/ntt/"> NTT</a>
-        <div class="color-secondary"> 01-20 </div>
-      </li>
-      
-    </ul>
-    
+      <h1> 目录 </h1><nav id="TableOfContents">
+  <ol>
+    <li><a href="#多项式乘法逆-10e">多项式乘法逆 10E</a></li>
+  </ol>
+</nav>
+    <section class="content-frame my-10">
+      <h2 id="多项式乘法逆-10e">多项式乘法逆 10E</h2>
 
+
+
+<pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_INV10E_NTBLOCK
+#define ALGO_MATH_POLY_INV10E_NTBLOCK
+
+#include &quot;../../base.hpp&quot;
+#include &quot;ntt.hpp&quot;
+#include &quot;nt-block-helper.hpp&quot;
+
+#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+
+template &lt;static_modint_concept ModT&gt;
+std::vector&lt;ModT&gt; poly_inv_10E_block(std::span&lt;const ModT&gt; self, u32 m) {
+  if (m == 1)
+    return {self[0].inv()};
+  auto [n, u] = detail::nt_block_len(m);
+  std::vector&lt;ModT&gt; x = poly_inv_10E_block(self, n);
+  x.resize(n * u);
+  std::vector&lt;ModT&gt; nf0(n * u * 2), ng0(n * u * 2);
+  auto nf = detail::nt_block_split(nf0, n * 2);
+  auto ng = detail::nt_block_split(ng0, n * 2);
+  auto xk = detail::nt_block_split(x, n);
+
+  for (u32 k = 0; k &lt; u; ++k) {
+    std::copy(self.begin() + k * n, std::min(self.begin() + (k + 1) * n, self.end()), nf[k].begin());
+    ntt&lt;ModT&gt;(nf[k]);
+    if (k == 0)
+      continue;
+    std::copy(xk[k - 1].begin(), xk[k - 1].end(), ng[k - 1].begin());
+    ntt&lt;ModT&gt;(ng[k - 1]);
+    std::vector&lt;ModT&gt; psi(n * 2);
+    for (u32 j = 0; j &lt; k; ++j) {
+      for (u32 i = 0; i &lt; n; ++i)
+        psi[i] -= (nf[k - j][i] + nf[k - 1 - j][i]) * ng[j][i];
+      for (u32 i = n; i &lt; n * 2; ++i)
+        psi[i] -= (nf[k - j][i] - nf[k - 1 - j][i]) * ng[j][i];
+    }
+    intt&lt;ModT&gt;(psi);
+    std::fill_n(psi.begin() + n, n, 0);
+    ntt&lt;ModT&gt;(psi);
+    dot&lt;ModT&gt;(psi, ng[0]);
+    intt&lt;ModT&gt;(psi);
+    std::copy_n(psi.begin(), n, xk[k].begin());
+  }
+  return x.resize(m), x;
+}
+
+#endif // ALGO_MATH_POLY_INV10E_NTBLOCK
+
+</code></pre>
+
+
+
+    </section>
+    <hr />
+    <section class="comment-frame my-10">
+      
+
+
+
+    </section>
   </article>
-</div>
+</main>
 
 
 <footer class="my-10 color-secondary text-3 flex items-end justify-center a-underline">
