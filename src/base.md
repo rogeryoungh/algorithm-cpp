@@ -30,4 +30,5 @@ date: "2023-01-20"
 #### 分块牛顿迭代
 
 - [多项式乘法逆 10E 分块](../math/poly/inv-10e-nt-block)，`math/poly/inv-10E-block.hpp`。
+- [多项式除法 10E 分块](../math/poly/div-10e-nt-block)，`math/poly/div-10E-nt-block.hpp`。
 - [多项式开根 8E 分块](../math/poly/sqrt-8e-nt-block)，`math/poly/sqrt-8E-nt-block.hpp`。
