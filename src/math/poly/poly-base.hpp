@@ -6,7 +6,7 @@
 #include "vec-dots.hpp"
 #include "inv-10E-nt.hpp"
 #include "div-13E-nt.hpp"
-#include "ln-13E-nt.hpp"
+#include "ln.hpp"
 #include "exp-17E-nt.hpp"
 #include "sqrt-8E-nt-block.hpp"
 #include "deriv.hpp"
@@ -79,7 +79,7 @@ public:
   }
 
   Poly ln(u32 m) const {
-    return poly_ln_13E<ModT>(*this, m);
+    return poly_ln<ModT>(*this, m, poly_div_13E<ModT>);
   }
 
   Poly exp(u32 m) const {
