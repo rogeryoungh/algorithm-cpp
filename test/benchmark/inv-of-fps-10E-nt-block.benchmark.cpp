@@ -1,6 +1,6 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
-#include "../../src/math/poly/inv-10E-nt.hpp"
+#include "../../src/math/poly/inv-10E-nt-block.hpp"
 #include "../../src/other/modint/basic-modint.hpp"
 
 constexpr u32 P = 998244353;
@@ -24,7 +24,7 @@ struct BM_INV : TEST_BASE {
   int run(int n) {
     auto tf = f;
     detail::ntt_size = 0;
-    poly_inv_10E<ModT>(tf, n);
+    poly_inv_10E_block<ModT>(tf, n);
     benchmark::DoNotOptimize(tf[0]);
     return detail::ntt_size;
   }
