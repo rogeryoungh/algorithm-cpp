@@ -9,6 +9,7 @@
 #include "ln.hpp"
 #include "exp-14E-nt-block.hpp"
 #include "sqrt-8E-nt-block.hpp"
+#include "safe-sqrt.hpp"
 #include "deriv.hpp"
 #include "integr.hpp"
 
@@ -87,22 +88,11 @@ public:
   }
 
   Poly sqrt(u32 m) const {
-    return poly_sqrt_8E_block<ModT>(*this, m);
+    return poly_sqrt_8E_block<ModT>(*this, m, this->front().sqrt());
   }
 
   std::optional<Poly> sqrt_safe(u32 m) const {
-    auto it = begin();
-    while (it != end() && *it == 0)
-      ++it;
-    if (it == end())
-      return Poly(m);
-    auto sq = cipola(it->val(), ModT::get_mod());
-    u32 len = it - begin();
-    if (len % 2 == 1 || !sq.has_value())
-      return std::nullopt;
-    auto x = poly_sqrt_8E_block<ModT>({it, end()}, m - len / 2);
-    x.insert(x.begin(), len / 2, 0);
-    return x;
+    return poly_safe_sqrt<ModT>(*this, m, poly_sqrt_8E_block<ModT>);
   }
 
   template <class U = u32>

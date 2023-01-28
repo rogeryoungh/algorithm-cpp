@@ -68,17 +68,17 @@
 
 #include &quot;../../base.hpp&quot;
 #include &quot;ntt.hpp&quot;
-#include &quot;inv-10E-nt.hpp&quot;
+#include &quot;vec-dots.hpp&quot;
 
 #include &lt;algorithm&gt;
 #include &lt;vector&gt;
 #include &lt;iostream&gt;
 
 template &lt;static_modint_concept ModT&gt;
-std::vector&lt;ModT&gt; poly_sqrt_11E(std::span&lt;const ModT&gt; self, u32 m) {
+std::vector&lt;ModT&gt; poly_sqrt_11E(std::span&lt;const ModT&gt; self, u32 m, const ModT &amp;x0) {
   u32 n = std::bit_ceil(m);
   std::vector&lt;ModT&gt; x(n), g(n), ng(n);
-  x[0] = self[0].sqrt().value();
+  x[0] = x0;
   if (n == 1)
     return x;
   ng[0] = g[0] = x[0].inv();

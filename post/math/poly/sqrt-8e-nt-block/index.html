@@ -76,11 +76,11 @@
 #include &lt;iostream&gt;
 
 template &lt;static_modint_concept ModT&gt;
-std::vector&lt;ModT&gt; poly_sqrt_8E_block(std::span&lt;const ModT&gt; self, u32 m) {
+std::vector&lt;ModT&gt; poly_sqrt_8E_block(std::span&lt;const ModT&gt; self, u32 m, const ModT &amp;x0) {
   if (m == 1)
-    return {self[0].sqrt().value()};
+    return {x0};
   auto [n, u] = detail::nt_block_len(m);
-  std::vector&lt;ModT&gt; x = poly_sqrt_8E_block(self, n), h = poly_inv_10E&lt;ModT&gt;(x, n);
+  std::vector&lt;ModT&gt; x = poly_sqrt_8E_block(self, n, x0), h = poly_inv_10E&lt;ModT&gt;(x, n);
   x.resize(n * u), h.resize(n * 2);
   std::vector&lt;ModT&gt; ng0(n * u * 2);
   auto ng = detail::nt_block_split(ng0, n * 2);
