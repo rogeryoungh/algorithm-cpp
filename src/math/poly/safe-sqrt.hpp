@@ -8,8 +8,8 @@
 #include <span>
 #include <vector>
 
-template <static_modint_concept ModT>
-std::optional<std::vector<ModT>> poly_safe_sqrt(std::span<const ModT> f, u32 m, auto &&poly_sqrt) {
+template <static_modint_concept ModT, auto poly_sqrt>
+std::optional<std::vector<ModT>> poly_safe_sqrt(std::span<const ModT> f, u32 m) {
   auto it = f.begin();
   while (it != f.end() && *it == 0)
     ++it;

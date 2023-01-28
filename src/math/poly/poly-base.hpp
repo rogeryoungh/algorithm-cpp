@@ -9,7 +9,9 @@
 #include "ln.hpp"
 #include "exp-14E-nt-block.hpp"
 #include "sqrt-8E-nt-block.hpp"
+#include "pow.hpp"
 #include "safe-sqrt.hpp"
+#include "safe-pow.hpp"
 #include "deriv.hpp"
 #include "integr.hpp"
 
@@ -29,6 +31,17 @@ public:
   using Vec::cbegin;
   using Vec::cend;
   using Vec::end;
+
+  static constexpr auto m_inv = poly_inv_10E<ModT>;
+  static constexpr auto m_deriv = poly_deriv<ModT>;
+  static constexpr auto m_integr = poly_integr<ModT>;
+  static constexpr auto m_div = poly_div_10E_block<ModT>;
+  static constexpr auto m_ln = poly_ln<ModT, m_div>;
+  static constexpr auto m_exp = poly_exp_14E_block<ModT>;
+  static constexpr auto m_sqrt = poly_sqrt_8E_block<ModT>;
+  static constexpr auto m_safe_sqrt = poly_safe_sqrt<ModT, m_sqrt>;
+  static constexpr auto m_pow = poly_pow<ModT, m_ln, m_exp>;
+  static constexpr auto m_safe_pow = poly_safe_pow<ModT, m_pow>;
 
   Poly() = default;
 
@@ -64,35 +77,43 @@ public:
   }
 
   Poly inv(u32 m) const {
-    return poly_inv_10E<ModT>(*this, m);
+    return m_inv(*this, m);
   }
 
   Poly deriv(u32 m) const {
-    return poly_deriv<ModT>(*this, m);
+    return m_deriv(*this, m);
   }
 
   Poly integr(u32 m, u32 C = 0) const {
-    return poly_integr<ModT>(*this, m, C);
+    return m_integr(*this, m, C);
   }
 
   Poly div(const Poly &rhs, u32 m) {
-    return poly_div_10E_block<ModT>(*this, rhs, m);
+    return m_div(*this, rhs, m);
   }
 
   Poly ln(u32 m) const {
-    return poly_ln<ModT>(*this, m, poly_div_10E_block<ModT>);
+    return m_ln(*this, m);
   }
 
   Poly exp(u32 m) const {
-    return poly_exp_14E_block<ModT>(*this, m);
+    return m_exp(*this, m);
   }
 
   Poly sqrt(u32 m) const {
-    return poly_sqrt_8E_block<ModT>(*this, m, this->front().sqrt());
+    return m_sqrt(*this, m, this->front().sqrt());
   }
 
   std::optional<Poly> sqrt_safe(u32 m) const {
-    return poly_safe_sqrt<ModT>(*this, m, poly_sqrt_8E_block<ModT>);
+    return m_safe_sqrt(*this, m);
+  }
+
+  Poly pow(u64 k, u32 m) const {
+    return m_pow(*this, k, m);
+  }
+
+  Poly safe_pow(u64 k, u64 k2, u32 m) const {
+    return m_safe_pow(*this, k, k2, m);
   }
 
   template <class U = u32>
