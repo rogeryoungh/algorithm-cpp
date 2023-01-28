@@ -1,3 +1,10 @@
+// magic!
+#pragma GCC target("abm,movbe,bmi,bmi2,lzcnt,popcnt,avx2")
+#pragma GCC optimize("O3")
+#pragma GCC optimize("inline")
+#pragma GCC optimize("unroll-loops")
+#pragma GCC optimize("omit-frame-pointer")
+
 #define PROBLEM "https://judge.yosupo.jp/problem/sqrt_of_formal_power_series"
 
 #include "../../src/other/fastio.hpp"
