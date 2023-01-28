@@ -7,8 +7,8 @@
 #include <span>
 #include <vector>
 
-template <static_modint_concept ModT>
-auto poly_ln(std::span<const ModT> f, u32 m, auto &&poly_div) {
+template <static_modint_concept ModT, auto poly_div>
+auto poly_ln(std::span<const ModT> f, u32 m) {
   std::vector<ModT> x(m);
   std::copy(f.begin(), std::min(f.begin() + m, f.end()), x.begin());
   for (u32 i = 0; i < m; ++i)
