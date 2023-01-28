@@ -51,6 +51,24 @@ public:
 
   Poly(const std::vector<ModT> &v) : Vec(v) {}
 
+  Poly(const ModT &v) : Vec({v}) {}
+
+  Poly &operator+=(const Poly &rhs) {
+    if (size() < rhs.size())
+      resize(rhs.size());
+    for (u32 i = 0; i < rhs.size(); ++i)
+      (*this)[i] += rhs[i];
+    return *this;
+  }
+
+  Poly &operator-=(const Poly &rhs) {
+    if (size() < rhs.size())
+      resize(rhs.size());
+    for (u32 i = 0; i < rhs.size(); ++i)
+      (*this)[i] -= rhs[i];
+    return *this;
+  }
+
   Poly &operator*=(const Poly &rhs) {
     if (empty() || rhs.empty()) {
       return resize(0), *this;
@@ -74,6 +92,14 @@ public:
 
   friend Poly operator*(const Poly &lhs, const Poly &rhs) {
     return Poly(lhs) *= rhs;
+  }
+
+  friend Poly operator+(const Poly &lhs, const Poly &rhs) {
+    return Poly(lhs) += rhs;
+  }
+
+  friend Poly operator-(const Poly &lhs, const Poly &rhs) {
+    return Poly(lhs) -= rhs;
   }
 
   Poly inv(u32 m) const {
@@ -101,7 +127,7 @@ public:
   }
 
   Poly sqrt(u32 m) const {
-    return m_sqrt(*this, m, this->front().sqrt());
+    return m_sqrt(*this, m, this->front().sqrt().value());
   }
 
   std::optional<Poly> sqrt_safe(u32 m) const {
