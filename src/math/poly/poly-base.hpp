@@ -7,7 +7,7 @@
 #include "inv-10E-nt-block.hpp"
 #include "div-10E-nt-block.hpp"
 #include "ln.hpp"
-#include "exp-17E-nt.hpp"
+#include "exp-14E-nt-block.hpp"
 #include "sqrt-8E-nt-block.hpp"
 #include "deriv.hpp"
 #include "integr.hpp"
@@ -83,7 +83,7 @@ public:
   }
 
   Poly exp(u32 m) const {
-    return poly_exp_17E<ModT>(*this, m);
+    return poly_exp_14E_block<ModT>(*this, m);
   }
 
   Poly sqrt(u32 m) const {

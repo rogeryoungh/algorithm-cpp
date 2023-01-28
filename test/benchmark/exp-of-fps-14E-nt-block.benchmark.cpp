@@ -1,6 +1,6 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
-#include "../../src/math/poly/exp-17E-nt.hpp"
+#include "../../src/math/poly/exp-14E-nt-block.hpp"
 #include "../../src/other/modint/basic-modint.hpp"
 
 constexpr u32 P = 998244353;
@@ -24,7 +24,7 @@ struct BM_EXP : TEST_BASE {
   int run(int n) {
     auto tf = f;
     detail::ntt_size = 0;
-    poly_exp_17E<ModT>(f, n);
+    poly_exp_14E_block<ModT>(f, n);
     benchmark::DoNotOptimize(f[0]);
     return detail::ntt_size;
   }

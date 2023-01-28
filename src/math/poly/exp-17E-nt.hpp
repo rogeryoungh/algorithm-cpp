@@ -3,7 +3,7 @@
 
 #include "../../base.hpp"
 #include "ntt.hpp"
-#include "inv-10E-nt.hpp"
+#include "../constant/prepare-inv.hpp"
 
 #include <algorithm>
 #include <vector>

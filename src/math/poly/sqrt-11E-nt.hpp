@@ -38,7 +38,7 @@ std::vector<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m) {
       f[i] = self[i - t] + self[i] - f[i - t];
     std::fill_n(f.begin(), t, 0);
     std::copy_n(g.begin(), t, ng.begin());
-    ntt<ModT>(f); // 2E
+    ntt<ModT>(f);                   // 2E
     ntt<ModT>({ng.begin(), t * 2}); // 2E
     dot<ModT>(f, ng);
     intt<ModT>(f); // 2E
