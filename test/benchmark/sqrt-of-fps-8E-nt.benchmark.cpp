@@ -24,7 +24,7 @@ struct BM_SQRT : TEST_BASE {
   int run(int n) {
     std::vector tf = f;
     detail::ntt_size = 0;
-    poly_sqrt_8E_block<ModT>(f, n);
+    poly_sqrt_8E_block<ModT>(f, n, f[0].sqrt().value());
     benchmark::DoNotOptimize(f[0]);
     return detail::ntt_size;
   }
