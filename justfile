@@ -14,7 +14,7 @@ pre-expand:
 	python3 scripts/pre-expand.py
 
 bench src:
-	g++ {{src}} -lbenchmark -std=c++20 -o a.out -Ofast
+	g++ {{src}} -lbenchmark -std=c++20 -o a.out -O3 -fno-split-paths -march=native
 	./a.out
 
 fmt:

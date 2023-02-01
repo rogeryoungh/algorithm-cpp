@@ -9,7 +9,7 @@
 template <static_modint_concept ModT>
 auto &prepare_inv(u32 m) {
   static std::vector<ModT> iv{1, 1};
-  static constexpr auto P = ModT::get_mod();
+  static constexpr auto P = ModT::mod();
   while (iv.size() < m) {
     u32 l = iv.size();
     iv.resize(l * 2);

@@ -1,18 +1,18 @@
 #ifdef ALGO_FASTIO
 
-#ifdef ALGO_MODINT_BASIC_MODINT
-template <u32 MOD>
-inline FastI &operator>>(FastI &is, BasicModint<MOD> &m) {
+#ifdef ALGO_MODINT_STATIC_MODINT
+template <class Space>
+inline FastI &operator>>(FastI &is, StaticModint<Space> &m) {
   i64 x;
   is >> x;
-  m = BasicModint<MOD>(x);
+  m = StaticModint<Space>(x);
   return is;
 }
 
-template <u32 MOD>
-inline FastO &operator<<(FastO &os, const BasicModint<MOD> &m) {
+template <class Space>
+inline FastO &operator<<(FastO &os, const StaticModint<Space> &m) {
   return os << m.val();
 }
-#endif // ALGO_MODINT_BASIC_MODINT
+#endif // ALGO_MODINT_STATIC_MODINT
 
 #endif // ALGO_FASTIO

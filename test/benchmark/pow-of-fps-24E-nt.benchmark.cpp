@@ -4,11 +4,12 @@
 #include "../../src/math/poly/pow.hpp"
 #include "../../src/math/poly/ln.hpp"
 #include "../../src/math/poly/div-10E-nt-block.hpp"
-#include "../../src/other/modint/basic-modint.hpp"
+
+#include "../../src/other/modint/static-modint.hpp"
 
 constexpr u32 P = 998244353;
 
-using ModT = BasicModint<P>;
+using ModT = BasicStaticModint<u32, P>;
 
 /////////////////////////////////////////////////////////
 

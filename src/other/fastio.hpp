@@ -8,7 +8,7 @@
 #include <vector>
 #include <array>
 
-// 快读，未实现 string 读入，未限定读入类型
+// 快读
 
 struct BasicBuffer {
   std::vector<char> s;
@@ -44,7 +44,19 @@ struct FastI : BasicBuffer {
     p = end;
   }
   FastI &operator>>(char &x) {
-    return x = getc(), *this;
+    do
+      x = getc();
+    while (std::isgraph(x));
+    return *this;
+  }
+  FastI &operator>>(std::string &x) {
+    x.resize(0);
+    char c = getc();
+    while (!std::isgraph(c))
+      c = getc();
+    while (std::isgraph(c))
+      x.push_back(c), c = getc();
+    return *this;
   }
   template <std::unsigned_integral T>
   FastI &operator>>(T &x) {

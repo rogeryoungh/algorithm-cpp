@@ -1,10 +1,12 @@
 #define PROBLEM "https://loj.ac/p/143"
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/other/modint/basic-modint.hpp"
+#include "../../src/other/modint/static-modint.hpp"
 #include "../../src/math/poly/poly-base.hpp"
+#include "../../src/other/modint/montgomery-space.hpp"
 
-using ModT = BasicModint<998244353>;
+using Space = MontgomerySpace<u32, 998244353>;
+using ModT = StaticModint<Space>;
 using FPS = Poly<ModT>;
 
 i32 main() {

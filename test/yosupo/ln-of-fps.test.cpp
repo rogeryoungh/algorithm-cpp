@@ -8,10 +8,10 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/log_of_formal_power_series"
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/other/modint/basic-modint.hpp"
+#include "../../src/other/modint/static-modint.hpp"
 #include "../../src/math/poly/poly-base.hpp"
 
-using ModT = BasicModint<998244353>;
+using ModT = BasicStaticModint<u32, 998244353>;
 using FPS = Poly<ModT>;
 
 i32 main() {

@@ -1,11 +1,12 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
 #include "../../src/math/poly/exp-14E-nt-block.hpp"
-#include "../../src/other/modint/basic-modint.hpp"
+
+#include "../../src/other/modint/static-modint.hpp"
 
 constexpr u32 P = 998244353;
 
-using ModT = BasicModint<P>;
+using ModT = BasicStaticModint<u32, P>;
 
 /////////////////////////////////////////////////////////
 

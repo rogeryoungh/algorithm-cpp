@@ -1,10 +1,10 @@
 #define PROBLEM "https://www.luogu.com.cn/problem/P3803"
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/other/modint/basic-modint.hpp"
 #include "../../src/math/poly/poly-base.hpp"
+#include "../../src/other/modint/static-modint.hpp"
 
-using ModT = BasicModint<998244353>;
+using ModT = BasicStaticModint<u32, 998244353>;
 using FPS = Poly<ModT>;
 
 i32 main() {

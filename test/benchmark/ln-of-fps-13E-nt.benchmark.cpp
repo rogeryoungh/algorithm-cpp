@@ -2,11 +2,12 @@
 
 #include "../../src/math/poly/div-13E-nt.hpp"
 #include "../../src/math/poly/ln.hpp"
-#include "../../src/other/modint/basic-modint.hpp"
+
+#include "../../src/other/modint/static-modint.hpp"
 
 constexpr u32 P = 998244353;
 
-using ModT = BasicModint<P>;
+using ModT = BasicStaticModint<u32, P>;
 
 /////////////////////////////////////////////////////////
 
@@ -25,7 +26,7 @@ struct BM_LN : TEST_BASE {
   int run(int n) {
     auto tf = f;
     detail::ntt_size = 0;
-    poly_ln<ModT>(tf, n, poly_div_13E<ModT>);
+    poly_ln<ModT, poly_div_13E<ModT>>(tf, n);
     benchmark::DoNotOptimize(tf[0]);
     return detail::ntt_size;
   }
