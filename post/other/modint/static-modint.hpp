@@ -1,71 +1,64 @@
-#ifndef ALGO_MODINT_BASIC_MODINT
-#define ALGO_MODINT_BASIC_MODINT
+#ifndef ALGO_MODINT_STATIC_MODINT
+#define ALGO_MODINT_STATIC_MODINT
 
 #include "../../base.hpp"
 #include "../../math/cipolla.hpp"
+#include "basic-mod-space.hpp"
 #include <iostream>
 
 #ifdef DEBUG
 #include <cassert>
 #endif
 
-// 朴素的 Modint30，采取了一些常数优化
-// 不保证 inv 等运算在 MOD 下合法
+// 封装 Modint，功能由 Space 提供
 
-template <u32 MOD>
-class BasicModint {
-protected:
-  u32 v;
-  static_assert(0 < MOD && MOD < u32(1) << 31, "mod must in [1, 2^31)");
+template <class Space_>
+struct StaticModint {
+  using Space = Space_;
+  using ValueT = typename Space::ValueT;
+  using TransT = typename Space::TransT;
+  using isStatic = std::true_type;
+  using rawU32 = typename Space::rawU32;
 
-public:
-  using value_type = u32;
-  using is_static = std::true_type;
-  using raw_u32 = std::true_type;
+  TransT v;
 
-  constexpr inline static u32 reduce_2m(u32 n) {
-#ifdef DEBUG
-    assert(n < MOD * 2);
-#endif
-    return n - (n >= MOD ? MOD : 0);
-  }
+  constexpr StaticModint() = default;
+  constexpr StaticModint(ValueT v_) : v(Space::trans(v_)) {}
 
-  constexpr inline static u32 reduce_neg(u32 n) {
-    return n + (n >> 31 ? MOD : 0);
-  }
+  using Self = StaticModint;
 
-  using Self = BasicModint;
-  constexpr BasicModint(u32 v_ = 0) : v(v_) {}
-
-  explicit operator u32() const {
+  explicit operator ValueT() const {
     return val();
   }
 
   constexpr static Self safe(i64 v) {
-    return Self(reduce_neg(v % MOD));
+    return Self(Space::safe(v));
   }
 
-  template <class U = u32>
-  constexpr inline U val() const {
-    return U(v);
+  constexpr ValueT val() const {
+    return Space::val(v);
   }
 
-  constexpr static u32 get_mod() {
-    return MOD;
+  constexpr TransT raw() const {
+    return v;
+  }
+
+  constexpr static ValueT mod() {
+    return Space::mod();
   }
 
   constexpr Self &operator+=(const Self &rhs) {
-    v = reduce_neg(v + rhs.v - MOD);
+    v = Space::add(v, rhs.v);
     return *this;
   }
 
   constexpr Self &operator-=(const Self &rhs) {
-    v = reduce_neg(v - rhs.v);
+    v = Space::sub(v, rhs.v);
     return *this;
   }
 
   constexpr Self &operator*=(const Self &rhs) {
-    v = u64(v) * rhs.v % MOD;
+    v = Space::mul(v, rhs.v);
     return *this;
   }
 
@@ -92,7 +85,7 @@ public:
   }
 
   constexpr Self inv() const {
-    return pow(MOD - 2);
+    return pow(Space::mod() - 2);
   }
 
   constexpr Self &operator/=(const Self &rhs) {
@@ -104,15 +97,15 @@ public:
   }
 
   constexpr Self operator-() const {
-    return Self{v == 0 ? 0 : MOD - v};
+    return Self() -= *this;
   }
 
   constexpr std::optional<Self> sqrt() const {
-    return cipola(val(), get_mod());
+    return cipola(val(), mod());
   }
 
   constexpr Self shift2() const {
-    return (v + (v % 2 == 0 ? 0 : get_mod())) / 2;
+    return Space::shift2(v);
   }
 
   friend inline std::istream &operator>>(std::istream &is, Self &m) {
@@ -135,6 +128,9 @@ public:
   }
 };
 
+template <class T, T MOD>
+using BasicStaticModint = StaticModint<BasicModSpace<T, MOD>>;
+
 #include "modint-io.hpp"
 
-#endif // ALGO_MODINT_BASIC_MODINT
+#endif // ALGO_MODINT_STATIC_MODINT

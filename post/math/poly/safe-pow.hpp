@@ -13,13 +13,10 @@ auto poly_safe_pow(std::span<const ModT> f, u64 k, u64 k2, u32 m) {
   while (it != f.end() && *it == 0)
     ++it;
   u32 len = it - f.begin();
-  if (k == 0) {
-    std::vector<ModT> r(m);
-    r[0] = 1;
-    return r;
-  }
   if (it == f.end() || (k > 1E9 && len >= 1) || k * len >= m) {
-    return std::vector<ModT>(m);
+    std::vector<ModT> r(m);
+    r[0] = k == 0;
+    return r;
   }
   std::vector<ModT> x(it, f.end());
   ModT f0 = x[0], f0iv = f0.inv(), f0k = f0.pow(k2);

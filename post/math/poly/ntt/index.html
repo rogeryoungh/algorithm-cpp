@@ -79,19 +79,14 @@ namespace detail {
 
 u32 ntt_size = 0;
 
-template &lt;u32 M&gt;
-inline u32 mo(u32 x) {
-  return x &gt;= M ? x - M : x;
-}
-
 } // namespace detail
 
 template &lt;static_modint_concept ModT&gt;
 auto &amp;prepare_root(u32 m) {
-  using value = typename ModT::value_type;
-  static constexpr value P = ModT::get_mod();
-  static constexpr value g = 3;
-  static constexpr u64 max_bit = (P - 1) &amp; -(P - 1);
+  using ValueT = typename ModT::ValueT;
+  static constexpr ValueT P = ModT::mod();
+  static constexpr ValueT g = 3;
+  static constexpr ValueT max_bit = ValueT(1) &lt;&lt; std::countr_zero(ModT::mod() - 1);
 
   static std::vector&lt;ModT&gt; rt{1, 1};
   assert(m &lt;= max_bit);
@@ -137,91 +132,13 @@ static void intt(std::span&lt;ModT&gt; f) { // dit
       }
     }
   }
-  const ModT ivn = ModT::get_mod() - (ModT::get_mod() - 1) / n;
+  const ModT ivn = ModT(n).inv();
   for (i32 i = 0; i &lt; n; i++)
     f[i] *= ivn;
   std::reverse(f.begin() + 1, f.end());
 }
 
-template &lt;u32 MOD&gt;
-struct BarrettMul {
-  u32 b = 0, c = 0;
-  BarrettMul() = default;
-  inline BarrettMul(u32 x) : b(x), c((u64(x) &lt;&lt; 32) / MOD) {}
-  inline u32 operator*(u32 a) { // &lt;= 2M !!!
-    return u64(a) * b - (u64(a) * c &gt;&gt; 32) * MOD;
-  }
-};
-
-template &lt;static_modint_concept ModT&gt;
-auto &amp;prepare_root_barrett(u32 m) {
-  using value = typename ModT::value_type;
-  static constexpr value P = ModT::get_mod();
-  static constexpr value g = 3;
-  static constexpr u64 max_bit = (P - 1) &amp; -(P - 1);
-
-  static std::vector&lt;BarrettMul&lt;P&gt;&gt; rt{{1}, {1}};
-  assert(m &lt;= max_bit);
-  while (rt.size() &lt; m) {
-    u32 n = rt.size();
-    rt.resize(n * 2);
-    u32 p = ModT(g).pow((P - 1) / n / 2).val();
-    for (u32 i = n; i &lt; n * 2; i += 2) {
-      rt[i] = rt[i / 2], rt[i + 1] = u64(p) * rt[i].b % P;
-    }
-  }
-  return rt;
-}
-
-template &lt;static_raw32_modint_concept ModT&gt;
-static void ntt(std::span&lt;ModT&gt; f_) { // dif
-  i32 n = f_.size();
-  assert(std::has_single_bit&lt;u32&gt;(n));
-  auto &amp;rt = prepare_root_barrett&lt;ModT&gt;(n);
-  detail::ntt_size += n;
-
-  constexpr u32 P = ModT::get_mod();
-  constexpr u32 P2 = P * 2;
-
-  auto f = std::bit_cast&lt;std::span&lt;u32&gt;&gt;(f_);
-  for (i32 l = n / 2; l &gt; 0; l /= 2) {
-    for (i32 i = 0; i &lt; n; i += l * 2) {
-      for (i32 j = 0; j &lt; l; ++j) {
-        u32 x = f[i + j], y = f[i + j + l];
-        f[i + j + l] = rt[j + l] * (x - y + P2);
-        f[i + j] = detail::mo&lt;P2&gt;(x + y);
-      }
-    }
-  }
-  for (i32 i = 0; i &lt; n; i++)
-    f[i] = detail::mo&lt;P&gt;(detail::mo&lt;P2&gt;(f[i]));
-}
-
-template &lt;static_raw32_modint_concept ModT&gt;
-static void intt(std::span&lt;ModT&gt; f_) { // dit
-  i32 n = f_.size();
-  assert(std::has_single_bit&lt;u32&gt;(n));
-  auto &amp;rt = prepare_root_barrett&lt;ModT&gt;(n);
-  detail::ntt_size += n;
-
-  constexpr u32 P = ModT::get_mod();
-  constexpr u32 P2 = P * 2;
-
-  auto f = std::bit_cast&lt;std::span&lt;u32&gt;&gt;(f_);
-  for (i32 l = 1; l &lt; n; l *= 2) {
-    for (i32 i = 0; i &lt; n; i += l * 2) {
-      for (i32 j = 0; j &lt; l; ++j) {
-        u32 x = detail::mo&lt;P2&gt;(f[i + j]);
-        u32 y = rt[j + l] * f[i + j + l];
-        f[i + j] = x + y, f[i + j + l] = x - y + P2;
-      }
-    }
-  }
-  const u32 ivn = P - (P - 1) / n;
-  for (i32 i = 0; i &lt; n; i++)
-    f[i] = f[i] * u64(ivn) % P;
-  std::reverse(f.begin() + 1, f.end());
-}
+#include &quot;ntt-barrett.hpp&quot;
 
 #endif // ALGO_MATH_POLY_NTT
 
