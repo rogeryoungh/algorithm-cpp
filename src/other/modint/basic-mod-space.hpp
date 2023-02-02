@@ -14,6 +14,7 @@ struct BasicModSpace<u32, MOD> {
   using ValueT = u32;
   using TransT = u32;
   using rawU32 = std::true_type;
+  using isMontgomery = std::false_type;
 
   enum : u32 {
     MOD2 = MOD * 2,

@@ -15,6 +15,7 @@ struct MontgomerySpace<u32, MOD> {
   using ValueT = u32;
   using TransT = u32;
   using rawU32 = std::false_type;
+  using isMontgomery = std::true_type;
 
   static constexpr u32 get_nr() {
     u32 x = 1;
