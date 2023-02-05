@@ -10,293 +10,152 @@
 #include <span>
 #include <vector>
 
-namespace detail {
+#include "../../other/modint/montgomery-x8.hpp"
 
-extern u32 ntt_size;
-
-} // namespace detail
-
-#include "../../other/avx.hpp"
-
-
-
-template <static_modint_concept ModT>
-auto &prepare_root_avx(u32 m) {
+template <montgomery_modint_concept ModT>
+struct NttInfoAvx {
+  using X8 = simd::M32x8<ModT>;
   using ValueT = typename ModT::ValueT;
+
   static constexpr ValueT P = ModT::mod();
   static constexpr ValueT g = 3;
   static constexpr ValueT max_bit = ValueT(1) << std::countr_zero(ModT::mod() - 1);
 
-  static std::vector<ModT> rt{1, 1};
-  assert(m <= max_bit);
-  while (rt.size() < m) {
-    u32 n = rt.size();
-    rt.resize(n * 2);
-    ModT p = ModT(g).pow((P - 1) / n / 2);
-    for (u32 i = n; i < n * 2; i += 2) {
-      rt[i] = rt[i / 2], rt[i + 1] = p * rt[i];
+  std::vector<X8> rt;
+
+  NttInfoAvx() {
+    init_rt(64);
+  }
+
+  void init_rt(i32 m) {
+    assert(m <= max_bit);
+    rt.resize(m / 8);
+    std::span<ModT> rt0 = as_modt();
+    rt0[0] = rt0[1] = 1;
+    for (i32 n = 2; n < m; n *= 2) {
+      ModT p = ModT(g).pow((P - 1) / n / 2);
+      for (i32 i = n; i < n * 2; i += 2) {
+        rt0[i] = rt0[i / 2], rt0[i + 1] = p * rt0[i];
+      }
     }
   }
-  return rt;
-}
 
-namespace detail {
+  auto as_modt() {
+    return std::span{(ModT *)rt.data(), rt.size() * 8};
+  }
 
-template <montgomery_modint_concept ModT>
-static void ntt_less_16(std::span<ModT> f) { // dif
-  i32 n = f.size();
-  auto &rt = prepare_root_avx<ModT>(n);
+  void prepare_root(i32 m) {
+    assert(m <= max_bit);
+    while (rt.size() < m) {
+      u32 n = rt.size();
+      rt.resize(n * 2);
+      ModT p = ModT(g).pow((P - 1) / n / 2 / 8);
+      alignas(32) std::array<ModT, 8> arr{};
+      for (i32 i = 0; i < 8; ++i)
+        arr[i] = i == 0 ? 1 : arr[i - 1] * p;
+      X8 pp = arr, p8 = X8::from((arr[7] * p).raw());
+      for (i32 i = n; i < n * 2; ++i) {
+        rt[i] = pp, pp *= p8;
+      }
+    }
+  }
+  template <i32 L>
+  X8 rt_small() {
+    std::array<ModT, 8> r;
+    std::span<ModT> rt0 = {(ModT *)rt.data(), 64};
+    std::fill(r.begin(), r.end(), rt0[L + 0]);
+    for (i32 i = 0; i < 8; i += L * 2) {
+      for (i32 j = 0; j < L; ++j)
+        r[i + j + L] = rt0[L + j];
+    }
+    return r;
+  }
+  static NttInfoAvx &instance() {
+    static NttInfoAvx info{};
+    return info;
+  }
+};
+
+template <montgomery_modint_concept ModT, bool aligned>
+static void ntt_avx(std::span<ModT> f0) { // dif
+  using X8 = simd::M32x8<ModT>;
+
+  static auto &info = NttInfoAvx<ModT>::instance();
+
+  i32 n8 = f0.size(), n = n8 / 8;
+  assert(n8 % 16 == 0);
+  std::span<simd::I256> f{(simd::I256 *)f0.data(), u32(n)};
+  info.prepare_root(n);
+
+  static X8 rt2 = info.template rt_small<2>();
+  static X8 rt4 = info.template rt_small<4>();
 
   for (i32 l = n / 2; l > 0; l /= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
       for (i32 j = 0; j < l; ++j) {
-        ModT x = f[i + j], y = f[i + j + l];
-        f[i + j + l] = rt[j + l] * (x - y);
-        f[i + j] = x + y;
+        X8 fx = X8::template load<aligned>(&f[i + j]);
+        X8 fy = X8::template load<aligned>(&f[i + j + l]);
+
+        X8 rx = fx + fy;
+        X8 ry = info.rt[j + l] * (fx - fy);
+        rx.template store<aligned>(&f[i + j]);
+        ry.template store<aligned>(&f[i + j + l]);
       }
     }
   }
-}
-
-template <montgomery_modint_concept ModT>
-static void ntt_avx(std::span<ModT> f) { // dif
-  i32 n = f.size();
-  auto &rt = prepare_root_avx<ModT>(n);
-
-  for (i32 l = n / 2; l >= 16; l /= 2) {
-    for (i32 i = 0; i < n; i += l * 2) {
-      for (i32 j = 0; j < l; j += 8) {
-        auto px = (u8x32 *)&f[i + j];
-        auto py = (u8x32 *)&f[i + j + l];
-        auto pr = (u8x32 *)&rt[j + l];
-        m32x8 fx = i32x8(px), fy = i32x8(py);
-        m32x8 r = i32x8(pr);
-
-        m32x8 ry = r * (fx - fy);
-        m32x8 rx = fx + fy;
-        rx.v.store(px);
-        ry.v.store(py);
-      }
-    }
-  }
-  auto gen_rt = [&](i32 L) {
-    std::array<ModT, 8> ar;
-    for (i32 i = 0; i < 8; i += L)
-      for (i32 j = 0; j < L; ++j)
-        ar[i + j] = rt[L + j];
-    m32x8 r = i32x8(ar);
-    return r;
-  };
-  auto r8 = gen_rt(8);
-  auto r4 = gen_rt(4);
-  auto r2 = gen_rt(2);
-  // L = 8
-  for (i32 i = 0; i < n; i += 16) {
-    auto px = (u8x32 *)&f[i];
-    auto py = (u8x32 *)&f[i + 8];
-    m32x8 fx = i32x8(px), fy = i32x8(py);
-
-    m32x8 ry = r8 * (fx - fy);
-    m32x8 rx = fx + fy;
-    rx.v.store(px);
-    ry.v.store(py);
-  }
-  for (i32 i = 0; i < n; i += 16) {
-    auto px = (u8x32 *)&f[i];
-    auto py = (u8x32 *)&f[i + 8];
-
-    // 01230123 45674567
-    i32x8 fxy0 = px, fxy1 = py;
-    // 01234567
-    m32x8 fx = i32x8::permute_128<0x31>(fxy0, fxy1);
-    m32x8 fy = i32x8::permute_128<0x20>(fxy0, fxy1);
-
-    m32x8 ry = r4 * (fx - fy);
-    m32x8 rx = fx + fy;
-    i32x8::permute_128<0x20>(rx.v, ry.v).store(px);
-    i32x8::permute_128<0x31>(rx.v, ry.v).store(py);
-  }
-  for (i32 i = 0; i < n; i += 16) {
-    auto px = (u8x32 *)&f[i];
-    auto py = (u8x32 *)&f[i + 8];
-    // 01012323 45456767
-    i32x8 fxy0 = px, fxy1 = py;
-    // 01452367
-    m32x8 fx = i32x8::unpack_hi_64(fxy0, fxy1);
-    m32x8 fy = i32x8::unpack_lo_64(fxy0, fxy1);
-
-    m32x8 ry = r2 * (fx - fy);
-    m32x8 rx = fx + fy;
-
-    i32x8::unpack_hi_64(rx.v, ry.v).store(py);
-    i32x8::unpack_lo_64(rx.v, ry.v).store(px);
-  }
-  for (i32 i = 0; i < n; i += 16) {
-    auto px = (u8x32 *)&f[i];
-    auto py = (u8x32 *)&f[i + 8];
-    // 00112233 44556677
-    i32x8 fxy0 = px, fxy1 = py;
-    fxy0 = fxy0.shuffle<0b11011000>();
-    // 01012323 45456767
-    fxy1 = fxy1.shuffle<0b11011000>();
-    // 01452367
-    m32x8 fx = i32x8::unpack_hi_64(fxy0, fxy1);
-    m32x8 fy = i32x8::unpack_lo_64(fxy0, fxy1);
-
-    m32x8 ry = fx - fy;
-    m32x8 rx = fx + fy;
-
-    i32x8::unpack_hi_64(rx.v, ry.v).shuffle<0b11011000>().store(py);
-    i32x8::unpack_lo_64(rx.v, ry.v).shuffle<0b11011000>().store(px);
+  for (i32 i = 0; i < n; ++i) {
+    X8 fi = X8::template load<aligned>(&f[i]);
+    fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
+    fi *= rt4;
+    fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
+    fi *= rt2;
+    fi = fi.template neg<0b10101010>() + fi.template shuffle<0b10110001>();
+    fi.template store<aligned>(&f[i]);
   }
 }
 
-template <montgomery_modint_concept ModT>
-static void intt_less_16(std::span<ModT> f) { // dit
-  i32 n = f.size();
-  auto &rt = prepare_root_avx<ModT>(n);
-  for (i32 l = 1; l < n; l *= 2) {
+template <montgomery_modint_concept ModT, bool aligned>
+static void intt_avx(std::span<ModT> f0) { // dit
+  using X8 = simd::M32x8<ModT>;
+
+  static auto &info = NttInfoAvx<ModT>::instance();
+
+  i32 n8 = f0.size(), n = n8 / 8;
+  assert(n8 % 16 == 0);
+  std::span<simd::I256> f{(simd::I256 *)f0.data(), u32(n)};
+  info.prepare_root(n);
+
+  static X8 rt2 = info.template rt_small<2>();
+  static X8 rt4 = info.template rt_small<4>();
+
+  for (i32 i = 0; i < n; ++i) {
+    X8 fi = X8::template load<aligned>(&f[i]);
+    fi = fi.template neg<0b10101010>() + fi.template shuffle<0b10110001>();
+    fi *= rt2;
+    fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
+    fi *= rt4;
+    fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
+    fi.template store<aligned>(&f[i]);
+  }
+  for (i64 l = 1; l < n; l *= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
       for (i32 j = 0; j < l; ++j) {
-        ModT x = f[i + j], y = rt[j + l] * f[i + j + l];
-        f[i + j] = x + y, f[i + j + l] = x - y;
+        X8 fx = X8::template load<aligned>(&f[i + j]);
+        X8 fy = X8::template load<aligned>(&f[i + j + l]) * info.rt[j + l];
+        X8 rx = fx + fy;
+        X8 ry = fx - fy;
+        rx.template store<aligned>(&f[i + j]);
+        ry.template store<aligned>(&f[i + j + l]);
       }
     }
   }
-  const ModT ivn = ModT(n).inv();
-  for (i32 i = 0; i < n; i++)
-    f[i] *= ivn;
-  std::reverse(f.begin() + 1, f.end());
-}
-
-template <montgomery_modint_concept ModT>
-static void intt_avx(std::span<ModT> f) { // dit
-  i32 n = f.size();
-  auto &rt = prepare_root_avx<ModT>(n);
-  auto gen_rt = [&](i32 L) {
-    std::array<ModT, 8> ar;
-    for (i32 i = 0; i < 8; i += L)
-      for (i32 j = 0; j < L; ++j)
-        ar[i + j] = rt[L + j];
-    m32x8 r = i32x8(ar);
-    return r;
-  };
-  auto r8 = gen_rt(8);
-  auto r4 = gen_rt(4);
-  auto r2 = gen_rt(2);
-  for (i32 i = 0; i < n; i += 16) {
-    auto px = (u8x32 *)&f[i];
-    auto py = (u8x32 *)&f[i + 8];
-    // 00112233 44556677
-    i32x8 fxy0 = px, fxy1 = py;
-    fxy0 = fxy0.shuffle<0b11011000>();
-    // 01012323 45456767
-    fxy1 = fxy1.shuffle<0b11011000>();
-    // 01452367
-    m32x8 fy = i32x8::unpack_hi_64(fxy0, fxy1);
-    m32x8 fx = i32x8::unpack_lo_64(fxy0, fxy1);
-
-    m32x8 ry = fx - fy;
-    m32x8 rx = fx + fy;
-
-    i32x8::unpack_hi_64(rx.v, ry.v).shuffle<0b11011000>().store(py);
-    i32x8::unpack_lo_64(rx.v, ry.v).shuffle<0b11011000>().store(px);
-  }
-
-  for (i32 i = 0; i < n; i += 16) {
-    auto px = (u8x32 *)&f[i];
-    auto py = (u8x32 *)&f[i + 8];
-    // 01012323 45456767
-    i32x8 fxy0 = px, fxy1 = py;
-    // 01452367
-    m32x8 fy = i32x8::unpack_hi_64(fxy0, fxy1);
-    m32x8 fx = i32x8::unpack_lo_64(fxy0, fxy1);
-
-    fy *= r2;
-    m32x8 ry = (fx - fy);
-    m32x8 rx = fx + fy;
-
-    i32x8::unpack_hi_64(rx.v, ry.v).store(py);
-    i32x8::unpack_lo_64(rx.v, ry.v).store(px);
-  }
-  for (i32 i = 0; i < n; i += 16) {
-    auto px = (u8x32 *)&f[i];
-    auto py = (u8x32 *)&f[i + 8];
-
-    // 01230123 45674567
-    i32x8 fxy0 = px, fxy1 = py;
-    // 01234567
-    m32x8 fx = i32x8::permute_128<0x20>(fxy0, fxy1);
-    m32x8 fy = i32x8::permute_128<0x31>(fxy0, fxy1);
-
-    fy *= r4;
-    m32x8 ry = fx - fy;
-    m32x8 rx = fx + fy;
-    i32x8::permute_128<0x20>(rx.v, ry.v).store(px);
-    i32x8::permute_128<0x31>(rx.v, ry.v).store(py);
-  }
-  for (i32 i = 0; i < n; i += 16) {
-    auto px = (u8x32 *)&f[i];
-    auto py = (u8x32 *)&f[i + 8];
-    m32x8 fx = i32x8(px), fy = i32x8(py);
-
-    fy *= r8;
-    m32x8 ry = fx - fy;
-    m32x8 rx = fx + fy;
-    rx.v.store(px);
-    ry.v.store(py);
-  }
-  for (i64 l = 16; l < n; l *= 2) {
-    for (i32 i = 0; i < n; i += l * 2) {
-      for (i32 j = 0; j < l; j += 8) {
-        auto px = (u8x32 *)&f[i + j];
-        auto py = (u8x32 *)&f[i + j + l];
-        auto pr = (u8x32 *)&rt[j + l];
-        m32x8 r = i32x8(pr);
-        m32x8 fx = i32x8(px), fy = m32x8(py) * r;
-        m32x8 rx = fx + fy;
-        m32x8 ry = fx - fy;
-        rx.v.store(px);
-        ry.v.store(py);
-      }
-    }
-  }
-  ModT ivn = ModT(n).inv();
-  m32x8 ivn8 = i32x8(ivn.raw());
-  for (i32 i = 0; i < n; i += 8) {
-    auto pf = (u8x32 *)&f[i];
-    m32x8 fi = i32x8((u8x32 *)&f[i]);
+  X8 ivn8 = X8::from(ModT(n8).inv().raw());
+  for (i32 i = 0; i < n; ++i) {
+    X8 fi = X8::template load<aligned>(&f[i]);
     fi *= ivn8;
-    fi.v.store(pf);
+    fi.template store<aligned>(&f[i]);
   }
-  std::reverse(f.begin() + 1, f.end());
-}
-
-} // namespace detail
-
-template <montgomery_modint_concept ModT>
-static void ntt(std::span<ModT> f) { // dif
-  i32 n = f.size();
-  assert(std::has_single_bit<u32>(n));
-  detail::ntt_size += n;
-
-  if (n < 16) {
-    detail::ntt_less_16(f);
-  } else {
-    detail::ntt_avx(f);
-  }
-}
-
-template <montgomery_modint_concept ModT>
-static void intt(std::span<ModT> f) { // dit
-  i32 n = f.size();
-  assert(std::has_single_bit<u32>(n));
-  detail::ntt_size += n;
-  if (n < 16) {
-    detail::intt_less_16(f);
-  } else {
-    detail::intt_avx(f);
-  }
+  std::reverse(f0.begin() + 1, f0.end());
 }
 
 #endif // ALGO_MATH_POLY_NTT_AVX

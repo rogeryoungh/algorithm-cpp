@@ -3,51 +3,70 @@
 
 #include "../../base.hpp"
 #include "../../other/modint/modint-concept.hpp"
-#include "../../other/avx.hpp"
+#include "../../other/modint/montgomery-x8.hpp"
 
 #include <span>
 
-// template <static_modint_concept ModT>
-// static void dot(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
-//   u32 n = dst.size();
-//   for (u32 i = 0; i < n; i++)
-//     dst[i] = f[i] * g[i];
-// }
+template <static_modint_concept ModT>
+static void dot_basic(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
+  u32 n = dst.size();
+  for (u32 i = 0; i < n; i++)
+    dst[i] = f[i] * g[i];
+}
 
-// template <static_modint_concept ModT>
-// static void dot(std::span<ModT> f, std::span<const ModT> g) {
-//   u32 n = f.size();
-//   for (u32 i = 0; i < n; i++)
-//     f[i] *= g[i];
-// }
-
-template <montgomery_modint_concept ModT>
-static void dot(std::span<ModT> f, std::span<const ModT> g) {
+template <static_modint_concept ModT>
+static void dot_basic(std::span<ModT> f, std::span<const ModT> g) {
   u32 n = f.size();
-  u32 i = 0;
-  for (; i + 7 < n; i += 8) {
-    auto pf = (u8x32 *)&f[i];
-    auto pg = (const u8x32 *)&g[i];
-    auto di = m32x8(pf) * m32x8(pg);
-    di.v.store(pf);
-  }
-  for (; i < n; i++)
+  for (u32 i = 0; i < n; i++)
     f[i] *= g[i];
 }
 
 template <montgomery_modint_concept ModT>
-static void dot(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
+static void dot_avx(std::span<ModT> f, std::span<const ModT> g) {
+  u32 n8 = f.size();
+  u32 i = 0;
+  using X8 = simd::M32x8<ModT>;
+  for (; i + 7 < n8; i += 8) {
+    X8 fi = X8::load((simd::I256 *)&f[i]);
+    X8 gi = X8::load((simd::I256 *)&g[i]);
+    fi *= gi;
+    fi.store((simd::I256 *)&f[i]);
+  }
+  for (; i < n8; i++)
+    f[i] *= g[i];
+}
+
+template <montgomery_modint_concept ModT>
+static void dot_avx(std::span<simd::I256> f, std::span<const ModT> g, std::span<ModT> dst) {
   u32 n = dst.size();
   u32 i = 0;
+  using X8 = simd::M32x8<ModT>;
   for (; i + 7 < n; i += 8) {
-    auto pf = (u8x32 *)&f[i];
-    auto pg = (const u8x32 *)&g[i];
-    auto pd = (u8x32 *)&dst[i];
-    auto di = m32x8(pf) * m32x8(pg);
-    di.v.store(pd);
+    X8 fi = X8::load((simd::I256 *)&f[i]);
+    X8 gi = X8::load((simd::I256 *)&g[i]);
+    X8 di = fi * gi;
+    di.store((simd::I256 *)&dst[i]);
   }
   for (; i < n; i++)
     dst[i] = f[i] * g[i];
+}
+
+template <static_modint_concept ModT>
+static void dot(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
+  if constexpr (montgomery_modint_concept<ModT>) {
+    dot_avx(f, g, dst);
+  } else {
+    dot_basic(f, g, dst);
+  }
+}
+
+template <static_modint_concept ModT>
+static void dot(std::span<ModT> f, std::span<const ModT> g) {
+  if constexpr (montgomery_modint_concept<ModT>) {
+    dot_avx(f, g);
+  } else {
+    dot_basic(f, g);
+  }
 }
 
 #endif // ALGO_MATH_POLY_DOTS

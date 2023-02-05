@@ -1,17 +1,16 @@
 // magic!
-#pragma GCC target("abm,movbe,bmi,bmi2,lzcnt,popcnt,avx2")
+#pragma GCC target("avx2")
 #pragma GCC optimize("O3")
-#pragma GCC optimize("inline")
-#pragma GCC optimize("unroll-loops")
-#pragma GCC optimize("omit-frame-pointer")
 
 #define PROBLEM "https://judge.yosupo.jp/problem/pow_of_formal_power_series"
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/other/modint/static-modint.hpp"
 #include "../../src/math/poly/poly-base.hpp"
+#include "../../src/other/modint/montgomery-space.hpp"
+#include "../../src/other/modint/static-modint.hpp"
 
-using ModT = BasicStaticModint<u32, 998244353>;
+using Space = MontgomerySpace<u32, 998244353>;
+using ModT = StaticModint<Space>;
 using FPS = Poly<ModT>;
 
 i32 main() {

@@ -29,7 +29,8 @@ struct MontgomerySpace<u32, MOD> {
   }
 
   enum : u32 {
-    MR = get_nr(),
+    R = u32(u64(1) << 32 % MOD),
+    IR = u32(-get_nr()),
     MOD2 = MOD * 2,
   };
 
@@ -38,7 +39,7 @@ struct MontgomerySpace<u32, MOD> {
   }
 
   static u32 reduce(u64 x) {
-    return ((x - u64(u32(x) * MR) * MOD) >> 32);
+    return (x + u64(u32(x) * IR) * MOD) >> 32;
   }
 
   static u32 reduce_m(u32 n) {
@@ -50,15 +51,15 @@ struct MontgomerySpace<u32, MOD> {
   }
 
   static u32 add(u32 a, u32 b) {
-    return reduce_2m(a + b) - MOD;
+    return reduce_2m(a + b - MOD2);
   }
 
   static u32 sub(u32 a, u32 b) {
-    return reduce_2m(a - b) - MOD;
+    return reduce_2m(a - b);
   }
 
   static u32 mul(u32 a, u32 b) {
-    return reduce(u64(a + MOD) * (b + MOD));
+    return reduce(u64(a) * b);
   }
 
   static u32 safe(i64 x) {
@@ -66,10 +67,11 @@ struct MontgomerySpace<u32, MOD> {
   }
 
   static ValueT val(TransT x) {
-    return reduce_m(reduce(x + MOD));
+    return reduce_m(reduce(x) - MOD);
   }
 
   static u32 shift2(u32 x) {
+    x = reduce(x);
     return (x & 1 ? x + MOD : x) >> 1;
   }
 };

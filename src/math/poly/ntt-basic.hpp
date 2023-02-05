@@ -36,12 +36,10 @@ auto &prepare_root_basic(u32 m) {
   return rt;
 }
 
-template <static_basic_modint_concept ModT>
-static void ntt(std::span<ModT> f) { // dif
+template <static_modint_concept ModT>
+static void ntt_basic(std::span<ModT> f) { // dif
   i32 n = f.size();
-  assert(std::has_single_bit<u32>(n));
   auto &rt = prepare_root_basic<ModT>(n);
-  detail::ntt_size += n;
   for (i32 l = n / 2; l > 0; l /= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
       for (i32 j = 0; j < l; ++j) {
@@ -53,12 +51,10 @@ static void ntt(std::span<ModT> f) { // dif
   }
 }
 
-template <static_basic_modint_concept ModT>
-static void intt(std::span<ModT> f) { // dit
+template <static_modint_concept ModT>
+static void intt_basic(std::span<ModT> f) { // dit
   i32 n = f.size();
-  assert(std::has_single_bit<u32>(n));
   auto &rt = prepare_root_basic<ModT>(n);
-  detail::ntt_size += n;
   for (i32 l = 1; l < n; l *= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
       for (i32 j = 0; j < l; ++j) {
