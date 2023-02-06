@@ -19,6 +19,7 @@ struct StaticModint {
   using TransT = typename Space::TransT;
   using isStatic = std::true_type;
   using rawU32 = typename Space::rawU32;
+  using isMontgomery = typename Space::isMontgomery;
 
   TransT v;
 

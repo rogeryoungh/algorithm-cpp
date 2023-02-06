@@ -9,6 +9,7 @@
 #include "ln.hpp"
 #include "exp-14E-nt-block.hpp"
 #include "sqrt-8E-nt-block.hpp"
+#include "sqrt-11E-nt.hpp"
 #include "pow.hpp"
 #include "safe-sqrt.hpp"
 #include "safe-pow.hpp"
@@ -38,7 +39,7 @@ public:
   static constexpr auto m_div = poly_div_10E_block<ModT>;
   static constexpr auto m_ln = poly_ln<ModT, m_div>;
   static constexpr auto m_exp = poly_exp_14E_block<ModT>;
-  static constexpr auto m_sqrt = poly_sqrt_8E_block<ModT>;
+  static constexpr auto m_sqrt = poly_sqrt_11E<ModT>;
   static constexpr auto m_safe_sqrt = poly_safe_sqrt<ModT, m_sqrt>;
   static constexpr auto m_pow = poly_pow<ModT, m_ln, m_exp>;
   static constexpr auto m_safe_pow = poly_safe_pow<ModT, m_pow>;

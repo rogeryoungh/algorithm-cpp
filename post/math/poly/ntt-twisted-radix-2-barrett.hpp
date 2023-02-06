@@ -1,5 +1,5 @@
-#ifndef ALGO_MATH_POLY_NTT_BARRETT
-#define ALGO_MATH_POLY_NTT_BARRETT
+#ifndef ALGO_MATH_POLY_NTT_TWISTED_RADIX_2_BARRETT
+#define ALGO_MATH_POLY_NTT_TWISTED_RADIX_2_BARRETT
 
 #include "../../base.hpp"
 #include "../../other/modint/modint-concept.hpp"
@@ -102,4 +102,4 @@ static void intt(std::span<ModT> f_) { // dit
   std::reverse(f.begin() + 1, f.end());
 }
 
-#endif // ALGO_MATH_POLY_NTT_BARRETT
+#endif // ALGO_MATH_POLY_NTT_TWISTED_RADIX_2_BARRETT

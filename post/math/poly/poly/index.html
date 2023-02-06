@@ -74,6 +74,7 @@
 #include &quot;ln.hpp&quot;
 #include &quot;exp-14E-nt-block.hpp&quot;
 #include &quot;sqrt-8E-nt-block.hpp&quot;
+#include &quot;sqrt-11E-nt.hpp&quot;
 #include &quot;pow.hpp&quot;
 #include &quot;safe-sqrt.hpp&quot;
 #include &quot;safe-pow.hpp&quot;
@@ -103,7 +104,7 @@ public:
   static constexpr auto m_div = poly_div_10E_block&lt;ModT&gt;;
   static constexpr auto m_ln = poly_ln&lt;ModT, m_div&gt;;
   static constexpr auto m_exp = poly_exp_14E_block&lt;ModT&gt;;
-  static constexpr auto m_sqrt = poly_sqrt_8E_block&lt;ModT&gt;;
+  static constexpr auto m_sqrt = poly_sqrt_11E&lt;ModT&gt;;
   static constexpr auto m_safe_sqrt = poly_safe_sqrt&lt;ModT, m_sqrt&gt;;
   static constexpr auto m_pow = poly_pow&lt;ModT, m_ln, m_exp&gt;;
   static constexpr auto m_safe_pow = poly_safe_pow&lt;ModT, m_pow&gt;;
