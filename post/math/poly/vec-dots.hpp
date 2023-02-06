@@ -3,7 +3,6 @@
 
 #include "../../base.hpp"
 #include "../../other/modint/modint-concept.hpp"
-#include "../../other/modint/montgomery-x8.hpp"
 
 #include <span>
 
@@ -20,6 +19,10 @@ static void dot_basic(std::span<ModT> f, std::span<const ModT> g) {
   for (u32 i = 0; i < n; i++)
     f[i] *= g[i];
 }
+
+#ifndef ALGO_DISABLE_SIMD_AVX2
+
+#include "../../other/modint/montgomery-x8.hpp"
 
 template <montgomery_modint_concept ModT>
 static void dot_avx(std::span<ModT> f, std::span<const ModT> g) {
@@ -68,5 +71,19 @@ static void dot(std::span<ModT> f, std::span<const ModT> g) {
     dot_basic(f, g);
   }
 }
+
+#else
+
+template <static_modint_concept ModT>
+void dot(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
+  dot_basic(f, g, dst);
+}
+
+template <static_modint_concept ModT>
+void dot(std::span<ModT> f, std::span<const ModT> g) {
+  dot_basic(f, g);
+}
+
+#endif
 
 #endif // ALGO_MATH_POLY_DOTS

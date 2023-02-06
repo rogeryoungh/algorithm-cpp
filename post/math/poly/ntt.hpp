@@ -20,6 +20,8 @@ u32 ntt_size = 0;
 // #include "ntt-barrett.hpp"
 #include "ntt-classical-radix-2-basic.hpp"
 
+#ifndef ALGO_DISABLE_SIMD_AVX2
+
 #include "ntt-twisted-radix-2-avx.hpp"
 #include "ntt-classical-radix-2-avx.hpp"
 
@@ -86,6 +88,30 @@ void intt_classical(std::span<ModT> f) {
     detail::intt_classical_basic(f);
   }
 }
+
+#else
+
+template <static_modint_concept ModT>
+void ntt_twisted(std::span<ModT> f) {
+  detail::ntt_twisted_basic(f);
+}
+
+template <static_modint_concept ModT>
+void intt_twisted(std::span<ModT> f) {
+  detail::intt_twisted_basic(f);
+}
+
+template <static_modint_concept ModT>
+void ntt_classical(std::span<ModT> f) {
+  detail::ntt_classical_basic(f);
+}
+
+template <static_modint_concept ModT>
+void intt_classical(std::span<ModT> f) {
+  detail::intt_classical_basic(f);
+}
+
+#endif
 
 template <static_modint_concept ModT>
 void ntt(std::span<ModT> f) {
