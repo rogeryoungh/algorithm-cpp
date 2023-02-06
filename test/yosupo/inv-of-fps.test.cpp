@@ -1,5 +1,4 @@
 // magic!
-#pragma GCC target("avx2")
 #pragma GCC optimize("O3")
 
 #define PROBLEM "https://judge.yosupo.jp/problem/inv_of_formal_power_series"

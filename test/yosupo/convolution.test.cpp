@@ -1,5 +1,4 @@
 // magic!
-#pragma GCC target("avx2")
 #pragma GCC optimize("O3")
 
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
@@ -24,7 +23,7 @@ i32 main() {
     fin >> i;
   for (auto &i : g)
     fin >> i;
-  for (auto i : f * g)
+  for (auto i : f *g)
     fout << i << ' ';
   std::cerr << std::endl << detail::ntt_size << std::endl;
   return 0;

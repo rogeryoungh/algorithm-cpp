@@ -1,9 +1,9 @@
 // magic!
-#pragma GCC target("abm,movbe,bmi,bmi2,lzcnt,popcnt,avx2")
 #pragma GCC optimize("O3")
-#pragma GCC optimize("no-split-paths")
 
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
+
+#define ALGO_DISABLE_SIMD_AVX2
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/math/poly/poly-base.hpp"
