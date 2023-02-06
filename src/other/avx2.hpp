@@ -5,6 +5,8 @@
 
 // https://judge.yosupo.jp/submission/92714
 
+#pragma GCC target("avx2")
+
 #include <immintrin.h>
 #include <array>
 

@@ -28,35 +28,35 @@ struct BasicModSpace<u32, MOD> {
     return x;
   }
 
-  static ValueT val(TransT x) {
+  constexpr static ValueT val(TransT x) {
     return reduce_m(x);
   }
 
-  static u32 reduce_m(ValueT n) {
+  constexpr static u32 reduce_m(ValueT n) {
     return n >> 31 ? n + MOD : n;
   }
 
-  static u32 reduce_2m(u32 n) {
+  constexpr static u32 reduce_2m(u32 n) {
     return n >> 31 ? n + MOD2 : n;
   }
 
-  static u32 add(u32 a, u32 b) {
+  constexpr static u32 add(u32 a, u32 b) {
     return reduce_m(a + b - MOD);
   }
 
-  static u32 sub(u32 a, u32 b) {
+  constexpr static u32 sub(u32 a, u32 b) {
     return reduce_m(a - b);
   }
 
-  static u32 mul(u32 a, u32 b) {
+  constexpr static u32 mul(u32 a, u32 b) {
     return u64(a) * b % MOD;
   }
 
-  static u32 safe(i64 x) {
+  constexpr static u32 safe(i64 x) {
     return reduce_m(x % MOD);
   }
 
-  static u32 shift2(u32 x) {
+  constexpr static u32 shift2(u32 x) {
     return (x & 1 ? x + MOD : x) >> 1;
   }
 };

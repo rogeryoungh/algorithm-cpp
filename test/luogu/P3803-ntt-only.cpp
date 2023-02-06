@@ -1,5 +1,4 @@
 #define PROBLEM "https://www.luogu.com.cn/problem/P3803"
-#pragma GCC target("avx2")
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/other/modint/montgomery-space.hpp"

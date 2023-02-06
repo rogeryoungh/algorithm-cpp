@@ -12,8 +12,10 @@
 
 #include "../../other/modint/montgomery-x8.hpp"
 
+namespace detail {
+
 template <montgomery_modint_concept ModT>
-struct NttInfoAvx {
+struct NttTwistedInfoAvx {
   using X8 = simd::M32x8<ModT>;
   using ValueT = typename ModT::ValueT;
 
@@ -23,7 +25,7 @@ struct NttInfoAvx {
 
   std::vector<X8> rt;
 
-  NttInfoAvx() {
+  NttTwistedInfoAvx() {
     init_rt(64);
   }
 
@@ -70,17 +72,17 @@ struct NttInfoAvx {
     }
     return r;
   }
-  static NttInfoAvx &instance() {
-    static NttInfoAvx info{};
+  static NttTwistedInfoAvx &instance() {
+    static NttTwistedInfoAvx info{};
     return info;
   }
 };
 
 template <montgomery_modint_concept ModT, bool aligned>
-static void ntt_avx(std::span<ModT> f0) { // dif
+static void ntt_twisted_avx(std::span<ModT> f0) { // dif
   using X8 = simd::M32x8<ModT>;
 
-  static auto &info = NttInfoAvx<ModT>::instance();
+  static auto &info = NttTwistedInfoAvx<ModT>::instance();
 
   i32 n8 = f0.size(), n = n8 / 8;
   assert(n8 % 16 == 0);
@@ -115,10 +117,10 @@ static void ntt_avx(std::span<ModT> f0) { // dif
 }
 
 template <montgomery_modint_concept ModT, bool aligned>
-static void intt_avx(std::span<ModT> f0) { // dit
+static void intt_twisted_avx(std::span<ModT> f0) { // dit
   using X8 = simd::M32x8<ModT>;
 
-  static auto &info = NttInfoAvx<ModT>::instance();
+  static auto &info = NttTwistedInfoAvx<ModT>::instance();
 
   i32 n8 = f0.size(), n = n8 / 8;
   assert(n8 % 16 == 0);
@@ -157,5 +159,7 @@ static void intt_avx(std::span<ModT> f0) { // dit
   }
   std::reverse(f0.begin() + 1, f0.end());
 }
+
+} // namespace detail
 
 #endif // ALGO_MATH_POLY_NTT_AVX

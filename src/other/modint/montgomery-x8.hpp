@@ -44,6 +44,10 @@ struct M32x8 {
     return i32x8::from(v);
   }
 
+  static M32x8 from(ModT v) {
+    return from(v.raw());
+  }
+
   inline static I32x8 Rx8 = i32x8::from(ModT::Space::R);
   inline static I32x8 IRx8 = i32x8::from(ModT::Space::IR);
   inline static I32x8 MOD2x8 = i32x8::from(ModT::Space::MOD2);

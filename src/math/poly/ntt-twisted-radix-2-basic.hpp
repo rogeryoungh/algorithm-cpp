@@ -1,5 +1,5 @@
-#ifndef ALGO_MATH_POLY_NTT_BASIC
-#define ALGO_MATH_POLY_NTT_BASIC
+#ifndef ALGO_MATH_POLY_NTT_TWISTED_RADIX_2_BASIC
+#define ALGO_MATH_POLY_NTT_TWISTED_RADIX_2_BASIC
 
 #include "../../base.hpp"
 #include "../../other/modint/modint-concept.hpp"
@@ -12,12 +12,8 @@
 
 namespace detail {
 
-extern u32 ntt_size;
-
-} // namespace detail
-
 template <static_modint_concept ModT>
-auto &prepare_root_basic(u32 m) {
+auto &prepare_root_twisted_basic(u32 m) {
   using ValueT = typename ModT::ValueT;
   static constexpr ValueT P = ModT::mod();
   static constexpr ValueT g = 3;
@@ -37,29 +33,30 @@ auto &prepare_root_basic(u32 m) {
 }
 
 template <static_modint_concept ModT>
-static void ntt_basic(std::span<ModT> f) { // dif
+static void ntt_twisted_basic(std::span<ModT> f) { // dif
   i32 n = f.size();
-  auto &rt = prepare_root_basic<ModT>(n);
+  auto &rt = prepare_root_twisted_basic<ModT>(n);
   for (i32 l = n / 2; l > 0; l /= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
       for (i32 j = 0; j < l; ++j) {
         ModT x = f[i + j], y = f[i + j + l];
-        f[i + j + l] = rt[j + l] * (x - y);
         f[i + j] = x + y;
+        f[i + j + l] = rt[j + l] * (x - y);
       }
     }
   }
 }
 
 template <static_modint_concept ModT>
-static void intt_basic(std::span<ModT> f) { // dit
+static void intt_twisted_basic(std::span<ModT> f) { // dit
   i32 n = f.size();
-  auto &rt = prepare_root_basic<ModT>(n);
+  auto &rt = prepare_root_twisted_basic<ModT>(n);
   for (i32 l = 1; l < n; l *= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
       for (i32 j = 0; j < l; ++j) {
         ModT x = f[i + j], y = rt[j + l] * f[i + j + l];
-        f[i + j] = x + y, f[i + j + l] = x - y;
+        f[i + j] = x + y;
+        f[i + j + l] = x - y;
       }
     }
   }
@@ -69,4 +66,6 @@ static void intt_basic(std::span<ModT> f) { // dit
   std::reverse(f.begin() + 1, f.end());
 }
 
-#endif // ALGO_MATH_POLY_NTT_BASIC
+} // namespace detail
+
+#endif // ALGO_MATH_POLY_NTT_TWISTED_RADIX_2_BASIC
