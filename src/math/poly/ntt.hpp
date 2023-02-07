@@ -19,6 +19,7 @@ u32 ntt_size = 0;
 #include "ntt-twisted-radix-2-basic.hpp"
 // #include "ntt-barrett.hpp"
 #include "ntt-classical-radix-2-basic.hpp"
+#include "ntt-classical-radix-4-basic.hpp"
 
 #ifndef ALGO_DISABLE_SIMD_AVX2
 
@@ -59,9 +60,10 @@ void intt_twisted(std::span<ModT> f) {
 
 template <static_modint_concept ModT>
 void ntt_classical(std::span<ModT> f) {
+  detail::ntt_classical_basic4(f);
   if constexpr (montgomery_modint_concept<ModT>) {
     if (f.size() < 16)
-      detail::ntt_classical_basic(f);
+      detail::ntt_classical_basic4(f);
     else if (u64(f.data()) & 0x1f)
       detail::ntt_classical_avx<ModT, false>(f);
     else
@@ -77,7 +79,7 @@ template <static_modint_concept ModT>
 void intt_classical(std::span<ModT> f) {
   if constexpr (montgomery_modint_concept<ModT>) {
     if (f.size() < 16)
-      detail::intt_classical_basic(f);
+      detail::intt_classical_basic4(f);
     else if (u64(f.data()) & 0x1f)
       detail::intt_classical_avx<ModT, false>(f);
     else
@@ -103,12 +105,12 @@ void intt_twisted(std::span<ModT> f) {
 
 template <static_modint_concept ModT>
 void ntt_classical(std::span<ModT> f) {
-  detail::ntt_classical_basic(f);
+  detail::ntt_classical_basic4(f);
 }
 
 template <static_modint_concept ModT>
 void intt_classical(std::span<ModT> f) {
-  detail::intt_classical_basic(f);
+  detail::intt_classical_basic4(f);
 }
 
 #endif
