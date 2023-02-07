@@ -60,7 +60,6 @@ void intt_twisted(std::span<ModT> f) {
 
 template <static_modint_concept ModT>
 void ntt_classical(std::span<ModT> f) {
-  detail::ntt_classical_basic4(f);
   if constexpr (montgomery_modint_concept<ModT>) {
     if (f.size() < 16)
       detail::ntt_classical_basic4(f);
@@ -69,9 +68,9 @@ void ntt_classical(std::span<ModT> f) {
     else
       detail::ntt_classical_avx<ModT, true>(f);
   } else if constexpr (raw32_modint_concept<ModT>) {
-    detail::ntt_classical_basic(f);
+    detail::ntt_classical_basic4(f);
   } else {
-    detail::ntt_classical_basic(f);
+    detail::ntt_classical_basic4(f);
   }
 }
 
@@ -85,9 +84,9 @@ void intt_classical(std::span<ModT> f) {
     else
       detail::intt_classical_avx<ModT, true>(f);
   } else if constexpr (raw32_modint_concept<ModT>) {
-    detail::intt_classical_basic(f);
+    detail::intt_classical_basic4(f);
   } else {
-    detail::intt_classical_basic(f);
+    detail::intt_classical_basic4(f);
   }
 }
 
