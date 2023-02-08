@@ -90,6 +90,7 @@ u32 ntt_size = 0;
 
 #include &quot;ntt-twisted-radix-2-avx.hpp&quot;
 #include &quot;ntt-classical-radix-2-avx.hpp&quot;
+#include &quot;ntt-classical-radix-4-avx.hpp&quot;
 
 template &lt;static_modint_concept ModT&gt;
 void ntt_twisted(std::span&lt;ModT&gt; f) {
@@ -129,9 +130,9 @@ void ntt_classical(std::span&lt;ModT&gt; f) {
     if (f.size() &lt; 16)
       detail::ntt_classical_basic4(f);
     else if (u64(f.data()) &amp; 0x1f)
-      detail::ntt_classical_avx&lt;ModT, false&gt;(f);
+      detail::ntt_classical_avx4&lt;ModT, false&gt;(f);
     else
-      detail::ntt_classical_avx&lt;ModT, true&gt;(f);
+      detail::ntt_classical_avx4&lt;ModT, true&gt;(f);
   } else if constexpr (raw32_modint_concept&lt;ModT&gt;) {
     detail::ntt_classical_basic4(f);
   } else {
@@ -145,9 +146,9 @@ void intt_classical(std::span&lt;ModT&gt; f) {
     if (f.size() &lt; 16)
       detail::intt_classical_basic4(f);
     else if (u64(f.data()) &amp; 0x1f)
-      detail::intt_classical_avx&lt;ModT, false&gt;(f);
+      detail::intt_classical_avx4&lt;ModT, false&gt;(f);
     else
-      detail::intt_classical_avx&lt;ModT, true&gt;(f);
+      detail::intt_classical_avx4&lt;ModT, true&gt;(f);
   } else if constexpr (raw32_modint_concept&lt;ModT&gt;) {
     detail::intt_classical_basic4(f);
   } else {
