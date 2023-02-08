@@ -16,14 +16,16 @@ i32 main() {
   fin >> n >> m;
   n++, m++;
   u32 L = std::bit_ceil(n + m - 1);
-  std::vector<ModT> f(L), g(L);
+  // std::vector<ModT> f(L), g(L);
+  ModT *f = new (std::align_val_t(32))ModT[L];
+  ModT *g = new (std::align_val_t(32))ModT[L];
   for (i32 i = 0; i < n; ++i)
     fin >> f[i];
   for (i32 i = 0; i < m; ++i)
     fin >> g[i];
-  ntt<ModT>(f), ntt<ModT>(g);
-  dot<ModT>(f, g);
-  intt<ModT>(f);
+  ntt<ModT>({f, L}), ntt<ModT>({g, L});
+  dot<ModT>({f, L}, {g, L});
+  intt<ModT>({f, L});
   for (i32 i = 0; i < n + m - 1; ++i)
     fout << f[i] << ' ';
   std::cerr << std::endl << detail::ntt_size << std::endl;
