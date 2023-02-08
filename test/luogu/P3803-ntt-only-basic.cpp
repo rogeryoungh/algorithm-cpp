@@ -1,5 +1,7 @@
 #define PROBLEM "https://www.luogu.com.cn/problem/P3803"
 
+#define ALGO_IO_NUMBER_ONLY
+
 #define ALGO_DISABLE_SIMD_AVX2
 
 #include "../../src/other/fastio.hpp"

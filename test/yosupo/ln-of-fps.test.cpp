@@ -3,6 +3,8 @@
 
 #define PROBLEM "https://judge.yosupo.jp/problem/log_of_formal_power_series"
 
+#define ALGO_IO_NUMBER_ONLY
+
 #include "../../src/other/fastio.hpp"
 #include "../../src/math/poly/poly-base.hpp"
 #include "../../src/other/modint/montgomery-space.hpp"

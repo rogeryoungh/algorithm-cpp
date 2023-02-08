@@ -1,5 +1,7 @@
 #define PROBLEM "https://www.luogu.com.cn/problem/P4238"
 
+#define ALGO_IO_NUMBER_ONLY
+
 #include "../../src/other/fastio.hpp"
 #include "../../src/math/poly/poly-base.hpp"
 #include "../../src/other/modint/montgomery-space.hpp"

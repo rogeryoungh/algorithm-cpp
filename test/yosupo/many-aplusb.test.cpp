@@ -1,5 +1,9 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/many_aplusb"
 
+#define ALGO_IO_NUMBER_ONLY
+
+#define ALGO_IO_NUMBER_ONLY
+
 #include "../../src/other/fastio.hpp"
 
 i32 main() {

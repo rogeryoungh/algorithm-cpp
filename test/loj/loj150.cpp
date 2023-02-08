@@ -1,5 +1,7 @@
 #define PROBLEM "https://loj.ac/p/143"
 
+#define ALGO_IO_NUMBER_ONLY
+
 #include "../../src/other/fastio.hpp"
 #include "../../src/other/modint/static-modint.hpp"
 #include "../../src/math/poly/poly-base.hpp"

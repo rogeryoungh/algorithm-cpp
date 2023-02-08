@@ -3,6 +3,8 @@
 
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
+#define ALGO_IO_NUMBER_ONLY
+
 #define ALGO_DISABLE_SIMD_AVX2
 
 #include "../../src/other/fastio.hpp"
