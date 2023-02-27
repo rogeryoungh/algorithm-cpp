@@ -1,5 +1,7 @@
 # 算法库
 
+[![verify](https://github.com/rogeryoungh/algorithm-cpp/actions/workflows/verify.yml/badge.svg)](https://github.com/rogeryoungh/algorithm-cpp/actions/workflows/verify.yml) [![code-size](https://img.shields.io/github/languages/code-size/rogeryoungh/algorithm-cpp)](https://github.com/rogeryoungh/algorithm-cpp)
+
 > 正在编写中……这里是项目地址：[rogeryoungh/algorithm-cpp](https://github.com/rogeryoungh/algorithm-cpp)，感兴趣不妨来点个 star 哦！
 
 我的算法库，计划包含算法竞赛的~~常见~~（我会的）算法。

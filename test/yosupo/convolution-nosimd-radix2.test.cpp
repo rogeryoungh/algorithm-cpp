@@ -6,12 +6,15 @@
 #define ALGO_IO_NUMBER_ONLY
 
 #define ALGO_DISABLE_SIMD_AVX2
+#define ALGO_DISABLE_NTT_RADIX_4
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/math/poly/poly-base.hpp"
+#include "../../src/other/modint/montgomery-space.hpp"
 #include "../../src/other/modint/static-modint.hpp"
 
-using ModT = BasicStaticModint<u32, 998244353>;
+using Space = MontgomerySpace<u32, 998244353>;
+using ModT = StaticModint<Space>;
 using FPS = Poly<ModT>;
 
 i32 main() {

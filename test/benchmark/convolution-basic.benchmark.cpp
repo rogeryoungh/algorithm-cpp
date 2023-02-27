@@ -2,12 +2,10 @@
 
 #include "../../src/math/poly/poly-base.hpp"
 #include "../../src/other/modint/static-modint.hpp"
-#include "../../src/other/modint/montgomery-space.hpp"
 
 constexpr u32 P = 998244353;
 
-using Space = MontgomerySpace<u32, 998244353>;
-using ModT = StaticModint<Space>;
+using ModT = BasicStaticModint<u32, P>;
 using FPS = Poly<ModT>;
 
 /////////////////////////////////////////////////////////

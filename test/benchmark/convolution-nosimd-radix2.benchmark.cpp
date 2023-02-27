@@ -1,5 +1,8 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
+#define ALGO_DISABLE_SIMD_AVX2
+#define ALGO_DISABLE_NTT_RADIX_4
+
 #include "../../src/math/poly/poly-base.hpp"
 #include "../../src/other/modint/static-modint.hpp"
 #include "../../src/other/modint/montgomery-space.hpp"
