@@ -81,51 +81,24 @@ u32 ntt_size = 0;
 
 } // namespace detail
 
-#include &quot;ntt-twisted-radix-2-basic.hpp&quot;
-// #include &quot;ntt-barrett.hpp&quot;
-#include &quot;ntt-classical-radix-2-basic.hpp&quot;
+/////////////////////
+
+#ifndef ALGO_DISABLE_NTT_CLASSICAL
+
+#ifndef ALGO_DISABLE_NTT_RADIX_4
+
 #include &quot;ntt-classical-radix-4-basic.hpp&quot;
 
 #ifndef ALGO_DISABLE_SIMD_AVX2
 
-#include &quot;ntt-twisted-radix-2-avx.hpp&quot;
-#include &quot;ntt-classical-radix-2-avx.hpp&quot;
 #include &quot;ntt-classical-radix-4-avx.hpp&quot;
 
-template &lt;static_modint_concept ModT&gt;
-void ntt_twisted(std::span&lt;ModT&gt; f) {
-  if constexpr (montgomery_modint_concept&lt;ModT&gt;) {
-    if (f.size() &lt; 16)
-      detail::ntt_twisted_basic(f);
-    else if (u64(f.data()) &amp; 0x1f)
-      detail::ntt_twisted_avx&lt;ModT, false&gt;(f);
-    else
-      detail::ntt_twisted_avx&lt;ModT, true&gt;(f);
-  } else if constexpr (raw32_modint_concept&lt;ModT&gt;) {
-    detail::ntt_twisted_basic(f);
-  } else {
-    detail::ntt_twisted_basic(f);
-  }
-}
+// classical-radix-4-avx2
 
 template &lt;static_modint_concept ModT&gt;
-void intt_twisted(std::span&lt;ModT&gt; f) {
-  if constexpr (montgomery_modint_concept&lt;ModT&gt;) {
-    if (f.size() &lt; 16)
-      detail::intt_twisted_basic(f);
-    else if (u64(f.data()) &amp; 0x1f)
-      detail::intt_twisted_avx&lt;ModT, false&gt;(f);
-    else
-      detail::intt_twisted_avx&lt;ModT, true&gt;(f);
-  } else if constexpr (raw32_modint_concept&lt;ModT&gt;) {
-    detail::intt_twisted_basic(f);
-  } else {
-    detail::intt_twisted_basic(f);
-  }
-}
-
-template &lt;static_modint_concept ModT&gt;
-void ntt_classical(std::span&lt;ModT&gt; f) {
+void ntt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
   if constexpr (montgomery_modint_concept&lt;ModT&gt;) {
     if (f.size() &lt; 16)
       detail::ntt_classical_basic4(f);
@@ -133,15 +106,15 @@ void ntt_classical(std::span&lt;ModT&gt; f) {
       detail::ntt_classical_avx4&lt;ModT, false&gt;(f);
     else
       detail::ntt_classical_avx4&lt;ModT, true&gt;(f);
-  } else if constexpr (raw32_modint_concept&lt;ModT&gt;) {
-    detail::ntt_classical_basic4(f);
   } else {
     detail::ntt_classical_basic4(f);
   }
 }
 
 template &lt;static_modint_concept ModT&gt;
-void intt_classical(std::span&lt;ModT&gt; f) {
+void intt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
   if constexpr (montgomery_modint_concept&lt;ModT&gt;) {
     if (f.size() &lt; 16)
       detail::intt_classical_basic4(f);
@@ -149,52 +122,162 @@ void intt_classical(std::span&lt;ModT&gt; f) {
       detail::intt_classical_avx4&lt;ModT, false&gt;(f);
     else
       detail::intt_classical_avx4&lt;ModT, true&gt;(f);
-  } else if constexpr (raw32_modint_concept&lt;ModT&gt;) {
-    detail::intt_classical_basic4(f);
   } else {
     detail::intt_classical_basic4(f);
   }
 }
 
-#else
+#else // ALGO_DISABLE_SIMD_AVX2
 
-template &lt;static_modint_concept ModT&gt;
-void ntt_twisted(std::span&lt;ModT&gt; f) {
-  detail::ntt_twisted_basic(f);
-}
+#include &quot;ntt-classical-radix-4-basic.hpp&quot;
 
-template &lt;static_modint_concept ModT&gt;
-void intt_twisted(std::span&lt;ModT&gt; f) {
-  detail::intt_twisted_basic(f);
-}
-
-template &lt;static_modint_concept ModT&gt;
-void ntt_classical(std::span&lt;ModT&gt; f) {
-  detail::ntt_classical_basic4(f);
-}
-
-template &lt;static_modint_concept ModT&gt;
-void intt_classical(std::span&lt;ModT&gt; f) {
-  detail::intt_classical_basic4(f);
-}
-
-#endif
+// classical-radix-4-basic
 
 template &lt;static_modint_concept ModT&gt;
 void ntt(std::span&lt;ModT&gt; f) {
   assert(std::has_single_bit&lt;u32&gt;(f.size()));
   detail::ntt_size += f.size();
-  ntt_classical(f);
-  // ntt_twisted(f);
+  detail::ntt_classical_basic4(f);
 }
 
 template &lt;static_modint_concept ModT&gt;
 void intt(std::span&lt;ModT&gt; f) {
   assert(std::has_single_bit&lt;u32&gt;(f.size()));
   detail::ntt_size += f.size();
-  intt_classical(f);
-  // intt_twisted(f);
+  detail::intt_classical_basic4(f);
 }
+
+#endif // ALGO_DISABLE_SIMD_AVX2
+
+#else // ALGO_DISABLE_NTT_RADIX_4
+
+#include &quot;ntt-classical-radix-2-basic.hpp&quot;
+
+#ifndef ALGO_DISABLE_SIMD_AVX2
+
+#include &quot;ntt-classical-radix-2-avx.hpp&quot;
+
+// classical-radix-2-avx2
+
+template &lt;static_modint_concept ModT&gt;
+void ntt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
+  if constexpr (montgomery_modint_concept&lt;ModT&gt;) {
+    if (f.size() &lt; 16)
+      detail::ntt_classical_basic(f);
+    else if (u64(f.data()) &amp; 0x1f)
+      detail::ntt_classical_avx&lt;ModT, false&gt;(f);
+    else
+      detail::ntt_classical_avx&lt;ModT, true&gt;(f);
+  } else {
+    detail::ntt_classical_basic(f);
+  }
+}
+
+template &lt;static_modint_concept ModT&gt;
+void intt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
+  if constexpr (montgomery_modint_concept&lt;ModT&gt;) {
+    if (f.size() &lt; 16)
+      detail::intt_classical_basic(f);
+    else if (u64(f.data()) &amp; 0x1f)
+      detail::intt_classical_avx&lt;ModT, false&gt;(f);
+    else
+      detail::intt_classical_avx&lt;ModT, true&gt;(f);
+  } else {
+    detail::intt_classical_basic(f);
+  }
+}
+
+#else // ALGO_DISABLE_SIMD_AVX2
+
+#include &quot;ntt-classical-radix-2-basic.hpp&quot;
+
+// classical-radix-2-basic
+
+template &lt;static_modint_concept ModT&gt;
+void ntt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
+  detail::ntt_classical_basic(f);
+}
+
+template &lt;static_modint_concept ModT&gt;
+void intt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
+  detail::intt_classical_basic(f);
+}
+
+#endif // ALGO_DISABLE_SIMD_AVX2
+
+#endif // ALGO_DISABLE_NTT_RADIX_4
+
+#else // ALGO_DISABLE_NTT_CLASSICAL
+
+#include &quot;ntt-twisted-radix-2-basic.hpp&quot;
+
+#ifndef ALGO_DISABLE_SIMD_AVX2
+
+#include &quot;ntt-twisted-radix-2-avx.hpp&quot;
+
+// twisted-radix-2-avx2
+
+template &lt;static_modint_concept ModT&gt;
+void ntt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
+  if constexpr (montgomery_modint_concept&lt;ModT&gt;) {
+    if (f.size() &lt; 16)
+      detail::ntt_twisted_basic(f);
+    else if (u64(f.data()) &amp; 0x1f)
+      detail::ntt_twisted_avx&lt;ModT, false&gt;(f);
+    else
+      detail::ntt_twisted_avx&lt;ModT, true&gt;(f);
+  } else {
+    detail::ntt_twisted_basic(f);
+  }
+}
+
+template &lt;static_modint_concept ModT&gt;
+void intt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
+  if constexpr (montgomery_modint_concept&lt;ModT&gt;) {
+    if (f.size() &lt; 16)
+      detail::intt_twisted_basic(f);
+    else if (u64(f.data()) &amp; 0x1f)
+      detail::intt_twisted_avx&lt;ModT, false&gt;(f);
+    else
+      detail::intt_twisted_avx&lt;ModT, true&gt;(f);
+  } else {
+    detail::intt_twisted_basic(f);
+  }
+}
+
+#else // ALGO_DISABLE_SIMD_AVX2
+
+// twisted-radix-2-basic
+
+template &lt;static_modint_concept ModT&gt;
+void ntt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
+  detail::ntt_twisted_basic(f);
+}
+
+template &lt;static_modint_concept ModT&gt;
+void intt(std::span&lt;ModT&gt; f) {
+  assert(std::has_single_bit&lt;u32&gt;(f.size()));
+  detail::ntt_size += f.size();
+  detail::intt_twisted_basic(f);
+}
+
+#endif // ALGO_DISABLE_SIMD_AVX2
+
+#endif // ALGO_DISABLE_NTT_CLASSICAL
 
 #endif // ALGO_MATH_POLY_NTT
 
