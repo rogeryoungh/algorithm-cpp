@@ -33,7 +33,13 @@ struct StaticModint {
   }
 
   constexpr static Self safe(i64 v) {
-    return Self(Space::safe(v));
+    return Self::raw(Space::safe(v));
+  }
+
+  constexpr static Self raw(u32 v) {
+    Self r;
+    r.v = v;
+    return r;
   }
 
   constexpr ValueT val() const {
@@ -102,11 +108,27 @@ struct StaticModint {
   }
 
   constexpr std::optional<Self> sqrt() const {
-    return cipola(val(), mod());
+    return cipola(*this);
   }
 
   constexpr Self shift2() const {
     return Space::shift2(v);
+  }
+
+  constexpr static Self muladd(const Self &a, const Self &b, const Self &c) { // a * b + c
+    return raw(Space::muladd(a.raw(), b.raw(), c.raw()));
+  }
+
+  constexpr static Self mulsub(const Self &a, const Self &b, const Self &c) { // a * b - c
+    return raw(Space::mulsub(a.raw(), b.raw(), c.raw()));
+  }
+
+  constexpr static Self addmul(const Self &a, const Self &b, const Self &c) { // (a + b) * c
+    return raw(Space::addmul(a.raw(), b.raw(), c.raw()));
+  }
+
+  constexpr static Self submul(const Self &a, const Self &b, const Self &c) { // (a - b) * c
+    return raw(Space::submul(a.raw(), b.raw(), c.raw()));
   }
 
   friend inline std::istream &operator>>(std::istream &is, Self &m) {

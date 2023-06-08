@@ -67,11 +67,13 @@ static void ntt_classical_basic4(std::span<ModT> f) { // dif
         ModT x1 = f[i + j + 1 * l] * r;
         ModT x2 = f[i + j + 2 * l] * r2;
         ModT x3 = f[i + j + 3 * l] * r3;
-        ModT x1x3 = (x1 - x3) * img;
-        f[i + j + 0 * l] = x0 + x2 + x1 + x3;
-        f[i + j + 1 * l] = x0 + x2 - x1 - x3;
-        f[i + j + 2 * l] = x0 - x2 + x1x3;
-        f[i + j + 3 * l] = x0 - x2 - x1x3;
+        ModT x1x3 = ModT::submul(x1, x3, img);
+        ModT x02 = x0 + x2, x0_2 = x0 - x2;
+        ModT x13 = x1 + x3;
+        f[i + j + 0 * l] = x02 + x13;
+        f[i + j + 1 * l] = x02 - x13;
+        f[i + j + 2 * l] = x0_2 + x1x3;
+        f[i + j + 3 * l] = x0_2 - x1x3;
       }
       r *= info.rate3[std::countr_one<u32>(k)];
     }
@@ -91,11 +93,13 @@ static void intt_classical_basic4(std::span<ModT> f) { // dit
         ModT x1 = f[i + j + 1 * l];
         ModT x2 = f[i + j + 2 * l];
         ModT x3 = f[i + j + 3 * l];
-        ModT x2x3 = (x2 - x3) * img;
-        f[i + j + 0 * l] = x0 + x1 + x2 + x3;
-        f[i + j + 1 * l] = (x0 - x1 + x2x3) * r;
-        f[i + j + 2 * l] = (x0 + x1 - x2 - x3) * r2;
-        f[i + j + 3 * l] = (x0 - x1 - x2x3) * r3;
+        ModT x2x3 = ModT::submul(x2, x3, img);
+        ModT x01 = x0 + x1, x0_1 = x0 - x1;
+        ModT x23 = x2 + x3;
+        f[i + j + 0 * l] = x01 + x23;
+        f[i + j + 1 * l] = ModT::addmul(x0_1, x2x3, r);
+        f[i + j + 2 * l] = ModT::submul(x01, x23, r2);
+        f[i + j + 3 * l] = ModT::submul(x0_1, x2x3, r3);
       }
       r *= info.irate3[std::countr_one<u32>(k)];
     }

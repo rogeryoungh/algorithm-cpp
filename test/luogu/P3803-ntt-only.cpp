@@ -19,8 +19,8 @@ i32 main() {
   n++, m++;
   u32 L = std::bit_ceil(n + m - 1);
   // std::vector<ModT> f(L), g(L);
-  ModT *f = new (std::align_val_t(32))ModT[L];
-  ModT *g = new (std::align_val_t(32))ModT[L];
+  ModT *f = new (std::align_val_t(32)) ModT[L];
+  ModT *g = new (std::align_val_t(32)) ModT[L];
   for (i32 i = 0; i < n; ++i)
     fin >> f[i];
   for (i32 i = 0; i < m; ++i)

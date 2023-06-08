@@ -62,6 +62,22 @@ struct MontgomerySpace<u32, MOD> {
     return reduce(u64(a) * b);
   }
 
+  constexpr static u32 muladd(u32 a, u32 b, u32 c) { // a * b + c
+    return reduce(u64(a) * b + c);
+  }
+
+  constexpr static u32 mulsub(u32 a, u32 b, u32 c) { // a * b - c
+    return reduce(u64(a) * b + MOD2 - c);
+  }
+
+  constexpr static u32 addmul(u32 a, u32 b, u32 c) { // (a + b) * c
+    return reduce(u64(a + b) * c);
+  }
+
+  constexpr static u32 submul(u32 a, u32 b, u32 c) { // (a - b) * c
+    return reduce(u64(a + MOD2 - b) * c);
+  }
+
   constexpr static u32 safe(i64 x) {
     return reduce_m(x % MOD);
   }
