@@ -33,7 +33,7 @@ struct StaticModint {
   }
 
   constexpr static Self safe(i64 v) {
-    return Self::raw(Space::safe(v));
+    return Space::safe(v);
   }
 
   constexpr static Self raw(u32 v) {

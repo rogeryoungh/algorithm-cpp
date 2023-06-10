@@ -42,8 +42,8 @@ template <class T>
 inline auto to_array(const I256 &v) {
   constexpr u32 sizeT = sizeof(T);
   static_assert(sizeof(I256) % sizeT == 0);
-  alignas(32) std::array<T, sizeT> arr;
-  _mm256_store_si256((I256 *)arr.data(), v);
+  alignas(32) std::array<T, sizeof(I256) / sizeT> arr;
+  _mm256_storeu_si256((I256 *)arr.data(), v);
   return arr;
 }
 
@@ -111,10 +111,11 @@ inline I32x8 sign(const I32x8 &a) {
   return _mm256_cmpgt_epi32(zero(), a);
 }
 
-inline std::pair<I64x4, I64x4> mul_0246_1357(const I32x8 &a, const I32x8 &b) {
+inline auto mul_0246_1357(const I32x8 &a, const I32x8 &b) {
   auto x0246 = mul(a, b);
   auto x1357 = mul(shuffle<0b11110101>(a), shuffle<0b11110101>(b));
-  return {x0246, x1357};
+  alignas(32) std::pair<I64x4, I64x4> p = {x0246, x1357};
+  return p;
 }
 
 inline I32x8 abs(const I32x8 &a) {
@@ -127,6 +128,13 @@ namespace u32x8 {
 
 inline U64x4 mul(const U32x8 &a, const U32x8 &b) {
   return _mm256_mul_epu32(a, b);
+}
+
+inline auto mul_0246_1357(const U32x8 &a, const U32x8 &b) {
+  auto x0246 = mul(a, b);
+  auto x1357 = mul(i32x8::shuffle<0b11110101>(a), i32x8::shuffle<0b11110101>(b));
+  alignas(32) std::pair<U64x4, U64x4> p = {x0246, x1357};
+  return p;
 }
 
 } // namespace u32x8

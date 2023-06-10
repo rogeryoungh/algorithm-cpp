@@ -102,7 +102,7 @@ struct NttClassicalInfoAvx4 {
 
 template <montgomery_modint_concept ModT, bool aligned>
 static void ntt_classical_avx4(std::span<ModT> f0) { // dif
-  using X8 = simd::M32x8<ModT>;
+  using X8 = simd::M32x8<ModT, aligned>;
 
   static NttClassicalInfoAvx4<ModT> info;
 
@@ -115,12 +115,12 @@ static void ntt_classical_avx4(std::span<ModT> f0) { // dif
 
   if (n_4b) {
     for (i32 j = 0; j < l; ++j) {
-      X8 fx = X8::template load<aligned>(&f[j]);
-      X8 fy = X8::template load<aligned>(&f[j + l]);
+      X8 fx = X8::load(&f[j]);
+      X8 fy = X8::load(&f[j + l]);
       X8 rx = fx + fy;
       X8 ry = fx - fy;
-      rx.template store<aligned>(&f[j]);
-      ry.template store<aligned>(&f[j + l]);
+      rx.store(&f[j]);
+      ry.store(&f[j + l]);
     }
     l /= 2;
   }
@@ -130,40 +130,42 @@ static void ntt_classical_avx4(std::span<ModT> f0) { // dif
     for (i32 i = 0, k = 0; i < n; i += l * 4, ++k) {
       X8 r2 = r * r, r3 = r2 * r;
       for (i32 j = 0; j < l; ++j) {
-        X8 x0 = X8::template load<aligned>(&f[i + j + 0 * l]);
-        X8 x1 = X8::template load<aligned>(&f[i + j + 1 * l]) * r;
-        X8 x2 = X8::template load<aligned>(&f[i + j + 2 * l]) * r2;
-        X8 x3 = X8::template load<aligned>(&f[i + j + 3 * l]) * r3;
-        X8 x1x3 = (x1 - x3) * img;
-        X8 y0 = x0 + x2 + x1 + x3;
-        X8 y1 = x0 + x2 - x1 - x3;
-        X8 y2 = x0 - x2 + x1x3;
-        X8 y3 = x0 - x2 - x1x3;
-        y0.template store<aligned>(&f[i + j + 0 * l]);
-        y1.template store<aligned>(&f[i + j + 1 * l]);
-        y2.template store<aligned>(&f[i + j + 2 * l]);
-        y3.template store<aligned>(&f[i + j + 3 * l]);
+        X8 x0 = X8::load(&f[i + j + 0 * l]);
+        X8 x1 = X8::load(&f[i + j + 1 * l]) * r;
+        X8 x2 = X8::load(&f[i + j + 2 * l]) * r2;
+        X8 x3 = X8::load(&f[i + j + 3 * l]) * r3;
+        X8 x1x3 = X8::submul(x1, x3, img);
+        X8 x02 = x0 + x2, x0_2 = x0 - x2;
+        X8 x13 = x1 + x3;
+        X8 y0 = x02 + x13;
+        X8 y1 = x02 - x13;
+        X8 y2 = x0_2 + x1x3;
+        X8 y3 = x0_2 - x1x3;
+        y0.store(&f[i + j + 0 * l]);
+        y1.store(&f[i + j + 1 * l]);
+        y2.store(&f[i + j + 2 * l]);
+        y3.store(&f[i + j + 3 * l]);
       }
       r *= info.rate3x8[std::countr_one<u32>(k)];
     }
   }
   X8 rti = X8::from(ModT(1));
   for (i32 i = 0; i < n; ++i) {
-    X8 fi = X8::template load<aligned>(&f[i]);
+    X8 fi = X8::load(&f[i]);
     fi *= rti;
     fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
     fi *= rt4;
     fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
     fi *= rt2;
     fi = fi.template neg<0b10101010>() + fi.template shuffle<0b10110001>();
-    fi.template store<aligned>(&f[i]);
+    fi.store(&f[i]);
     rti *= info.rate4ix8[std::countr_one<u32>(i)];
   }
 }
 
 template <montgomery_modint_concept ModT, bool aligned>
 static void intt_classical_avx4(std::span<ModT> f0) { // dit
-  using X8 = simd::M32x8<ModT>;
+  using X8 = simd::M32x8<ModT, aligned>;
 
   static NttClassicalInfoAvx4<ModT> info;
 
@@ -176,53 +178,55 @@ static void intt_classical_avx4(std::span<ModT> f0) { // dit
 
   X8 rti = X8::from(ModT(1));
   for (i32 i = 0; i < n; ++i) {
-    X8 fi = X8::template load<aligned>(&f[i]);
+    X8 fi = X8::load(&f[i]);
     fi = fi.template neg<0b10101010>() + fi.template shuffle<0b10110001>();
     fi *= rt2;
     fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
     fi *= rt4;
     fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
     fi *= rti;
-    fi.template store<aligned>(&f[i]);
+    fi.store(&f[i]);
     rti *= info.irate4ix8[std::countr_one<u32>(i)];
   }
-for (; l < (n_4b ? n / 2 : n); l *= 4) {
+  for (; l < (n_4b ? n / 2 : n); l *= 4) {
     X8 r = X8::from(ModT(1)), img = X8::from(info.irt[2]);
     for (i32 i = 0, k = 0; i < n; i += l * 4, ++k) {
       X8 r2 = r * r, r3 = r2 * r;
       for (i32 j = 0; j < l; ++j) {
-        X8 x0 = X8::template load<aligned>(&f[i + j + 0 * l]);
-        X8 x1 = X8::template load<aligned>(&f[i + j + 1 * l]);
-        X8 x2 = X8::template load<aligned>(&f[i + j + 2 * l]);
-        X8 x3 = X8::template load<aligned>(&f[i + j + 3 * l]);
-        X8 x2x3 = (x2 - x3) * img;
-        X8 y0 =x0 + x1 + x2 + x3;
-        X8 y1 = (x0 - x1 + x2x3) * r;
-        X8 y2 = (x0 + x1 - x2 - x3) * r2;
-        X8 y3 = (x0 - x1 - x2x3) * r3;
-        y0.template store<aligned>(&f[i + j + 0 * l]);
-        y1.template store<aligned>(&f[i + j + 1 * l]);
-        y2.template store<aligned>(&f[i + j + 2 * l]);
-        y3.template store<aligned>(&f[i + j + 3 * l]);
+        X8 x0 = X8::load(&f[i + j + 0 * l]);
+        X8 x1 = X8::load(&f[i + j + 1 * l]);
+        X8 x2 = X8::load(&f[i + j + 2 * l]);
+        X8 x3 = X8::load(&f[i + j + 3 * l]);
+        X8 x2x3 = X8::submul(x2, x3, img);
+        X8 x01 = x0 + x1, x0_1 = x0 - x1;
+        X8 x23 = x2 + x3;
+        X8 y0 = x01 + x23;
+        X8 y1 = X8::addmul(x0_1, x2x3, r);
+        X8 y2 = X8::submul(x01, x23, r2);
+        X8 y3 = X8::submul(x0_1, x2x3, r3);
+        y0.store(&f[i + j + 0 * l]);
+        y1.store(&f[i + j + 1 * l]);
+        y2.store(&f[i + j + 2 * l]);
+        y3.store(&f[i + j + 3 * l]);
       }
       r *= info.irate3x8[std::countr_one<u32>(k)];
     }
   }
   if (n_4b) {
     for (i32 j = 0; j < l; ++j) {
-      X8 fx = X8::template load<aligned>(&f[j]);
-      X8 fy = X8::template load<aligned>(&f[j + l]);
+      X8 fx = X8::load(&f[j]);
+      X8 fy = X8::load(&f[j + l]);
       X8 rx = fx + fy;
       X8 ry = fx - fy;
-      rx.template store<aligned>(&f[j]);
-      ry.template store<aligned>(&f[j + l]);
+      rx.store(&f[j]);
+      ry.store(&f[j + l]);
     }
   }
   X8 ivn8 = X8::from(ModT(n8).inv());
   for (i32 i = 0; i < n; ++i) {
-    X8 fi = X8::template load<aligned>(&f[i]);
+    X8 fi = X8::load(&f[i]);
     fi *= ivn8;
-    fi.template store<aligned>(&f[i]);
+    fi.store(&f[i]);
   }
 }
 

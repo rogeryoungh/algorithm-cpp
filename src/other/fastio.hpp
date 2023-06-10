@@ -77,7 +77,7 @@ struct FastO : Buf {
   std::vector<u32> pre;
 #define E10(x) u64(1E##x)
   FastO(FILE *f, u32 size = 1 << 18) : Buf(f, size), pre(E10(4)) {
-    for (i32 i = 0; i < E10(4); ++i) {
+    for (i32 i = 0; i < i32(E10(4)); ++i) {
       i32 ti = i;
       for (i32 j = 0; j < 4; ++j) {
         pre[i] = pre[i] << 8 | ti % 10 | 0x30;
@@ -94,7 +94,7 @@ struct FastO : Buf {
       push('-'), x = -x;
     return *this << std::make_unsigned<T>::type(x);
   }
-  void output4(i32 t) {
+  void output4(u32 t) {
     auto tp = (const char *)&pre[t];
     if (t >= E10(2)) {
       if (t >= E10(3))
@@ -141,10 +141,6 @@ struct FastO : Buf {
   }
   FastO &operator<<(const char *x) {
     return puts(x), *this;
-  }
-  template <size_t N>
-  FastO &operator<<(const char x[N]) {
-    return push(x, N), *this;
   }
   FastO &operator<<(const std::string &x) {
     return push(x.c_str(), x.size()), *this;
