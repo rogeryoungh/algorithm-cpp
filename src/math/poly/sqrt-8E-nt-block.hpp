@@ -1,23 +1,18 @@
 #ifndef ALGO_MATH_POLY_SQRT8E_NTBLOCK
 #define ALGO_MATH_POLY_SQRT8E_NTBLOCK
 
-#include "../../base.hpp"
-#include "ntt.hpp"
+#include "poly-def.hpp"
 #include "inv-10E-nt.hpp"
 #include "nt-block-helper.hpp"
 
-#include <algorithm>
-#include <vector>
-#include <iostream>
-
 template <class ModT>
-std::vector<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const ModT &x0) {
+AVec<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const ModT &x0) {
   if (m == 1)
     return {x0};
   auto [n, u] = detail::nt_block_len(m);
-  std::vector<ModT> x = poly_sqrt_8E_block(self, n, x0), h = poly_inv_10E<ModT>(x, n);
+  AVec<ModT> x = poly_sqrt_8E_block(self, n, x0), h = poly_inv_10E<ModT>(x, n);
   x.resize(n * u), h.resize(n * 2);
-  std::vector<ModT> ng0(n * u * 2);
+  AVec<ModT> ng0(n * u * 2);
   auto ng = detail::nt_block_split(ng0, n * 2);
   auto xk = detail::nt_block_split(x, n);
 
@@ -25,7 +20,7 @@ std::vector<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const Mo
   for (u32 k = 1; k < u; ++k) {
     std::copy(xk[k - 1].begin(), xk[k - 1].end(), ng[k - 1].begin());
     ntt<ModT>(ng[k - 1]);
-    std::vector<ModT> psi(n * 2);
+    AVec<ModT> psi(n * 2);
     for (u32 j = 0; j < k; ++j) {
       if (j == 0) {
         for (u32 i = 0; i < n; i++)

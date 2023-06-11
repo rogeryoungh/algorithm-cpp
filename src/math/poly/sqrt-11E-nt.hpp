@@ -1,18 +1,12 @@
 #ifndef ALGO_MATH_POLY_SQRT11ENT
 #define ALGO_MATH_POLY_SQRT11ENT
 
-#include "../../base.hpp"
-#include "ntt.hpp"
-#include "vec-dots.hpp"
-
-#include <algorithm>
-#include <vector>
-#include <iostream>
+#include "poly-def.hpp"
 
 template <class ModT>
-std::vector<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x0) {
+AVec<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x0) {
   u32 n = std::bit_ceil(m);
-  std::vector<ModT> x(n), g(n), ng(n);
+  AVec<ModT> x(n), g(n), ng(n);
   x[0] = x0;
   if (n == 1)
     return x;
@@ -20,7 +14,7 @@ std::vector<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x
   x[1] = (self[1] * g[0]).shift2();
   ntt<ModT>({ng.begin(), 2});
   for (u32 t = 2; t < n; t *= 2) {
-    std::vector<ModT> f(t * 2), nf(t);
+    AVec<ModT> f(t * 2), nf(t);
     std::copy_n(x.begin(), t, nf.begin());
     ntt<ModT>(nf); // 1E
     std::copy_n(nf.begin(), t, f.begin());

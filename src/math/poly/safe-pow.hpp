@@ -1,11 +1,8 @@
 #ifndef ALGO_MATH_POLY_SAFE_POW
 #define ALGO_MATH_POLY_SAFE_POW
 
-#include "../../base.hpp"
+#include "poly-def.hpp"
 #include "../constant/prepare-inv.hpp"
-
-#include <span>
-#include <vector>
 
 template <class ModT, auto poly_pow>
 auto poly_safe_pow(std::span<const ModT> f, u64 k, u64 k2, u32 m) {
@@ -14,11 +11,11 @@ auto poly_safe_pow(std::span<const ModT> f, u64 k, u64 k2, u32 m) {
     ++it;
   u32 len = it - f.begin();
   if (it == f.end() || (k > 1E9 && len >= 1) || k * len >= m) {
-    std::vector<ModT> r(m);
+    AVec<ModT> r(m);
     r[0] = k == 0;
     return r;
   }
-  std::vector<ModT> x(it, f.end());
+  AVec<ModT> x(it, f.end());
   ModT f0 = x[0], f0iv = f0.inv(), f0k = f0.pow(k2);
   for (auto &i : x)
     i *= f0iv;

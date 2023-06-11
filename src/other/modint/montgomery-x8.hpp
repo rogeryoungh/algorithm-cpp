@@ -2,15 +2,16 @@
 #define ALGO_MODINT_MONTGOMERY_SPACE_X8
 
 #include "../../base.hpp"
-#include <type_traits>
-
 #include "../avx2.hpp"
+#include "../../other/modint/modint-concept.hpp"
+
+#include <type_traits>
 
 namespace simd {
 
 // 仅在 Montgomery 空间里
 
-template <class ModT_>
+template <montgomery_modint_concept ModT_>
 struct M32x8 {
   using ModT = ModT_;
   I32x8 v;

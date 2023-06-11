@@ -2,15 +2,12 @@
 #define ALGO_MATH_POLY_NTT_CLASSICAL_RADIX_2_AVX
 
 #include "../../base.hpp"
-#include "../../other/modint/modint-concept.hpp"
+#include "../../other/modint/montgomery-x8.hpp"
 
-#include <algorithm>
 #include <bit>
 #include <cassert>
 #include <span>
 #include <vector>
-
-#include "../../other/modint/montgomery-x8.hpp"
 
 namespace detail {
 

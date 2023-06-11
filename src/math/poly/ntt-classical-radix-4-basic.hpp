@@ -2,7 +2,6 @@
 #define ALGO_MATH_POLY_NTT_CLASSICAL_RADIX_4_BASIC
 
 #include "../../base.hpp"
-#include "../../other/modint/modint-concept.hpp"
 
 #include <algorithm>
 #include <bit>

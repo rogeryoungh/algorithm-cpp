@@ -1,20 +1,16 @@
 #ifndef ALGO_MATH_POLY_INVSQRT_12ENT
 #define ALGO_MATH_POLY_INVSQRT_12ENT
 
-#include "../../base.hpp"
-#include "ntt.hpp"
-
-#include <algorithm>
-#include <vector>
+#include "poly-def.hpp"
 
 template <class ModT>
 auto poly_invsqrt_12E(std::span<const ModT> self, u32 m, const ModT &x0) {
   u32 n = std::bit_ceil(m);
-  std::vector<ModT> x(n * 2);
+  AVec<ModT> x(n * 2);
   x[0] = x0;
   ModT ivn2 = -ModT(2).inv();
   for (u32 t = 1; t < n; t *= 2) {
-    std::vector<ModT> u(t * 4), s(t * 4);
+    AVec<ModT> u(t * 4), s(t * 4);
     std::copy(self.begin(), std::min(self.begin() + t * 2, self.end()), u.begin());
     std::copy(x.begin(), x.begin() + t, s.begin());
     ntt<ModT>(u); // 4E

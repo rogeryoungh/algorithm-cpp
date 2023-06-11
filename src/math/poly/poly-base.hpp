@@ -1,9 +1,8 @@
 #ifndef ALGO_MATH_POLY_BASE
 #define ALGO_MATH_POLY_BASE
 
-#include "../../other/modint/modint-concept.hpp"
-#include "ntt.hpp"
-#include "vec-dots.hpp"
+#include "poly-def.hpp"
+
 #include "inv-10E-nt-block.hpp"
 #include "div-10E-nt-block.hpp"
 #include "ln.hpp"
@@ -16,12 +15,9 @@
 #include "deriv.hpp"
 #include "integr.hpp"
 
-#include <optional>
-#include <vector>
-
 template <class ModT>
-class Poly : public std::vector<ModT> {
-  using Vec = typename std::vector<ModT>;
+class Poly : public AVec<ModT> {
+  using Vec = AVec<ModT>;
 
 public:
   using Vec::empty;
@@ -49,9 +45,10 @@ public:
 
   Poly(u32 len) : Vec(len) {}
 
-  Poly(const std::vector<u32> &v) : Vec(v) {}
+  Poly(const std::vector<u32> &v) : Vec(v.begin(), v.end()) {}
+  Poly(const std::vector<ModT> &v) : Vec(v.begin(), v.end()) {}
 
-  Poly(const std::vector<ModT> &v) : Vec(v) {}
+  Poly(AVec<ModT> v) : Vec(std::move(v)) {}
 
   Poly(const ModT &v) : Vec({v}) {}
 
@@ -146,11 +143,6 @@ public:
 
   Poly safe_pow(u64 k, u64 k2, u32 m) const {
     return m_safe_pow(*this, k, k2, m);
-  }
-
-  template <class U = u32>
-  auto to_vec() const {
-    return std::vector<U>{begin(), end()};
   }
 };
 

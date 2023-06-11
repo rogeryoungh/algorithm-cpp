@@ -5,11 +5,10 @@
 #include "../../src/math/poly/ln.hpp"
 #include "../../src/math/poly/div-10E-nt-block.hpp"
 
+#include "../../src/other/modint/montgomery-space.hpp"
 #include "../../src/other/modint/static-modint.hpp"
-
-constexpr u32 P = 998244353;
-
-using ModT = BasicStaticModint<u32, P>;
+using Space = MontgomerySpace<u32, 998244353>;
+using ModT = StaticModint<Space>;
 
 /////////////////////////////////////////////////////////
 
@@ -26,7 +25,7 @@ struct BM_POW : TEST_BASE {
     f.resize(n);
     f[0] = 1;
     for (u32 i = 1; i < n; i++) {
-      f[i] = rng() % P;
+      f[i] = rng() % ModT::mod();
     }
   }
   int run(int n) {
@@ -36,7 +35,7 @@ struct BM_POW : TEST_BASE {
     benchmark::DoNotOptimize(f[0]);
     return detail::ntt_size;
   }
-  std::vector<ModT> f;
+  AVec<ModT> f;
 };
 
 BM_DEF(BM_POW)->RangeMultiplier(2)->Arg(1 << 18)->Arg(1 << 19)->Arg(1 << 20)->Arg(1E5)->MinTime(3);
