@@ -28,13 +28,13 @@ template <class ModT>
 static void dot_avx(std::span<ModT> f, std::span<const ModT> g) {
   using X8 = simd::M32x8<ModT>;
   using simd::i256::load, simd::i256::store;
-  u32 n = f.size(), lf = u64(f.data()) & 0x1f;
-  const auto loadg = lf == (u64(g.data()) & 0x1f) ? load<true> : load<false>;
+  u32 n = f.size(), lf = u64(&f[0]) & 0x1f;
+  const auto loadg = lf == (u64(&g[0]) & 0x1f) ? load<true> : load<false>;
   if (n < 16) {
     dot_basic(f, g);
   } else {
     u32 i = 0;
-    for (; i < lf; ++i) {
+    for (; u64(&f[i]) & 0x1f; ++i) {
       f[i] *= g[i];
     }
     for (; i + 7 < n; i += 8) {
@@ -53,14 +53,14 @@ template <class ModT>
 static void dot_avx(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
   using X8 = simd::M32x8<ModT>;
   using simd::i256::load, simd::i256::store;
-  u32 n = f.size(), lf = u64(f.data()) & 0x1f;
-  const auto loadg = lf == (u64(g.data()) & 0x1f) ? load<true> : load<false>;
-  const auto storeg = lf == (u64(dst.data()) & 0x1f) ? store<true> : store<false>;
+  u32 n = f.size(), lf = u64(&f[0]) & 0x1f;
+  const auto loadg = lf == (u64(&g[0]) & 0x1f) ? load<true> : load<false>;
+  const auto storeg = lf == (u64(&dst[0]) & 0x1f) ? store<true> : store<false>;
   if (n < 16) {
     dot_basic(f, g);
   } else {
     u32 i = 0;
-    for (; i < lf; ++i) {
+    for (; u64(&f[i]) & 0x1f; ++i) {
       dst[i] = f[i] * g[i];
     }
     for (; i + 7 < n; i += 8) {
@@ -70,7 +70,7 @@ static void dot_avx(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> 
       stored((simd::I256 *)&dst[i], fi.v);
     }
     for (; i < n; ++i) {
-      f[i] *= g[i];
+      dst[i] *= g[i];
     }
   }
 }

@@ -9,6 +9,7 @@
 #include "ln.hpp"
 #include "exp-14E-nt-block.hpp"
 #include "sqrt-8E-nt-block.hpp"
+#include "invsqrt-12E-nt.hpp"
 #include "pow.hpp"
 #include "safe-sqrt.hpp"
 #include "safe-pow.hpp"
@@ -33,6 +34,7 @@ public:
   using Vec::end;
 
   static constexpr auto m_inv = poly_inv_10E<ModT>;
+  static constexpr auto m_invsqrt = poly_invsqrt_12E<ModT>;
   static constexpr auto m_deriv = poly_deriv<ModT>;
   static constexpr auto m_integr = poly_integr<ModT>;
   static constexpr auto m_div = poly_div_10E_block<ModT>;
@@ -124,6 +126,10 @@ public:
 
   Poly exp(u32 m) const {
     return m_exp(*this, m);
+  }
+
+  Poly invsqrt(u32 m) const {
+    return m_invsqrt(*this, m, this->front().sqrt().value().inv());
   }
 
   Poly sqrt(u32 m) const {
