@@ -12,17 +12,20 @@
 
 namespace detail {
 
-template <static_modint_concept ModT>
+template <class ModT>
 auto &prepare_root_twisted_basic(u32 m) {
   using ValueT = typename ModT::ValueT;
-  static constexpr ValueT P = ModT::mod();
-  static constexpr ValueT g = 3;
-  static constexpr ValueT max_bit = ValueT(1) << std::countr_zero(ModT::mod() - 1);
+  const ValueT P = ModT::mod();
+  const ValueT g = 3;
+  const ValueT max_bit = ValueT(1) << std::countr_zero(ModT::mod() - 1);
 
-  static std::vector<ModT> rt{1, 1};
+  static std::vector<ModT> rt;
   assert(m <= max_bit);
   while (rt.size() < m) {
     u32 n = rt.size();
+    if (n == 0) {
+      n = 2, rt = {1, 1};
+    }
     rt.resize(n * 2);
     ModT p = ModT(g).pow((P - 1) / n / 2);
     for (u32 i = n; i < n * 2; i += 2) {
@@ -32,7 +35,7 @@ auto &prepare_root_twisted_basic(u32 m) {
   return rt;
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void ntt_twisted_basic(std::span<ModT> f) { // dif
   i32 n = f.size();
   auto &rt = prepare_root_twisted_basic<ModT>(n);
@@ -47,7 +50,7 @@ static void ntt_twisted_basic(std::span<ModT> f) { // dif
   }
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void intt_twisted_basic(std::span<ModT> f) { // dit
   i32 n = f.size();
   auto &rt = prepare_root_twisted_basic<ModT>(n);

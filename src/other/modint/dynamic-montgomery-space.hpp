@@ -15,11 +15,13 @@ struct DynamicMontgomerySpace<u32, tag> {
   using rawU32 = std::false_type;
   using isMontgomery = std::true_type;
 
+private:
   inline static u32 R = -1;
   inline static u32 IR = -1;
   inline static u32 MOD = -1;
   inline static u32 MOD2 = -1;
 
+public:
   static bool set_mod(u32 mod) {
     if (mod <= 1 || mod >= (1u << 30))
       return false;
@@ -40,6 +42,18 @@ struct DynamicMontgomerySpace<u32, tag> {
 
   static u32 mod() {
     return MOD;
+  }
+
+  static u32 mod2() {
+    return MOD2;
+  }
+
+  static u32 r() {
+    return R;
+  }
+
+  static u32 ir() {
+    return IR;
   }
 
   static TransT trans(ValueT x) {
@@ -68,6 +82,22 @@ struct DynamicMontgomerySpace<u32, tag> {
 
   static u32 mul(u32 a, u32 b) {
     return reduce(u64(a) * b);
+  }
+
+  static u32 muladd(u32 a, u32 b, u32 c) { // a * b + c
+    return reduce(u64(a) * b + c);
+  }
+
+  static u32 mulsub(u32 a, u32 b, u32 c) { // a * b - c
+    return reduce(u64(a) * b + MOD2 - c);
+  }
+
+  static u32 addmul(u32 a, u32 b, u32 c) { // (a + b) * c
+    return reduce(u64(a + b) * c);
+  }
+
+  static u32 submul(u32 a, u32 b, u32 c) { // (a - b) * c
+    return reduce(u64(a + MOD2 - b) * c);
   }
 
   static u32 safe(i64 x) {

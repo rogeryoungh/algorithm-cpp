@@ -10,7 +10,7 @@
 #include <vector>
 #include <iostream>
 
-template <static_modint_concept ModT>
+template <class ModT>
 std::vector<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const ModT &x0) {
   if (m == 1)
     return {x0};

@@ -6,17 +6,16 @@
 
 #include "../avx2.hpp"
 
-#include "montgomery-space.hpp"
-
 namespace simd {
 
 // 仅在 Montgomery 空间里
 
-template <class ModT, bool global_aligned = false>
+template <class ModT_, bool global_aligned = false>
 struct M32x8 {
+  using ModT = ModT_;
   I32x8 v;
 
-  M32x8() : v() {}
+  M32x8() = default;
 
   M32x8(const I32x8 &a) : v(a) {}
 
@@ -48,26 +47,37 @@ struct M32x8 {
     return from(v.raw());
   }
 
-  inline static I32x8 Rx8 = i32x8::from(ModT::Space::R);
-  inline static I32x8 IRx8 = i32x8::from(ModT::Space::IR);
-  inline static I32x8 MOD2x8 = i32x8::from(ModT::Space::MOD2);
-  inline static I32x8 MODx8 = i32x8::from(ModT::Space::mod());
+  explicit operator I32x8() {
+    return v;
+  }
+
+  static I32x8 get_irx8() {
+    return i32x8::from(ModT::Space::ir());
+  }
+
+  static I32x8 get_mod2x8() {
+    return i32x8::from(ModT::Space::mod2());
+  }
+
+  static I32x8 get_modx8() {
+    return i32x8::from(ModT::Space::mod());
+  }
 
   static I32x8 reduce_m(I32x8 v) {
     I32x8 sign = i32x8::sign(v);
-    v = i32x8::add(v, i256::bit_and(sign, MODx8));
+    v = i32x8::add(v, i256::bit_and(sign, get_modx8()));
     return v;
   }
 
   static I32x8 reduce_2m(I32x8 v) {
     I32x8 sign = i32x8::sign(v);
-    v = i32x8::add(v, i256::bit_and(sign, MOD2x8));
+    v = i32x8::add(v, i256::bit_and(sign, get_mod2x8()));
     return v;
   }
 
   M32x8 &operator+=(const M32x8 &rhs) {
     v = i32x8::add(v, rhs.v);
-    v = i32x8::sub(v, MOD2x8);
+    v = i32x8::sub(v, get_mod2x8());
     v = reduce_2m(v);
     return *this;
   }
@@ -78,11 +88,9 @@ struct M32x8 {
     return *this;
   }
 
-  static I32x8 mul_reduce(const M32x8 &a, const M32x8 &b) {}
-
   static I32x8 reduce(const U64x4 &x0246, const U64x4 &x1357) {
-    auto km0246 = u32x8::mul(u32x8::mul(x0246, IRx8), MODx8);
-    auto km1357 = u32x8::mul(u32x8::mul(x1357, IRx8), MODx8);
+    auto km0246 = u32x8::mul(u32x8::mul(x0246, get_irx8()), get_modx8());
+    auto km1357 = u32x8::mul(u32x8::mul(x1357, get_irx8()), get_modx8());
     auto z0246 = i64x4::add(x0246, km0246);
     z0246 = i32x8::shuffle<0b11110101>(z0246);
     auto z1357 = i64x4::add(x1357, km1357);
@@ -116,7 +124,7 @@ struct M32x8 {
 
   constexpr static M32x8 submul(const M32x8 &a, const M32x8 &b, const M32x8 &c) { // (a - b) * c
     auto v = i32x8::sub(a.v, b.v);
-    v = i32x8::add(v, MOD2x8);
+    v = i32x8::add(v, get_mod2x8());
     auto [x0246, x1357] = u32x8::mul_0246_1357(v, c.v);
     v = reduce(x0246, x1357);
     return v;
@@ -128,7 +136,7 @@ struct M32x8 {
 
   template <i32 imm>
   M32x8 neg() const {
-    auto sub = i32x8::sub(MOD2x8, v);
+    auto sub = i32x8::sub(get_mod2x8(), v);
     return i32x8::blend<imm>(v, sub);
   }
 

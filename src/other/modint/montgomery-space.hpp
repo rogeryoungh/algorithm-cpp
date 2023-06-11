@@ -28,6 +28,18 @@ struct MontgomerySpace<u32, MOD> {
     return MOD;
   }
 
+  consteval static u32 mod2() {
+    return mod() * 2;
+  }
+
+  consteval static u32 r() {
+    return R;
+  }
+
+  consteval static u32 ir() {
+    return IR;
+  }
+
   enum : u32 {
     R = u32(u64(1) << 32 % MOD),
     IR = u32(-get_nr()),

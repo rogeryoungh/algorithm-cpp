@@ -1,5 +1,5 @@
-#ifdef ALGO_MODINT_STATIC_MODINT
 #ifdef ALGO_FASTIO
+#ifdef ALGO_MODINT_STATIC_MODINT
 
 template <class Space>
 inline FastI &operator>>(FastI &is, StaticModint<Space> &m) {
@@ -28,5 +28,5 @@ template <class Space>
 inline FastO &operator<<(FastO &os, const DynamicModint<Space> &m) {
   return os << m.val();
 }
-#endif
 #endif // ALGO_MODINT_DYNAMIC_MODINT
+#endif

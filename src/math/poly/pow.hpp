@@ -7,7 +7,7 @@
 #include <span>
 #include <vector>
 
-template <static_modint_concept ModT, auto poly_ln, auto poly_exp>
+template <class ModT, auto poly_ln, auto poly_exp>
 auto poly_pow(std::span<const ModT> f, u64 k, u32 m) {
   if (k == 0) {
     std::vector<ModT> x(m);

@@ -7,7 +7,7 @@
 #include <span>
 #include <vector>
 
-template <static_modint_concept ModT, auto poly_pow>
+template <class ModT, auto poly_pow>
 auto poly_safe_pow(std::span<const ModT> f, u64 k, u64 k2, u32 m) {
   auto it = f.begin();
   while (it != f.end() && *it == 0)

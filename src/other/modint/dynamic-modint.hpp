@@ -36,7 +36,13 @@ struct DynamicModint {
   }
 
   static Self safe(i64 v) {
-    return Self(Space::safe(v));
+    return Space::safe(v);
+  }
+
+  static Self raw(u32 v) {
+    Self r;
+    r.v = v;
+    return r;
   }
 
   ValueT val() const {
@@ -110,6 +116,22 @@ struct DynamicModint {
 
   Self shift2() const {
     return Space::shift2(v);
+  }
+
+  static Self muladd(const Self &a, const Self &b, const Self &c) { // a * b + c
+    return raw(Space::muladd(a.raw(), b.raw(), c.raw()));
+  }
+
+  static Self mulsub(const Self &a, const Self &b, const Self &c) { // a * b - c
+    return raw(Space::mulsub(a.raw(), b.raw(), c.raw()));
+  }
+
+  static Self addmul(const Self &a, const Self &b, const Self &c) { // (a + b) * c
+    return raw(Space::addmul(a.raw(), b.raw(), c.raw()));
+  }
+
+  static Self submul(const Self &a, const Self &b, const Self &c) { // (a - b) * c
+    return raw(Space::submul(a.raw(), b.raw(), c.raw()));
   }
 
   friend inline std::istream &operator>>(std::istream &is, Self &m) {

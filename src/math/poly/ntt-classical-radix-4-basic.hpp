@@ -12,17 +12,15 @@
 
 namespace detail {
 
-template <static_modint_concept ModT>
+template <class ModT>
 struct NttClassicalInfo4 {
   using ValueT = typename ModT::ValueT;
-  static constexpr ValueT P = ModT::mod();
-  static constexpr ValueT g = 3;
-  static constexpr i32 rank2 = std::countr_zero(P - 1);
-  std::array<ModT, rank2 + 1> rt, irt;
-  std::array<ModT, std::max<i32>(0, rank2 - 1)> rate2, irate2;
-  std::array<ModT, std::max<i32>(0, rank2 - 2)> rate3, irate3;
+  std::array<ModT, 64> rt, irt, rate2, irate2, rate3, irate3;
 
-  constexpr NttClassicalInfo4() {
+  NttClassicalInfo4() {
+    const ValueT P = ModT::mod();
+    const ValueT g = 3;
+    const i32 rank2 = std::countr_zero(P - 1);
     rt[rank2] = ModT(g).pow((P - 1) >> rank2);
     irt[rank2] = rt[rank2].inv();
     for (i32 i = rank2; i >= 1; --i) {
@@ -30,14 +28,14 @@ struct NttClassicalInfo4 {
       irt[i - 1] = irt[i] * irt[i];
     }
     ModT prod = 1, iprod = 1;
-    for (i32 i = 0; i < rate2.size(); ++i) {
+    for (i32 i = 0; i < rank2 - 1; ++i) {
       rate2[i] = prod * rt[i + 2];
       irate2[i] = iprod * irt[i + 2];
       prod *= irt[i + 2];
       iprod *= rt[i + 2];
     }
     prod = 1, iprod = 1;
-    for (i32 i = 0; i < rate3.size(); ++i) {
+    for (i32 i = 0; i < rank2 - 2; ++i) {
       rate3[i] = prod * rt[i + 3];
       irate3[i] = iprod * irt[i + 3];
       prod *= irt[i + 3];
@@ -46,9 +44,9 @@ struct NttClassicalInfo4 {
   }
 };
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void ntt_classical_basic4(std::span<ModT> f) { // dif
-  static constexpr NttClassicalInfo4<ModT> info;
+  const NttClassicalInfo4<ModT> info;
   i32 n = f.size(), l = n / 2, n_4b = std::countr_zero<u32>(n) & 1;
   if (n_4b) {
     for (i32 j = 0; j < l; ++j) {
@@ -80,9 +78,9 @@ static void ntt_classical_basic4(std::span<ModT> f) { // dif
   }
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void intt_classical_basic4(std::span<ModT> f) { // dit
-  static constexpr NttClassicalInfo4<ModT> info;
+  const NttClassicalInfo4<ModT> info;
   i32 n = f.size(), l = 1, n_4b = std::countr_zero<u32>(n) & 1;
   for (; l < (n_4b ? n / 2 : n); l *= 4) {
     ModT r = 1, img = info.irt[2];

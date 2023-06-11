@@ -9,7 +9,7 @@
 #include <vector>
 #include <iostream>
 
-template <static_modint_concept ModT>
+template <class ModT>
 std::vector<ModT> poly_div_13E(std::span<const ModT> lhs, std::span<const ModT> rhs, u32 m) {
   if (lhs.empty() || rhs.empty())
     return {};

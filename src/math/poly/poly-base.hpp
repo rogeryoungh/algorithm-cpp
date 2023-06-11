@@ -18,7 +18,7 @@
 #include <optional>
 #include <vector>
 
-template <static_modint_concept ModT>
+template <class ModT>
 class Poly : public std::vector<ModT> {
   using Vec = typename std::vector<ModT>;
 

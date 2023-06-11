@@ -9,7 +9,7 @@
 #include <vector>
 #include <iostream>
 
-template <static_modint_concept ModT>
+template <class ModT>
 std::vector<ModT> poly_exp_17E(std::span<const ModT> self, u32 m) {
   u32 n = std::bit_ceil(m);
   auto &iv = prepare_inv<ModT>(n);

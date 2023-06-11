@@ -6,10 +6,10 @@
 #include "../../other/modint/modint-concept.hpp"
 #include <vector>
 
-template <static_modint_concept ModT>
+template <class ModT>
 auto &prepare_inv(u32 m) {
   static std::vector<ModT> iv{1, 1};
-  static constexpr auto P = ModT::mod();
+  const auto P = ModT::mod();
   while (iv.size() < m) {
     u32 l = iv.size();
     iv.resize(l * 2);

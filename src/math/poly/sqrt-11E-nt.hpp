@@ -9,7 +9,7 @@
 #include <vector>
 #include <iostream>
 
-template <static_modint_concept ModT>
+template <class ModT>
 std::vector<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x0) {
   u32 n = std::bit_ceil(m);
   std::vector<ModT> x(n), g(n), ng(n);

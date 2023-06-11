@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector>
 
-template <static_modint_concept ModT>
+template <class ModT>
 auto poly_inv_10E(std::span<const ModT> f, u32 m) {
   u32 n = std::bit_ceil(m);
   std::vector<ModT> x(n);

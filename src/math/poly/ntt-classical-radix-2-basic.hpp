@@ -12,16 +12,15 @@
 
 namespace detail {
 
-template <static_modint_concept ModT>
+template <class ModT>
 struct NttClassicalInfo {
   using ValueT = typename ModT::ValueT;
-  static constexpr ValueT P = ModT::mod();
-  static constexpr ValueT g = 3;
-  static constexpr i32 rank2 = std::countr_zero(P - 1);
-  std::array<ModT, rank2 + 1> rt, irt;
-  std::array<ModT, std::max<i32>(0, rank2 - 1)> rate2, irate2;
+  std::array<ModT, 64> rt, irt, rate2, irate2;
 
-  constexpr NttClassicalInfo() {
+  NttClassicalInfo() {
+    const ValueT P = ModT::mod();
+    const ValueT g = 3;
+    const i32 rank2 = std::countr_zero(P - 1);
     rt[rank2] = ModT(g).pow((P - 1) >> rank2);
     irt[rank2] = rt[rank2].inv();
     for (i32 i = rank2; i >= 1; --i) {
@@ -38,9 +37,9 @@ struct NttClassicalInfo {
   }
 };
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void ntt_classical_basic(std::span<ModT> f) { // dif
-  static constexpr NttClassicalInfo<ModT> info;
+  const static NttClassicalInfo<ModT> info;
   i32 n = f.size();
   for (i32 l = n / 2; l > 0; l /= 2) {
     ModT r = 1;
@@ -55,9 +54,9 @@ static void ntt_classical_basic(std::span<ModT> f) { // dif
   }
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void intt_classical_basic(std::span<ModT> f) { // dit
-  static constexpr NttClassicalInfo<ModT> info;
+  const static NttClassicalInfo<ModT> info;
   i32 n = f.size();
   for (i32 l = 1; l < n; l *= 2) {
     ModT r = 1;

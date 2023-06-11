@@ -8,7 +8,7 @@
 #include <span>
 #include <vector>
 
-template <static_modint_concept ModT>
+template <class ModT>
 auto poly_integr(std::span<const ModT> f, u32 m, u32 C) {
   std::vector<ModT> x(m);
   std::copy(f.begin(), std::min(f.begin() + m - 1, f.end()), x.begin() + 1);

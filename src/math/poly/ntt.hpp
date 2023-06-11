@@ -30,7 +30,7 @@ u32 ntt_size = 0;
 
 // classical-radix-4-avx2
 
-template <static_modint_concept ModT>
+template <class ModT>
 void ntt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
@@ -46,7 +46,7 @@ void ntt(std::span<ModT> f) {
   }
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 void intt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
@@ -68,14 +68,14 @@ void intt(std::span<ModT> f) {
 
 // classical-radix-4-basic
 
-template <static_modint_concept ModT>
+template <class ModT>
 void ntt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
   detail::ntt_classical_basic4(f);
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 void intt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
@@ -94,7 +94,7 @@ void intt(std::span<ModT> f) {
 
 // classical-radix-2-avx2
 
-template <static_modint_concept ModT>
+template <class ModT>
 void ntt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
@@ -110,7 +110,7 @@ void ntt(std::span<ModT> f) {
   }
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 void intt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
@@ -132,14 +132,14 @@ void intt(std::span<ModT> f) {
 
 // classical-radix-2-basic
 
-template <static_modint_concept ModT>
+template <class ModT>
 void ntt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
   detail::ntt_classical_basic(f);
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 void intt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
@@ -160,7 +160,7 @@ void intt(std::span<ModT> f) {
 
 // twisted-radix-2-avx2
 
-template <static_modint_concept ModT>
+template <class ModT>
 void ntt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
@@ -176,7 +176,7 @@ void ntt(std::span<ModT> f) {
   }
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 void intt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
@@ -196,14 +196,14 @@ void intt(std::span<ModT> f) {
 
 // twisted-radix-2-basic
 
-template <static_modint_concept ModT>
+template <class ModT>
 void ntt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();
   detail::ntt_twisted_basic(f);
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 void intt(std::span<ModT> f) {
   assert(std::has_single_bit<u32>(f.size()));
   detail::ntt_size += f.size();

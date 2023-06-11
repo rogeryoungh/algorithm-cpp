@@ -6,14 +6,14 @@
 
 #include <span>
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void dot_basic(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
   u32 n = dst.size();
   for (u32 i = 0; i < n; i++)
     dst[i] = f[i] * g[i];
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void dot_basic(std::span<ModT> f, std::span<const ModT> g) {
   u32 n = f.size();
   for (u32 i = 0; i < n; i++)
@@ -24,7 +24,7 @@ static void dot_basic(std::span<ModT> f, std::span<const ModT> g) {
 
 #include "../../other/modint/montgomery-x8.hpp"
 
-template <montgomery_modint_concept ModT>
+template <class ModT>
 static void dot_avx(std::span<ModT> f, std::span<const ModT> g) {
   u32 n8 = f.size();
   u32 i = 0;
@@ -39,7 +39,7 @@ static void dot_avx(std::span<ModT> f, std::span<const ModT> g) {
     f[i] *= g[i];
 }
 
-template <montgomery_modint_concept ModT>
+template <class ModT>
 static void dot_avx(std::span<simd::I256> f, std::span<const ModT> g, std::span<ModT> dst) {
   u32 n = dst.size();
   u32 i = 0;
@@ -54,7 +54,7 @@ static void dot_avx(std::span<simd::I256> f, std::span<const ModT> g, std::span<
     dst[i] = f[i] * g[i];
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void dot(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
   if constexpr (montgomery_modint_concept<ModT>) {
     dot_avx(f, g, dst);
@@ -63,7 +63,7 @@ static void dot(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst)
   }
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void dot(std::span<ModT> f, std::span<const ModT> g) {
   if constexpr (montgomery_modint_concept<ModT>) {
     dot_avx(f, g);
@@ -74,12 +74,12 @@ static void dot(std::span<ModT> f, std::span<const ModT> g) {
 
 #else
 
-template <static_modint_concept ModT>
+template <class ModT>
 void dot(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
   dot_basic(f, g, dst);
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 void dot(std::span<ModT> f, std::span<const ModT> g) {
   dot_basic(f, g);
 }

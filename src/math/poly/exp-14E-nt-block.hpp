@@ -12,7 +12,7 @@
 #include <vector>
 #include <iostream>
 
-template <static_modint_concept ModT>
+template <class ModT>
 std::vector<ModT> poly_exp_14E_block(std::span<const ModT> self, u32 m) {
   if (m == 1)
     return {1};
