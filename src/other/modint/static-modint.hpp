@@ -3,7 +3,6 @@
 
 #include "../../base.hpp"
 #include "../../math/cipolla.hpp"
-#include "basic-mod-space.hpp"
 #include <iostream>
 
 #ifdef DEBUG
@@ -150,9 +149,6 @@ struct StaticModint {
     return !(lhs == rhs);
   }
 };
-
-template <class T, T MOD>
-using BasicStaticModint = StaticModint<BasicModSpace<T, MOD>>;
 
 #include "modint-io.hpp"
 

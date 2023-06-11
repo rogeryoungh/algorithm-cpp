@@ -30,16 +30,15 @@ struct SkipList {
     SkipListNode(K k, V v, i32 l, SkipListNode *nxt = nullptr) : key(k), value(v), level(l), forward(l + 1, nxt) {}
   };
 
-
   using Node = SkipListNode;
-  
+
   template <class... Args>
-  static Node &alloc(Args&& ...args) {
+  static Node &alloc(Args &&...args) {
     static std::queue<Node> pool;
     pool.emplace(std::forward<Args>(args)...);
     return pool.back();
   }
-  
+
   Node *head, *tail; // 两排哨兵
   i32 length;        // 链表长度 L0 层
   i32 level;         // 层数

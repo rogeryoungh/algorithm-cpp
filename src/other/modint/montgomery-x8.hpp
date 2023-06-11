@@ -10,7 +10,7 @@ namespace simd {
 
 // 仅在 Montgomery 空间里
 
-template <class ModT_, bool global_aligned = false>
+template <class ModT_>
 struct M32x8 {
   using ModT = ModT_;
   I32x8 v;
@@ -19,24 +19,10 @@ struct M32x8 {
 
   M32x8(const I32x8 &a) : v(a) {}
 
-  template <class S>
-  M32x8(const M32x8<S> &a) : v(a.v) {}
-
   template <class U32>
   M32x8(const std::array<U32, 8> &a) {
     static_assert(sizeof(U32) == 4);
     v = i256::load((const I256 *)a.data());
-  }
-
-  template <bool aligned = global_aligned>
-  static M32x8 load(const I256 *p) {
-    M32x8 r;
-    if constexpr (aligned) {
-      r = i256::load(p);
-    } else {
-      r = i256::loadu(p);
-    }
-    return r;
   }
 
   static M32x8 from(i32 v) {
@@ -138,15 +124,6 @@ struct M32x8 {
   M32x8 neg() const {
     auto sub = i32x8::sub(get_mod2x8(), v);
     return i32x8::blend<imm>(v, sub);
-  }
-
-  template <bool aligned = global_aligned>
-  void store(I256 *p) {
-    if constexpr (aligned) {
-      i256::store(p, v);
-    } else {
-      i256::storeu(p, v);
-    }
   }
 
   auto to_array() const {

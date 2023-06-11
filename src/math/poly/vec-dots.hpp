@@ -26,32 +26,53 @@ static void dot_basic(std::span<ModT> f, std::span<const ModT> g) {
 
 template <class ModT>
 static void dot_avx(std::span<ModT> f, std::span<const ModT> g) {
-  u32 n8 = f.size();
-  u32 i = 0;
   using X8 = simd::M32x8<ModT>;
-  for (; i + 7 < n8; i += 8) {
-    X8 fi = X8::load((simd::I256 *)&f[i]);
-    X8 gi = X8::load((simd::I256 *)&g[i]);
-    fi *= gi;
-    fi.store((simd::I256 *)&f[i]);
+  using simd::i256::load, simd::i256::store;
+  u32 n = f.size(), lf = u64(f.data()) & 0x1f;
+  const auto loadg = lf == (u64(g.data()) & 0x1f) ? load<true> : load<false>;
+  if (n < 16) {
+    dot_basic(f, g);
+  } else {
+    u32 i = 0;
+    for (; i < lf; ++i) {
+      f[i] *= g[i];
+    }
+    for (; i + 7 < n; i += 8) {
+      X8 fi = load((simd::I256 *)&f[i]);
+      X8 gi = loadg((simd::I256 *)&g[i]);
+      fi *= gi;
+      store((simd::I256 *)&f[i], fi.v);
+    }
+    for (; i < n; ++i) {
+      f[i] *= g[i];
+    }
   }
-  for (; i < n8; i++)
-    f[i] *= g[i];
 }
 
 template <class ModT>
-static void dot_avx(std::span<simd::I256> f, std::span<const ModT> g, std::span<ModT> dst) {
-  u32 n = dst.size();
-  u32 i = 0;
+static void dot_avx(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
   using X8 = simd::M32x8<ModT>;
-  for (; i + 7 < n; i += 8) {
-    X8 fi = X8::load((simd::I256 *)&f[i]);
-    X8 gi = X8::load((simd::I256 *)&g[i]);
-    X8 di = fi * gi;
-    di.store((simd::I256 *)&dst[i]);
+  using simd::i256::load, simd::i256::store;
+  u32 n = f.size(), lf = u64(f.data()) & 0x1f;
+  const auto loadg = lf == (u64(g.data()) & 0x1f) ? load<true> : load<false>;
+  const auto storeg = lf == (u64(dst.data()) & 0x1f) ? store<true> : store<false>;
+  if (n < 16) {
+    dot_basic(f, g);
+  } else {
+    u32 i = 0;
+    for (; i < lf; ++i) {
+      dst[i] = f[i] * g[i];
+    }
+    for (; i + 7 < n; i += 8) {
+      X8 fi = load((simd::I256 *)&f[i]);
+      X8 gi = loadg((simd::I256 *)&g[i]);
+      fi *= gi;
+      stored((simd::I256 *)&dst[i], fi.v);
+    }
+    for (; i < n; ++i) {
+      f[i] *= g[i];
+    }
   }
-  for (; i < n; i++)
-    dst[i] = f[i] * g[i];
 }
 
 template <class ModT>

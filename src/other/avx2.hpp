@@ -26,12 +26,20 @@ inline I256 loadu(const I256 *p) {
   return _mm256_loadu_si256(p);
 }
 
+template <bool aligned = true>
 inline I256 load(const I256 *p) {
-  return _mm256_load_si256(p);
+  if constexpr (aligned)
+    return _mm256_load_si256(p);
+  else
+    return _mm256_loadu_si256(p);
 }
 
+template <bool aligned = true>
 inline void store(I256 *p, const I256 &v) {
-  _mm256_store_si256(p, v);
+  if constexpr (aligned)
+    _mm256_store_si256(p, v);
+  else
+    _mm256_storeu_si256(p, v);
 }
 
 inline void storeu(I256 *p, const I256 &v) {

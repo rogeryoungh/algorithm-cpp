@@ -20,16 +20,21 @@ auto &prepare_root_twisted_basic(u32 m) {
   const ValueT max_bit = ValueT(1) << std::countr_zero(ModT::mod() - 1);
 
   static std::vector<ModT> rt;
+
+  m = std::bit_ceil(m);
   assert(m <= max_bit);
-  while (rt.size() < m) {
-    u32 n = rt.size();
+
+  u32 n = rt.size();
+  if (n < m) {
+    rt.resize(m);
     if (n == 0) {
-      n = 2, rt = {1, 1};
+      n = 2, rt[0] = rt[1] = 1;
     }
-    rt.resize(n * 2);
-    ModT p = ModT(g).pow((P - 1) / n / 2);
-    for (u32 i = n; i < n * 2; i += 2) {
-      rt[i] = rt[i / 2], rt[i + 1] = p * rt[i];
+    for (; n < m; n *= 2) {
+      ModT p = ModT(g).pow((P - 1) / n / 2);
+      for (u32 i = n; i < n * 2; i += 2) {
+        rt[i] = rt[i / 2], rt[i + 1] = p * rt[i];
+      }
     }
   }
   return rt;
