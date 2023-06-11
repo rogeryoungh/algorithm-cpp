@@ -119,7 +119,7 @@ static void intt_twisted_avx(std::span<ModT> f0) { // dit
     fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
     fi *= info.rt4;
     fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
-    store(fi.v, &f[i]);
+    store(&f[i], fi.v);
   }
   for (i64 l = 1; l < n; l *= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
@@ -132,7 +132,7 @@ static void intt_twisted_avx(std::span<ModT> f0) { // dit
       }
     }
   }
-  X8 ivn8 = X8::from(ModT::mod() - (ModT::mod() - 1) / n8);
+  X8 ivn8 = X8::from(ModT(n8).inv());
   for (i32 i = 0; i < n; ++i) {
     X8 fi = load(&f[i]);
     fi *= ivn8;

@@ -5,6 +5,10 @@
 #include "inv-10E-nt-block.hpp"
 #include "nt-block-helper.hpp"
 
+#ifndef ALGO_DISABLE_SIMD_AVX2
+#include "../../other/modint/montgomery-x8.hpp"
+#endif
+
 template <class ModT>
 AVec<ModT> poly_div_10E_block(std::span<const ModT> lhs, std::span<const ModT> rhs, u32 m) {
   if (lhs.empty() || rhs.empty())
@@ -28,12 +32,31 @@ AVec<ModT> poly_div_10E_block(std::span<const ModT> lhs, std::span<const ModT> r
     std::copy(xk[k - 1].begin(), xk[k - 1].end(), ng[k - 1].begin());
     ntt<ModT>(ng[k - 1]);
     AVec<ModT> psi(n * 2);
-    for (u32 j = 0; j < k; ++j) {
-      for (u32 i = 0; i < n; ++i)
-        psi[i] -= (nf[k - j][i] + nf[k - 1 - j][i]) * ng[j][i];
-      for (u32 i = n; i < n * 2; ++i)
-        psi[i] -= (nf[k - j][i] - nf[k - 1 - j][i]) * ng[j][i];
+#ifndef ALGO_DISABLE_SIMD_AVX2
+    if (montgomery_modint_concept<ModT> && n > 16) {
+      using X8 = simd::M32x8<ModT>;
+      auto *psix8 = reinterpret_cast<X8 *>(psi.data());
+      u32 nx8 = n / 8;
+      for (u32 j = 0; j < k; ++j) {
+        auto *nf1x8 = reinterpret_cast<X8 *>(nf[k - j].data());
+        auto *nf2x8 = reinterpret_cast<X8 *>(nf[k - j - 1].data());
+        auto *ngx8 = reinterpret_cast<X8 *>(ng[j].data());
+        for (u32 i = 0; i < nx8; ++i)
+          psix8[i] -= (nf1x8[i] + nf2x8[i]) * ngx8[i];
+        for (u32 i = nx8; i < nx8 * 2; ++i)
+          psix8[i] -= (nf1x8[i] - nf2x8[i]) * ngx8[i];
+      }
+    } else {
+#endif
+      for (u32 j = 0; j < k; ++j) {
+        for (u32 i = 0; i < n; ++i)
+          psi[i] -= (nf[k - j][i] + nf[k - 1 - j][i]) * ng[j][i];
+        for (u32 i = n; i < n * 2; ++i)
+          psi[i] -= (nf[k - j][i] - nf[k - 1 - j][i]) * ng[j][i];
+      }
+#ifndef ALGO_DISABLE_SIMD_AVX2
     }
+#endif
     intt<ModT>(psi);
     std::fill_n(psi.begin() + n, n, 0);
     for (u32 j = 0; j < std::min<u32>(n, lhs.size() - n * k); ++j)

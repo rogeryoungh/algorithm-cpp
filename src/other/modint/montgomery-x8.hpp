@@ -75,6 +75,10 @@ struct M32x8 {
     return *this;
   }
 
+  M32x8 operator-() const {
+    return neg<0b11111111>();
+  }
+
   static I32x8 reduce(const U64x4 &x0246, const U64x4 &x1357) {
     auto km0246 = u32x8::mul(u32x8::mul(x0246, get_irx8()), get_modx8());
     auto km1357 = u32x8::mul(u32x8::mul(x1357, get_irx8()), get_modx8());

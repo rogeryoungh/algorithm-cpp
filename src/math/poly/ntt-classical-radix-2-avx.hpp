@@ -128,7 +128,7 @@ static void intt_classical_avx(std::span<ModT> f0) { // dit
     fi *= info.irt4;
     fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
     fi *= rti;
-    fi.store(&f[i]);
+    store(&f[i], fi.v);
     rti *= info.irate4ix8[std::countr_one<u32>(i)];
   }
   for (i64 l = 1; l < n; l *= 2) {
