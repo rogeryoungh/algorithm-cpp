@@ -2,19 +2,18 @@
 #define ALGO_MATH_POLY_SQRT8E_NTBLOCK
 
 #include "poly-def.hpp"
-#include "inv-10E-nt.hpp"
 #include "nt-block-helper.hpp"
 
 #ifndef ALGO_DISABLE_SIMD_AVX2
 #include "../../other/modint/montgomery-x8.hpp"
 #endif
 
-template <class ModT>
+template <class ModT, auto poly_inv>
 AVec<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const ModT &x0) {
   if (m == 1)
     return {x0};
   auto [n, u] = detail::nt_block_len(m);
-  AVec<ModT> x = poly_sqrt_8E_block(self, n, x0), h = poly_inv_10E<ModT>(x, n);
+  AVec<ModT> x = poly_sqrt_8E_block<ModT, poly_inv>(self, n, x0), h = poly_inv(x, n);
   x.resize(n * u), h.resize(n * 2);
   AVec<ModT> ng0(n * u * 2);
   auto ng = detail::nt_block_split(ng0, n * 2);

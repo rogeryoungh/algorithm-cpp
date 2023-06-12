@@ -3,6 +3,7 @@
 
 #include "../../base.hpp"
 #include "../../other/modint/montgomery-x8.hpp"
+#include "vec-dots.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -132,12 +133,7 @@ static void intt_twisted_avx(std::span<ModT> f0) { // dit
       }
     }
   }
-  X8 ivn8 = X8::from(ModT(n8).inv());
-  for (i32 i = 0; i < n; ++i) {
-    X8 fi = load(&f[i]);
-    fi *= ivn8;
-    store(&f[i], fi.v);
-  }
+  dot_v(f0, ModT(n8).inv());
   std::reverse(f0.begin() + 1, f0.end());
 }
 

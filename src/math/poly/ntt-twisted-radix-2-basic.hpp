@@ -3,6 +3,7 @@
 
 #include "../../base.hpp"
 #include "../../other/modint/modint-concept.hpp"
+#include "vec-dots.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -68,9 +69,7 @@ static void intt_twisted_basic(std::span<ModT> f) { // dit
       }
     }
   }
-  const ModT ivn = ModT(n).inv();
-  for (i32 i = 0; i < n; i++)
-    f[i] *= ivn;
+  dot_v(f, ModT(n).inv());
   std::reverse(f.begin() + 1, f.end());
 }
 

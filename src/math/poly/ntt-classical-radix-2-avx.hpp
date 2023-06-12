@@ -3,6 +3,7 @@
 
 #include "../../base.hpp"
 #include "../../other/modint/montgomery-x8.hpp"
+#include "vec-dots.hpp"
 
 #include <bit>
 #include <cassert>
@@ -146,12 +147,7 @@ static void intt_classical_avx(std::span<ModT> f0) { // dit
       r *= info.irate2[std::countr_one<u32>(k)];
     }
   }
-  X8 ivn8 = X8::from(ModT(n8).inv());
-  for (i32 i = 0; i < n; ++i) {
-    X8 fi = load(&f[i]);
-    fi *= ivn8;
-    store(&f[i], fi.v);
-  }
+  dot_v(f0, ModT(n8).inv());
 }
 
 } // namespace detail

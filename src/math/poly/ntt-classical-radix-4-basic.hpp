@@ -2,6 +2,7 @@
 #define ALGO_MATH_POLY_NTT_CLASSICAL_RADIX_4_BASIC
 
 #include "../../base.hpp"
+#include "vec-dots.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -108,9 +109,7 @@ static void intt_classical_basic4(std::span<ModT> f) { // dit
       f[j + l] = x - y;
     }
   }
-  const ModT ivn = ModT(n).inv();
-  for (i32 i = 0; i < n; i++)
-    f[i] *= ivn;
+  dot_v(f, ModT(n).inv());
 }
 
 } // namespace detail

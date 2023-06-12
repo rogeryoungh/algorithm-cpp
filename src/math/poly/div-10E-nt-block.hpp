@@ -2,21 +2,20 @@
 #define ALGO_MATH_POLY_DIV10E_NTBLOCK
 
 #include "poly-def.hpp"
-#include "inv-10E-nt-block.hpp"
 #include "nt-block-helper.hpp"
 
 #ifndef ALGO_DISABLE_SIMD_AVX2
 #include "../../other/modint/montgomery-x8.hpp"
 #endif
 
-template <class ModT>
+template <class ModT, auto poly_inv>
 AVec<ModT> poly_div_10E_block(std::span<const ModT> lhs, std::span<const ModT> rhs, u32 m) {
   if (lhs.empty() || rhs.empty())
     return {};
   if (m == 1)
     return {lhs[0] / rhs[0]};
   auto [n, u] = detail::nt_block_len(m);
-  AVec<ModT> x = poly_div_10E_block(lhs, rhs, n), h = poly_inv_10E_block(rhs, n);
+  AVec<ModT> x = poly_div_10E_block<ModT, poly_inv>(lhs, rhs, n), h = poly_inv(rhs, n);
   x.resize(n * u), h.resize(n * 2);
   AVec<ModT> nf0(n * u * 2), ng0(n * u * 2);
   auto nf = detail::nt_block_split(nf0, n * 2);
@@ -59,8 +58,21 @@ AVec<ModT> poly_div_10E_block(std::span<const ModT> lhs, std::span<const ModT> r
 #endif
     intt<ModT>(psi);
     std::fill_n(psi.begin() + n, n, 0);
-    for (u32 j = 0; j < std::min<u32>(n, lhs.size() - n * k); ++j)
-      psi[j] += lhs[n * k + j];
+    {
+      u32 len = std::min<u32>(n, lhs.size() - n * k), i = 0;
+#ifndef ALGO_DISABLE_SIMD_AVX2
+      if (montgomery_modint_concept<ModT> && n > 16) {
+        using X8 = simd::M32x8<ModT>;
+        auto *psix8 = reinterpret_cast<X8 *>(psi.data());
+        auto *lhsx8 = reinterpret_cast<const X8 *>(lhs.data() + n * k);
+        u32 nx8 = len / 8;
+        for (; i < nx8; ++i)
+          psix8[i] += lhsx8[i];
+      }
+#endif
+      for (i *= 8; i < len; ++i)
+        psi[i] += lhs[n * k + i];
+    }
     ntt<ModT>(psi);
     dot<ModT>(psi, h);
     intt<ModT>(psi);

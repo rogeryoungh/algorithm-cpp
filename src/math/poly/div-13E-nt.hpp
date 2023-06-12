@@ -2,9 +2,8 @@
 #define ALGO_MATH_POLY_DIV13ENT
 
 #include "poly-def.hpp"
-#include "inv-10E-nt.hpp"
 
-template <class ModT>
+template <class ModT, auto poly_inv>
 AVec<ModT> poly_div_13E(std::span<const ModT> lhs, std::span<const ModT> rhs, u32 m) {
   if (lhs.empty() || rhs.empty())
     return {};
@@ -12,7 +11,7 @@ AVec<ModT> poly_div_13E(std::span<const ModT> lhs, std::span<const ModT> rhs, u3
     return {lhs[0] / rhs[0]};
   u32 t = std::bit_ceil(m);
   AVec<ModT> g(t), x(t), q(t);
-  AVec<ModT> u = poly_inv_10E<ModT>(rhs, t / 2); // 5E
+  AVec<ModT> u = poly_inv(rhs, t / 2); // 5E
   std::copy(rhs.begin(), std::min(rhs.begin() + t, rhs.end()), g.begin());
   std::copy(lhs.begin(), std::min(lhs.begin() + t / 2, lhs.end()), x.begin());
   u.resize(t);

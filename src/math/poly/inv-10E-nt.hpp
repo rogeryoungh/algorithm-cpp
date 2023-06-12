@@ -29,7 +29,7 @@ auto poly_inv_10E(std::span<const ModT> f, u32 m) {
       using X8 = simd::M32x8<ModT>;
       auto *x8 = reinterpret_cast<X8 *>(x.data());
       auto *f2x8 = reinterpret_cast<X8 *>(f2.data());
-      u32 nx8 = n / 8;
+      u32 nx8 = t * 2 / 8;
       for (u32 i = nx8 / 2; i < nx8; ++i) {
         x8[i] = -f2x8[i];
       }

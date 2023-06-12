@@ -59,6 +59,11 @@ inline I256 bit_and(const I256 &a, const I256 &b) {
   return _mm256_and_si256(a, b);
 }
 
+inline I256 and_not(const I256 &a, const I256 &b) {
+  return _mm256_andnot_si256(a, b);
+}
+
+
 } // namespace i256
 
 namespace i128x2 {
@@ -82,6 +87,15 @@ inline I64x4 add(const I64x4 &a, const I64x4 &b) {
 }
 
 } // namespace i64x4
+
+namespace u64x4 {
+
+template <i32 imm>
+inline U64x4 shift_r(const U64x4 &a) {
+  return _mm256_srli_epi64(a, imm);
+}
+
+} // namespace u64x4
 
 namespace i32x8 {
 
@@ -130,6 +144,10 @@ inline I32x8 abs(const I32x8 &a) {
   return _mm256_abs_epi32(a);
 }
 
+inline I256 cmpeq(const I256 &a, const I256 &b) {
+  return _mm256_cmpeq_epi32(a, b);
+}
+
 } // namespace i32x8
 
 namespace u32x8 {
@@ -143,6 +161,17 @@ inline auto mul_0246_1357(const U32x8 &a, const U32x8 &b) {
   auto x1357 = mul(i32x8::shuffle<0b11110101>(a), i32x8::shuffle<0b11110101>(b));
   alignas(32) std::pair<U64x4, U64x4> p = {x0246, x1357};
   return p;
+}
+
+// inline auto mul_0246_1357(const U32x8 &a, const U32x8 &b) {
+//   auto x0246 = mul(a, b);
+//   auto x1357 = mul(u64x4::shift_r<32>(a), u64x4::shift_r<32>(b));
+//   alignas(32) std::pair<U64x4, U64x4> p = {x0246, x1357};
+//   return p;
+// }
+
+inline auto mul_lo(const U32x8 &a, const U32x8 &b) {
+  return _mm256_mullo_epi32(a, b);
 }
 
 } // namespace u32x8

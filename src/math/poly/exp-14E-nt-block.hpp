@@ -11,12 +11,12 @@
 #include "../../other/modint/montgomery-x8.hpp"
 #endif
 
-template <class ModT>
+template <class ModT, auto poly_inv>
 AVec<ModT> poly_exp_14E_block(std::span<const ModT> self, u32 m) {
   if (m == 1)
     return {1};
   auto [n, u] = detail::nt_block_len(m);
-  AVec<ModT> x = poly_exp_14E_block(self, n), h = poly_inv_10E_block<ModT>(x, n);
+  AVec<ModT> x = poly_exp_14E_block<ModT, poly_inv>(self, n), h = poly_inv(x, n);
   x.resize(n * u), h.resize(n * 2);
   AVec<ModT> nf0(n * u * 2), ng0(n * u * 2);
   auto &iv = prepare_inv<ModT>(n * u);

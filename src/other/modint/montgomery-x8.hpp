@@ -76,7 +76,9 @@ struct M32x8 {
   }
 
   M32x8 operator-() const {
-    return neg<0b11111111>();
+    I32x8 sub = i32x8::sub(get_mod2x8(), v);
+    return i256::and_not(i32x8::cmpeq(v, i32x8::zero()), sub);
+    // return neg<0b11111111>();
   }
 
   static I32x8 reduce(const U64x4 &x0246, const U64x4 &x1357) {
@@ -89,9 +91,31 @@ struct M32x8 {
     return i32x8::blend<0b10101010>(z0246, z1357);
   }
 
+  static I32x8 mul_reduce(const I32x8 &a, const U64x4 &b) {
+    // x = u64(a) * b
+    // (x + u64(u32(x) * IR) * MOD) >> 32;
+    auto [x0246, x1357] = u32x8::mul_0246_1357(a, b);
+    auto km0246 = u32x8::mul(u32x8::mul(x0246, get_irx8()), get_modx8());
+    auto km1357 = u32x8::mul(u32x8::mul(x1357, get_irx8()), get_modx8());
+    auto z0246 = i64x4::add(x0246, km0246);
+    z0246 = i32x8::shuffle<0b11110101>(z0246);
+    auto z1357 = i64x4::add(x1357, km1357);
+    // z1357 = i32x8::shuffle<0b11110101>(z1357);
+    return i32x8::blend<0b10101010>(z0246, z1357);
+  }
+
+  // static I32x8 mul_reduce(const I32x8 &a, const U64x4 &b) {
+  //   U32x8 x0 = u32x8::mul_lo(get_irx8(), u32x8::mul_lo(a, b));
+  //   auto [x0246, x1357] = u32x8::mul_0246_1357(a, b);
+  //   auto x1 = u32x8::mul(x0, get_modx8());
+  //   auto x2 = u32x8::mul(i32x8::shuffle<0b11110101>(x0), get_modx8());
+  //   auto z0246 = u64x4::shift_r<32>(i64x4::add(x0246, x1));
+  //   auto z1357 = i64x4::add(x1357, x2);
+  //   return i32x8::blend<0b10101010>(z0246, z1357);
+  // }
+
   M32x8 &operator*=(const M32x8 &rhs) {
-    auto [x0246, x1357] = u32x8::mul_0246_1357(v, rhs.v);
-    v = reduce(x0246, x1357);
+    v = mul_reduce(v, rhs.v);
     return *this;
   }
 
@@ -108,16 +132,14 @@ struct M32x8 {
   }
   constexpr static M32x8 addmul(const M32x8 &a, const M32x8 &b, const M32x8 &c) { // (a + b) * c
     auto v = i32x8::add(a.v, b.v);
-    auto [x0246, x1357] = u32x8::mul_0246_1357(v, c.v);
-    v = reduce(x0246, x1357);
+    v = mul_reduce(v, c.v);
     return v;
   }
 
   constexpr static M32x8 submul(const M32x8 &a, const M32x8 &b, const M32x8 &c) { // (a - b) * c
     auto v = i32x8::sub(a.v, b.v);
     v = i32x8::add(v, get_mod2x8());
-    auto [x0246, x1357] = u32x8::mul_0246_1357(v, c.v);
-    v = reduce(x0246, x1357);
+    v = mul_reduce(v, c.v);
     return v;
   }
 
