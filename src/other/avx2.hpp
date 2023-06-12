@@ -63,7 +63,6 @@ inline I256 and_not(const I256 &a, const I256 &b) {
   return _mm256_andnot_si256(a, b);
 }
 
-
 } // namespace i256
 
 namespace i128x2 {

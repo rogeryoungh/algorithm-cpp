@@ -60,16 +60,13 @@ u32 ntt_size = 0;
 
 #endif
 
-template <class ModT>
+template <class ModT, bool aligned = true>
 void ntt(std::span<ModT> f) {
   assert(std::has_single_bit(f.size()));
   detail::ntt_size += f.size();
 #ifndef ALGO_DISABLE_SIMD_AVX2
   if (montgomery_modint_concept<ModT> && f.size() > 16) {
-    if (u64(f.data()) & 0x1f)
-      ALGO_DETAIL_NTT_AVX<ModT, false>(f);
-    else
-      ALGO_DETAIL_NTT_AVX<ModT, true>(f);
+    ALGO_DETAIL_NTT_AVX<ModT, aligned>(f);
   } else {
 #endif
     ALGO_DETAIL_NTT(f);
@@ -78,16 +75,13 @@ void ntt(std::span<ModT> f) {
 #endif
 }
 
-template <class ModT>
+template <class ModT, bool aligned = true>
 void intt(std::span<ModT> f) {
   assert(std::has_single_bit(f.size()));
   detail::ntt_size += f.size();
 #ifndef ALGO_DISABLE_SIMD_AVX2
   if (montgomery_modint_concept<ModT> && f.size() > 16) {
-    if (u64(f.data()) & 0x1f)
-      ALGO_DETAIL_INTT_AVX<ModT, false>(f);
-    else
-      ALGO_DETAIL_INTT_AVX<ModT, true>(f);
+    ALGO_DETAIL_INTT_AVX<ModT, aligned>(f);
   } else {
 #endif
     ALGO_DETAIL_INTT(f);

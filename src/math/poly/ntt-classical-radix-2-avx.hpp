@@ -147,7 +147,7 @@ static void intt_classical_avx(std::span<ModT> f0) { // dit
       r *= info.irate2[std::countr_one<u32>(k)];
     }
   }
-  dot_v(f0, ModT(n8).inv());
+  dot_v<ModT, aligned, false>(f0, ModT(n8).inv());
 }
 
 } // namespace detail

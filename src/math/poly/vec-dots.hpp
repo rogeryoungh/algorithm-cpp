@@ -7,149 +7,148 @@
 #include <span>
 
 #ifndef ALGO_DISABLE_SIMD_AVX2
-
 #include "../../other/modint/montgomery-x8.hpp"
+#endif
 
-template <class ModT>
-static void dot_avx(std::span<ModT> f, std::span<const ModT> g) {
-  using X8 = simd::M32x8<ModT>;
-  using simd::i256::load, simd::i256::store;
-  u32 n = f.size(), lf = u64(&f[0]) & 0x1f, i = 0;
-  const auto loadg = lf == (u64(&g[0]) & 0x1f) ? load<true> : load<false>;
-  for (; u64(&f[i]) & 0x1f; ++i) {
-    f[i] *= g[i];
-  }
-  for (; i + 7 < n; i += 8) {
-    X8 fi = load((simd::I256 *)&f[i]);
-    X8 gi = loadg((simd::I256 *)&g[i]);
-    fi *= gi;
-    store((simd::I256 *)&f[i], fi.v);
-  }
-  for (; i < n; ++i) {
-    f[i] *= g[i];
-  }
-}
-
-template <class ModT>
-static void dot_v_avx(std::span<ModT> f, ModT v) {
-  using X8 = simd::M32x8<ModT>;
-  using simd::i256::load, simd::i256::store;
-  u32 n = f.size(), i = 0;
-  for (; u64(&f[i]) & 0x1f; ++i) {
-    f[i] *= v;
-  }
-  X8 vx8 = X8::from(v);
-  for (; i + 7 < n; i += 8) {
-    X8 fi = load((simd::I256 *)&f[i]);
-    fi *= vx8;
-    store((simd::I256 *)&f[i], fi.v);
-  }
-  for (; i < n; ++i) {
-    f[i] *= v;
-  }
-}
-
-template <class ModT>
-static void dot_avx(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
-  using X8 = simd::M32x8<ModT>;
-  using simd::i256::load, simd::i256::store;
-  u32 n = f.size(), lf = u64(&f[0]) & 0x1f, i = 0;
-  const auto loadg = lf == (u64(&g[0]) & 0x1f) ? load<true> : load<false>;
-  const auto storeg = lf == (u64(&dst[0]) & 0x1f) ? store<true> : store<false>;
-  for (; u64(&f[i]) & 0x1f; ++i) {
-    dst[i] = f[i] * g[i];
-  }
-  for (; i + 7 < n; i += 8) {
-    X8 fi = load((simd::I256 *)&f[i]);
-    X8 gi = loadg((simd::I256 *)&g[i]);
-    fi *= gi;
-    stored((simd::I256 *)&dst[i], fi.v);
-  }
-  for (; i < n; ++i) {
-    dst[i] = f[i] * g[i];
-  }
-}
-
-template <class ModT>
-static void dot_v_avx(std::span<ModT> f, ModT v, std::span<ModT> dst) {
-  using X8 = simd::M32x8<ModT>;
-  using simd::i256::load, simd::i256::store;
-  u32 n = f.size(), lf = u64(&f[0]) & 0x1f;
-  const auto storeg = lf == (u64(&dst[0]) & 0x1f) ? store<true> : store<false>;
+template <class ModT, bool align = false, bool extra = true>
+inline void vectorization_1(u32 n, ModT *f, auto &&op) {
   u32 i = 0;
-  for (; u64(&f[i]) & 0x1f; ++i) {
-    dst[i] = f[i] * v;
+#ifndef ALGO_DISABLE_SIMD_AVX2
+  if (montgomery_modint_concept<ModT> && n > 16) {
+    using X8 = simd::M32x8<ModT>;
+    using simd::i256::load, simd::i256::store;
+    if constexpr (!align)
+      for (; u64(&f[i]) & 0x1f; ++i)
+        op(f[i]);
+    for (; i + 7 < n; i += 8) {
+      X8 fi = load((simd::I256 *)&f[i]);
+      op(fi);
+      store((simd::I256 *)&f[i], fi.v);
+    }
   }
-  X8 vx8 = X8::from(v);
-  for (; i + 7 < n; i += 8) {
-    X8 fi = load((simd::I256 *)&f[i]);
-    fi *= vx8;
-    stored((simd::I256 *)&dst[i], fi.v);
-  }
-  for (; i < n; ++i) {
-    dst[i] = f[i] * v;
-  }
+#endif
+  if constexpr (extra)
+    for (; i < n; ++i)
+      op(f[i]);
 }
 
-#endif
-
-template <class ModT>
-static void dot(std::span<ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
+template <class ModT, bool align = false, bool extra = true>
+inline void vectorization_2(u32 n, ModT *f, const ModT *g, auto &&op) {
+  u32 i = 0;
 #ifndef ALGO_DISABLE_SIMD_AVX2
-  if (montgomery_modint_concept<ModT> && f.size() > 16) {
-    dot_avx(f, g, dst);
-  } else {
-#endif
-    u32 n = dst.size();
-    for (u32 i = 0; i < n; i++)
-      dst[i] = f[i] * g[i];
-#ifndef ALGO_DISABLE_SIMD_AVX2
+  if (montgomery_modint_concept<ModT> && n > 16) {
+    using X8 = simd::M32x8<ModT>;
+    using simd::i256::load, simd::i256::store;
+    if constexpr (!align)
+      for (; u64(&f[i]) & 0x1f; ++i)
+        op(f[i], g[i]);
+    for (; i + 7 < n; i += 8) {
+      X8 fi = load((simd::I256 *)&f[i]);
+      X8 gi = load<align>((simd::I256 *)&g[i]);
+      op(fi, gi);
+      store((simd::I256 *)&f[i], fi.v);
+    }
   }
 #endif
+  if constexpr (extra)
+    for (; i < n; ++i)
+      op(f[i], g[i]);
 }
 
-template <class ModT>
-static void dot(std::span<ModT> f, std::span<const ModT> g) {
+template <class ModT, bool align = false, bool extra = true>
+void vectorization_3(u32 n, ModT *f, const ModT *g1, const ModT *g2, auto &&op) {
+  u32 i = 0;
 #ifndef ALGO_DISABLE_SIMD_AVX2
-  if (montgomery_modint_concept<ModT> && f.size() > 16) {
-    dot_avx(f, g);
-  } else {
-#endif
-    u32 n = f.size();
-    for (u32 i = 0; i < n; i++)
-      f[i] *= g[i];
-#ifndef ALGO_DISABLE_SIMD_AVX2
+  if (montgomery_modint_concept<ModT> && n > 16) {
+    using X8 = simd::M32x8<ModT>;
+    using simd::i256::load, simd::i256::store;
+    if constexpr (!align)
+      for (; u64(&f[i]) & 0x1f; ++i)
+        op(f[i], g1[i], g2[i]);
+    for (; i + 7 < n; i += 8) {
+      X8 fi = load((simd::I256 *)&f[i]);
+      X8 g1i = load<align>((simd::I256 *)&g1[i]);
+      X8 g2i = load<align>((simd::I256 *)&g2[i]);
+      op(fi, g1i, g2i);
+      store((simd::I256 *)&f[i], fi.v);
+    }
   }
 #endif
+  if constexpr (extra)
+    for (; i < n; ++i)
+      op(f[i], g1[i], g2[i]);
 }
 
-template <class ModT>
+template <class ModT, bool align = false, bool extra = true>
+void vectorization_4(u32 n, ModT *f, const ModT *g1, const ModT *g2, const ModT *g3, auto &&op) {
+  u32 i = 0;
+#ifndef ALGO_DISABLE_SIMD_AVX2
+  if (montgomery_modint_concept<ModT> && n > 16) {
+    using X8 = simd::M32x8<ModT>;
+    using simd::i256::load, simd::i256::store;
+    if constexpr (!align)
+      for (; u64(&f[i]) & 0x1f; ++i)
+        op(f[i], g1[i], g2[i], g3[i]);
+    for (; i + 7 < n; i += 8) {
+      X8 fi = load((simd::I256 *)&f[i]);
+      X8 g1i = load<align>((simd::I256 *)&g1[i]);
+      X8 g2i = load<align>((simd::I256 *)&g2[i]);
+      X8 g3i = load<align>((simd::I256 *)&g3[i]);
+      op(fi, g1i, g2i, g3i);
+      store((simd::I256 *)&f[i], fi.v);
+    }
+  }
+#endif
+  if constexpr (extra)
+    for (; i < n; ++i)
+      op(f[i], g1[i], g2[i], g3[i]);
+}
+
+template <class ModT, bool align = true, bool extra = true>
+void dot(std::span<const ModT> f, std::span<const ModT> g, std::span<ModT> dst) {
+  vectorization_3<ModT, align, extra>(f.size(), dst.data(), f.data(), g.data(), [](auto &di, auto fi, auto gi) {
+    di = fi * gi;
+  });
+}
+
+template <class ModT, bool align = true, bool extra = true>
+void dot(std::span<ModT> f, std::span<const ModT> g) {
+  vectorization_2<ModT, align, extra>(f.size(), f.data(), g.data(), [](auto &fi, auto gi) {
+    fi *= gi;
+  });
+}
+
+template <class ModT, bool align = true, bool extra = true>
 static void dot_v(std::span<ModT> f, ModT v, std::span<ModT> dst) {
 #ifndef ALGO_DISABLE_SIMD_AVX2
-  if (montgomery_modint_concept<ModT> && f.size() > 16) {
-    dot_v_avx(f, v, dst);
-  } else {
-#endif
-    u32 n = dst.size();
-    for (u32 i = 0; i < n; i++)
-      dst[i] = f[i] * v;
-#ifndef ALGO_DISABLE_SIMD_AVX2
-  }
+  auto vx8 = simd::M32x8<ModT>::from(v);
+  vectorization_2<ModT, align, extra>(dst.size(), dst.data(), f.data(), [v, vx8](auto &di, auto fi) {
+    if constexpr (sizeof(fi) == sizeof(ModT))
+      di = fi * v;
+    else
+      di = fi * vx8;
+  });
+#else
+  vectorization_2<ModT, align, extra>(dst.size(), dst.data(), f.data(), [v](auto &di, auto fi) {
+    di = fi * v;
+  });
 #endif
 }
 
-template <class ModT>
+template <class ModT, bool align = true, bool extra = true>
 static void dot_v(std::span<ModT> f, ModT v) {
 #ifndef ALGO_DISABLE_SIMD_AVX2
-  if (montgomery_modint_concept<ModT> && f.size() > 16) {
-    dot_v_avx(f, v);
-  } else {
-#endif
-    u32 n = f.size();
-    for (u32 i = 0; i < n; i++)
-      f[i] *= v;
-#ifndef ALGO_DISABLE_SIMD_AVX2
-  }
+  auto vx8 = simd::M32x8<ModT>::from(v);
+  vectorization_1<ModT, align, extra>(f.size(), f.data(), [v, vx8](auto &fi) {
+    if constexpr (sizeof(fi) == sizeof(ModT))
+      fi *= v;
+    else
+      fi *= vx8;
+  });
+#else
+  vectorization_1<ModT, align, extra>(f.size(), f.data(), [v](auto &fi) {
+    fi *= v;
+  });
 #endif
 }
 

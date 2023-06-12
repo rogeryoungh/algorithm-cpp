@@ -95,13 +95,7 @@ struct M32x8 {
     // x = u64(a) * b
     // (x + u64(u32(x) * IR) * MOD) >> 32;
     auto [x0246, x1357] = u32x8::mul_0246_1357(a, b);
-    auto km0246 = u32x8::mul(u32x8::mul(x0246, get_irx8()), get_modx8());
-    auto km1357 = u32x8::mul(u32x8::mul(x1357, get_irx8()), get_modx8());
-    auto z0246 = i64x4::add(x0246, km0246);
-    z0246 = i32x8::shuffle<0b11110101>(z0246);
-    auto z1357 = i64x4::add(x1357, km1357);
-    // z1357 = i32x8::shuffle<0b11110101>(z1357);
-    return i32x8::blend<0b10101010>(z0246, z1357);
+    return reduce(x0246, x1357);
   }
 
   // static I32x8 mul_reduce(const I32x8 &a, const U64x4 &b) {

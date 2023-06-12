@@ -69,7 +69,7 @@ static void intt_twisted_basic(std::span<ModT> f) { // dit
       }
     }
   }
-  dot_v(f, ModT(n).inv());
+  dot_v<ModT>(f, ModT(n).inv());
   std::reverse(f.begin() + 1, f.end());
 }
 

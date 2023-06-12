@@ -69,7 +69,7 @@ static void intt_classical_basic(std::span<ModT> f) { // dit
       r *= info.irate2[std::countr_one<u32>(k)];
     }
   }
-  dot_v(f, ModT(n).inv());
+  dot_v<ModT>(f, ModT(n).inv());
 }
 
 } // namespace detail

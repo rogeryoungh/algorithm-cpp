@@ -3,10 +3,6 @@
 
 #include "poly-def.hpp"
 
-#ifndef ALGO_DISABLE_SIMD_AVX2
-#include "../../other/modint/montgomery-x8.hpp"
-#endif
-
 template <class ModT>
 auto poly_invsqrt_12E(std::span<const ModT> self, u32 m, const ModT &x0) {
   u32 n = std::bit_ceil(m);
@@ -20,22 +16,17 @@ auto poly_invsqrt_12E(std::span<const ModT> self, u32 m, const ModT &x0) {
     ntt<ModT>(u); // 4E
     ntt<ModT>(s); // 4E
 #ifndef ALGO_DISABLE_SIMD_AVX2
-    if (montgomery_modint_concept<ModT> && t * 4 > 16) {
-      using X8 = simd::M32x8<ModT>;
-      auto *ux8 = reinterpret_cast<X8 *>(u.data());
-      auto *sx8 = reinterpret_cast<X8 *>(s.data());
-      X8 ivn2x8 = X8::from(ivn2);
-      u32 nx8 = t * 4 / 8;
-      for (u32 i = 0; i < nx8; ++i) {
-        ux8[i] *= sx8[i] * sx8[i] * sx8[i] * ivn2x8;
-      }
-    } else {
-#endif
-      for (u32 i = 0; i < t * 4; ++i) {
-        u[i] *= s[i] * s[i] * s[i] * ivn2;
-      }
-#ifndef ALGO_DISABLE_SIMD_AVX2
-    }
+    auto ivn2x8 = simd::M32x8<ModT>::from(ivn2);
+    vectorization_2<ModT, true>(t * 4, u.data(), s.data(), [ivn2, ivn2x8]<class T>(T &ui, T si) {
+      if constexpr (std::is_same_v<T, ModT>)
+        ui *= si * si * si * ivn2;
+      else
+        ui *= si * si * si * ivn2x8;
+    });
+#else
+    vectorization_2<ModT, true>(t * 4, u.data(), s.data(), [ivn2]<class T>(T &ui, T si) {
+      ui *= si * si * si * ivn2;
+    });
 #endif
     intt<ModT>(u); // 4E
     std::copy_n(u.begin() + t, t, x.begin() + t);

@@ -9,7 +9,7 @@ auto poly_deriv(std::span<const ModT> f, u32 m) {
   const auto &inc = prepare_inc<ModT>(m);
   AVec<ModT> x(m);
   std::copy(f.begin() + 1, std::min(f.begin() + m + 1, f.end()), x.begin());
-  dot<ModT>(x, {inc.begin() + 1, m});
+  dot<ModT, false>(x, {inc.begin() + 1, m});
   return x;
 }
 

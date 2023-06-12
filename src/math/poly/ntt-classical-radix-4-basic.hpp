@@ -109,7 +109,7 @@ static void intt_classical_basic4(std::span<ModT> f) { // dit
       f[j + l] = x - y;
     }
   }
-  dot_v(f, ModT(n).inv());
+  dot_v<ModT>(f, ModT(n).inv());
 }
 
 } // namespace detail

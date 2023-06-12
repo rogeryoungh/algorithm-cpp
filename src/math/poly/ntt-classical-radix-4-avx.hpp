@@ -196,7 +196,7 @@ static void intt_classical_avx4(std::span<ModT> f0) { // dit
       store(&f[j + l], ry.v);
     }
   }
-  dot_v(f0, ModT(n8).inv());
+  dot_v<ModT, aligned, false>(f0, ModT(n8).inv());
 }
 
 } // namespace detail

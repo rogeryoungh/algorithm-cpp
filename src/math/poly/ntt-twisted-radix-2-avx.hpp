@@ -133,7 +133,7 @@ static void intt_twisted_avx(std::span<ModT> f0) { // dit
       }
     }
   }
-  dot_v(f0, ModT(n8).inv());
+  dot_v<ModT, aligned, false>(f0, ModT(n8).inv());
   std::reverse(f0.begin() + 1, f0.end());
 }
 
