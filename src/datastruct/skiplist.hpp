@@ -20,33 +20,33 @@ struct SkipList {
   /*
       跳表结点（层数，值，指针）
   */
-
   struct SkipListNode {
     K key;
     V value;
     i32 level{};
-    std::vector<SkipListNode *> forward;
+    SkipListNode **forward;
     SkipListNode() = default;
-    SkipListNode(K k, V v, i32 l, SkipListNode *nxt = nullptr) : key(k), value(v), level(l), forward(l + 1, nxt) {}
+    SkipListNode(K k, V v, i32 l, SkipListNode *nxt = nullptr) {
+      key = k;
+      value = v;
+      level = l;
+      forward = new SkipListNode *[l + 1];
+      for (i32 i = 0; i <= l; ++i)
+        forward[i] = nxt;
+    }
+    ~SkipListNode() {
+      delete[] forward;
+    }
   };
-
   using Node = SkipListNode;
-
-  template <class... Args>
-  static Node &alloc(Args &&...args) {
-    static std::queue<Node> pool;
-    pool.emplace(std::forward<Args>(args)...);
-    return pool.back();
-  }
-
   Node *head, *tail; // 两排哨兵
   i32 length;        // 链表长度 L0 层
   i32 level;         // 层数
   std::mt19937 rng;
   SkipList() : rng(std::random_device{}()) {
     level = length = 0;
-    tail = &alloc(INVALID, 0, 0);
-    head = &alloc(INVALID, 0, MAXL, tail);
+    tail = new Node(INVALID, 0, 0);
+    head = new Node(INVALID, 0, MAXL, tail);
   }
   ~SkipList() {
     delete head;
@@ -82,7 +82,7 @@ struct SkipList {
       lv = ++level;
       update[lv] = head;
     }
-    Node *newNode = &alloc(key, value, lv);
+    Node *newNode = new Node(key, value, lv);
     for (i32 i = lv; i >= 0; --i) {
       p = update[i];
       newNode->forward[i] = p->forward[i];
