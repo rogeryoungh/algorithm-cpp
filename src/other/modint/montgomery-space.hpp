@@ -81,9 +81,8 @@ struct MontgomerySpace<u32, MOD> {
   constexpr static ValueT val(TransT x) {
     return reduce_m(reduce(x) - MOD);
   }
-
+  
   constexpr static u32 shift2(u32 x) {
-    x = reduce(x);
     return (x & 1 ? x + MOD : x) >> 1;
   }
 };

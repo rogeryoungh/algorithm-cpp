@@ -111,7 +111,7 @@ struct StaticModint {
   }
 
   constexpr Self shift2() const {
-    return Space::shift2(v);
+    return raw(Space::shift2(v));
   }
 
   friend inline std::istream &operator>>(std::istream &is, Self &m) {

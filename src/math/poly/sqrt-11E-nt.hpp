@@ -24,8 +24,9 @@ AVec<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x0) {
     ntt<ModT>(nf); // 1E
     dot<ModT>(nf, ng);
     intt<ModT>(nf); // 1E
-    for (u32 i = t / 2; i < t; ++i)
-      g[i] = -nf[i];
+    vectorization_2(t / 2, g.data() + t / 2, nf.data() + t / 2, [](auto &gi, auto nfi) {
+      gi = -nfi;
+    });
     dot<ModT>({f.begin(), t}, f);
     intt<ModT>({f.begin(), t}); // 1E
     for (u32 i = t; i < std::min<u32>(self.size(), t * 2); ++i)
@@ -36,8 +37,9 @@ AVec<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x0) {
     ntt<ModT>({ng.begin(), t * 2}); // 2E
     dot<ModT>(f, ng);
     intt<ModT>(f); // 2E
-    for (u32 i = t; i < t * 2; ++i)
-      x[i] = f[i].shift2();
+    vectorization_2(t, x.data() + t, f.data() + t, [](auto &xi, auto fi) {
+      xi = fi.shift2();
+    });
   }
   return x.resize(m), x;
 }

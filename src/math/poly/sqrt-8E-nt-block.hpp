@@ -45,20 +45,9 @@ AVec<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const ModT &x0)
     }
     intt<ModT>(psi);
     std::fill_n(psi.begin() + n, n, 0);
-#ifndef ALGO_DISABLE_SIMD_AVX2
-    auto iv2x8 = simd::M32x8<ModT>::from(ModT(2).inv());
-    auto fn1 = [iv2x8]<class T>(T &pi, T si) {
-      if constexpr (std::is_same_v<T, ModT>)
-        pi = (si - pi).shift2();
-      else
-        pi = (si - pi) * iv2x8;
-    };
-    vectorization_2(std::min<u32>(n, self.size() - n * k), psi.data(), self.data() + n * k, fn1);
-#else
     vectorization_2(std::min<u32>(n, self.size() - n * k), psi.data(), self.data() + n * k, []<class T>(T &pi, T si) {
       pi = (si - pi).shift2();
     });
-#endif
     ntt<ModT>(psi);
     dot<ModT>(psi, h);
     intt<ModT>(psi);

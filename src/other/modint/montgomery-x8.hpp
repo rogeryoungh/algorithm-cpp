@@ -123,6 +123,16 @@ struct M32x8 {
     return _mm256_blend_epi32(v, sub, imm);
   }
 
+  M32x8 shift2() const {
+    // (v & 1) ? v + mod : v
+    u32x8 one = i32x8_set1(1);
+    u32x8 and1 = _mm256_and_si256(one, v);
+    and1 = _mm256_sub_epi32(and1, one);
+    u32x8 smodx8 = _mm256_andnot_si256(and1, modx8());
+    u32x8 ans = _mm256_add_epi32(v, smodx8);
+    return _mm256_srli_epi32(ans, 1);
+  }
+
   auto to_array() const {
     return i256_toarray<u32>(v);
   }
