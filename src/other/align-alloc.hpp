@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <new>
 
 template <class T, u32 align>
 struct AlignedAllocator {
@@ -17,11 +18,11 @@ struct AlignedAllocator {
     using other = AlignedAllocator<U, align>;
   };
   void deallocate(T *p, std::size_t) {
-    delete[] p;
+    ::operator delete[] (p, std::align_val_t(align));
   }
 };
 
 template <class T, u32 align = 32>
-using AVec = std::vector<T, AlignedAllocator<T, 32>>;
+using AVec = std::vector<T, AlignedAllocator<T, align>>;
 
 #endif // ALGO_ALIGN_ALLOC

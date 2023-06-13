@@ -12,96 +12,97 @@
 
 template <class ModT, bool align = false, bool extra = true>
 inline void vectorization_1(u32 n, ModT *f, auto &&op) {
-  u32 i = 0;
 #ifndef ALGO_DISABLE_SIMD_AVX2
   if (montgomery_modint_concept<ModT> && n > 16) {
     using X8 = simd::M32x8<ModT>;
-    using simd::i256::load, simd::i256::store;
     if constexpr (!align)
-      for (; u64(&f[i]) & 0x1f; ++i)
-        op(f[i]);
-    for (; i + 7 < n; i += 8) {
-      X8 fi = load((simd::I256 *)&f[i]);
-      op(fi);
-      store((simd::I256 *)&f[i], fi.v);
+      for (; u64(f) & 0x1f; --n)
+        op(*f++);
+    auto fx8 = std::bit_cast<X8 *>(f);
+    for (; n >= 8; n -= 8) {
+      op(*fx8++);
     }
+    f = std::bit_cast<ModT *>(fx8);
   }
 #endif
   if constexpr (extra)
-    for (; i < n; ++i)
-      op(f[i]);
+    for (; n > 0; --n)
+      op(*f++);
 }
 
 template <class ModT, bool align = false, bool extra = true>
-inline void vectorization_2(u32 n, ModT *f, const ModT *g, auto &&op) {
-  u32 i = 0;
+inline void vectorization_2(u32 n, ModT *f, const ModT *g1, auto &&op) {
 #ifndef ALGO_DISABLE_SIMD_AVX2
   if (montgomery_modint_concept<ModT> && n > 16) {
     using X8 = simd::M32x8<ModT>;
-    using simd::i256::load, simd::i256::store;
+    using i256a = simd::i256a<align>;
     if constexpr (!align)
-      for (; u64(&f[i]) & 0x1f; ++i)
-        op(f[i], g[i]);
-    for (; i + 7 < n; i += 8) {
-      X8 fi = load((simd::I256 *)&f[i]);
-      X8 gi = load<align>((simd::I256 *)&g[i]);
-      op(fi, gi);
-      store((simd::I256 *)&f[i], fi.v);
+      for (; u64(f) & 0x1f; --n)
+        op(*f++, *g1++);
+    auto fx8 = std::bit_cast<X8 *>(f);
+    auto g1x8 = std::bit_cast<const i256a *>(g1);
+    for (; n >= 8; n -= 8) {
+      op(*fx8++, X8(*g1x8++));
     }
+    f = std::bit_cast<ModT *>(fx8);
+    g1 = std::bit_cast<const ModT *>(g1x8);
   }
 #endif
   if constexpr (extra)
-    for (; i < n; ++i)
-      op(f[i], g[i]);
+    for (; n > 0; --n)
+      op(*f++, *g1++);
 }
 
 template <class ModT, bool align = false, bool extra = true>
 void vectorization_3(u32 n, ModT *f, const ModT *g1, const ModT *g2, auto &&op) {
-  u32 i = 0;
 #ifndef ALGO_DISABLE_SIMD_AVX2
   if (montgomery_modint_concept<ModT> && n > 16) {
     using X8 = simd::M32x8<ModT>;
-    using simd::i256::load, simd::i256::store;
+    using i256a = simd::i256a<align>;
     if constexpr (!align)
-      for (; u64(&f[i]) & 0x1f; ++i)
-        op(f[i], g1[i], g2[i]);
-    for (; i + 7 < n; i += 8) {
-      X8 fi = load((simd::I256 *)&f[i]);
-      X8 g1i = load<align>((simd::I256 *)&g1[i]);
-      X8 g2i = load<align>((simd::I256 *)&g2[i]);
-      op(fi, g1i, g2i);
-      store((simd::I256 *)&f[i], fi.v);
+      for (; u64(&f) & 0x1f; n -= 8)
+        op(*f++, *g1++, *g2++);
+    auto fx8 = std::bit_cast<X8 *>(f);
+    auto g1x8 = std::bit_cast<const i256a *>(g1);
+    auto g2x8 = std::bit_cast<const i256a *>(g2);
+    for (; n >= 8; n -= 8) {
+      op(*fx8++, X8(*g1x8++), X8(*g2x8++));
     }
+    f = std::bit_cast<ModT *>(fx8);
+    g1 = std::bit_cast<const ModT *>(g1x8);
+    g2 = std::bit_cast<const ModT *>(g2x8);
   }
 #endif
   if constexpr (extra)
-    for (; i < n; ++i)
-      op(f[i], g1[i], g2[i]);
+    for (; n > 0; --n)
+      op(*f++, *g1++, *g2++);
 }
 
 template <class ModT, bool align = false, bool extra = true>
 void vectorization_4(u32 n, ModT *f, const ModT *g1, const ModT *g2, const ModT *g3, auto &&op) {
-  u32 i = 0;
 #ifndef ALGO_DISABLE_SIMD_AVX2
   if (montgomery_modint_concept<ModT> && n > 16) {
     using X8 = simd::M32x8<ModT>;
-    using simd::i256::load, simd::i256::store;
+    using i256a = simd::i256a<align>;
     if constexpr (!align)
-      for (; u64(&f[i]) & 0x1f; ++i)
-        op(f[i], g1[i], g2[i], g3[i]);
-    for (; i + 7 < n; i += 8) {
-      X8 fi = load((simd::I256 *)&f[i]);
-      X8 g1i = load<align>((simd::I256 *)&g1[i]);
-      X8 g2i = load<align>((simd::I256 *)&g2[i]);
-      X8 g3i = load<align>((simd::I256 *)&g3[i]);
-      op(fi, g1i, g2i, g3i);
-      store((simd::I256 *)&f[i], fi.v);
+      for (; u64(&f) & 0x1f; n -= 8)
+        op(*f++, *g1++, *g2++, *g3++);
+    auto fx8 = std::bit_cast<X8 *>(f);
+    auto g1x8 = std::bit_cast<const i256a *>(g1);
+    auto g2x8 = std::bit_cast<const i256a *>(g2);
+    auto g3x8 = std::bit_cast<const i256a *>(g3);
+    for (; n >= 8; n -= 8) {
+      op(*fx8++, X8(*g1x8++), X8(*g2x8++), X8(*g3x8++));
     }
+    f = std::bit_cast<ModT *>(fx8);
+    g1 = std::bit_cast<const ModT *>(g1x8);
+    g2 = std::bit_cast<const ModT *>(g2x8);
+    g3 = std::bit_cast<const ModT *>(g3x8);
   }
 #endif
   if constexpr (extra)
-    for (; i < n; ++i)
-      op(f[i], g1[i], g2[i], g3[i]);
+    for (; n > 0; --n)
+      op(*f++, *g1++, *g2++, *g3++);
 }
 
 template <class ModT, bool align = true, bool extra = true>

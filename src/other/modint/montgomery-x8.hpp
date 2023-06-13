@@ -14,95 +14,83 @@ namespace simd {
 template <montgomery_modint_concept ModT_>
 struct M32x8 {
   using ModT = ModT_;
-  I32x8 v;
+  u32x8 v;
 
   M32x8() = default;
 
-  M32x8(const I32x8 &a) : v(a) {}
+  M32x8(const u32x8 a) : v(a) {}
 
   template <class U32>
   M32x8(const std::array<U32, 8> &a) {
     static_assert(sizeof(U32) == 4);
-    v = i256::load((const I256 *)a.data());
-  }
-
-  static M32x8 from(i32 v) {
-    return i32x8::from(v);
+    v = *reinterpret_cast<const i256 *>(a.data());
   }
 
   static M32x8 from(ModT v) {
-    return from(v.raw());
+    return i32x8_set1(v.raw());
   }
 
-  explicit operator I32x8() {
+  explicit operator u32x8() {
     return v;
   }
 
-  static I32x8 get_irx8() {
-    return i32x8::from(ModT::Space::ir());
+  static u32x8 reduce_m(u32x8 v) { // 4, 0.33
+    // v = sign(v) ? v + mod : v;
+    u32x8 sign = i32x8_sign(v);
+    u32x8 smodx8 = _mm256_and_si256(sign, modx8());
+    return _mm256_add_epi32(v, smodx8);
   }
 
-  static I32x8 get_mod2x8() {
-    return i32x8::from(ModT::Space::mod2());
+  static u32x8 reduce_2m(u32x8 v) { // 4, 0.33
+    // v = sign(v) ? v + mod2 : v;
+    u32x8 sign = i32x8_sign(v);
+    u32x8 smod2x8 = _mm256_and_si256(sign, mod2x8());
+    return _mm256_add_epi32(v, smod2x8);
   }
 
-  static I32x8 get_modx8() {
-    return i32x8::from(ModT::Space::mod());
-  }
-
-  static I32x8 reduce_m(I32x8 v) {
-    I32x8 sign = i32x8::sign(v);
-    v = i32x8::add(v, i256::bit_and(sign, get_modx8()));
-    return v;
-  }
-
-  static I32x8 reduce_2m(I32x8 v) {
-    I32x8 sign = i32x8::sign(v);
-    v = i32x8::add(v, i256::bit_and(sign, get_mod2x8()));
-    return v;
-  }
-
-  M32x8 &operator+=(const M32x8 &rhs) {
-    v = i32x8::add(v, rhs.v);
-    v = i32x8::sub(v, get_mod2x8());
+  M32x8 &operator+=(const M32x8 &rhs) { // 6, 0.33
+    v = _mm256_add_epi32(v, rhs.v);
+    v = _mm256_sub_epi32(v, mod2x8());
     v = reduce_2m(v);
     return *this;
   }
 
-  M32x8 &operator-=(const M32x8 &rhs) {
-    v = i32x8::sub(v, rhs.v);
+  M32x8 &operator-=(const M32x8 &rhs) { // 5, 0.33
+    v = _mm256_sub_epi32(v, rhs.v);
     v = reduce_2m(v);
     return *this;
   }
 
   M32x8 operator-() const {
-    I32x8 sub = i32x8::sub(get_mod2x8(), v);
-    return i256::and_not(i32x8::cmpeq(v, i32x8::zero()), sub);
+    u32x8 sub = _mm256_sub_epi32(mod2x8(), v); // 1, 0.33
+    u32x8 sign = i32x8_sign(v);                // 2, 0.33
+    return _mm256_andnot_si256(sign, sub);
     // return neg<0b11111111>();
   }
 
-  static I32x8 reduce(const U64x4 &x0246, const U64x4 &x1357) {
-    auto km0246 = u32x8::mul(u32x8::mul(x0246, get_irx8()), get_modx8());
-    auto km1357 = u32x8::mul(u32x8::mul(x1357, get_irx8()), get_modx8());
-    auto z0246 = i64x4::add(x0246, km0246);
-    z0246 = i32x8::shuffle<0b11110101>(z0246);
-    auto z1357 = i64x4::add(x1357, km1357);
+  static u32x8 reduce(const u64x4 &x0246, const u64x4 &x1357) { // 24, 0.33
+    // (x + u64(u32(x) * IR) * MOD) >> 32;
+    auto y0246 = u32x8_mul0246(u32x8_mul0246(x0246, irx8()), modx8());
+    auto y1357 = u32x8_mul0246(u32x8_mul0246(x1357, irx8()), modx8());
+    auto z0246 = _mm256_add_epi64(x0246, y0246);
+    z0246 = i32x8_swap_lohi(z0246);
+    auto z1357 = _mm256_add_epi64(x1357, y1357);
     // z1357 = i32x8::shuffle<0b11110101>(z1357);
-    return i32x8::blend<0b10101010>(z0246, z1357);
+    return _mm256_blend_epi32(z0246, z1357, 0b10101010);
   }
 
-  static I32x8 mul_reduce(const I32x8 &a, const U64x4 &b) {
-    // x = u64(a) * b
-    // (x + u64(u32(x) * IR) * MOD) >> 32;
-    auto [x0246, x1357] = u32x8::mul_0246_1357(a, b);
+  static u32x8 mul_reduce(const u32x8 &a, const u32x8 &b) { // 36, 0.33
+    // return reduce(u64(a) * b);
+    u64x4 x0246 = u32x8_mul0246(a, b);
+    u64x4 x1357 = u32x8_mul1357(a, b);
     return reduce(x0246, x1357);
   }
 
   // static I32x8 mul_reduce(const I32x8 &a, const U64x4 &b) {
-  //   U32x8 x0 = u32x8::mul_lo(get_irx8(), u32x8::mul_lo(a, b));
+  //   U32x8 x0 = u32x8::mul_lo(irx8(), u32x8::mul_lo(a, b));
   //   auto [x0246, x1357] = u32x8::mul_0246_1357(a, b);
-  //   auto x1 = u32x8::mul(x0, get_modx8());
-  //   auto x2 = u32x8::mul(i32x8::shuffle<0b11110101>(x0), get_modx8());
+  //   auto x1 = u32x8::mul(x0, modx8());
+  //   auto x2 = u32x8::mul(i32x8::shuffle<0b11110101>(x0), modx8());
   //   auto z0246 = u64x4::shift_r<32>(i64x4::add(x0246, x1));
   //   auto z1357 = i64x4::add(x1357, x2);
   //   return i32x8::blend<0b10101010>(z0246, z1357);
@@ -124,41 +112,59 @@ struct M32x8 {
   friend M32x8 operator*(const M32x8 &lhs, const M32x8 &rhs) {
     return M32x8(lhs) *= rhs;
   }
-  constexpr static M32x8 addmul(const M32x8 &a, const M32x8 &b, const M32x8 &c) { // (a + b) * c
-    auto v = i32x8::add(a.v, b.v);
-    v = mul_reduce(v, c.v);
-    return v;
+  static M32x8 addmul(const M32x8 &a, const M32x8 &b, const M32x8 &c) {
+    // (a + b) * c
+    auto v = _mm256_add_epi32(a.v, b.v);
+    return mul_reduce(v, c.v);
+    // return (a + b) * c;
   }
 
-  constexpr static M32x8 submul(const M32x8 &a, const M32x8 &b, const M32x8 &c) { // (a - b) * c
-    auto v = i32x8::sub(a.v, b.v);
-    v = i32x8::add(v, get_mod2x8());
-    v = mul_reduce(v, c.v);
-    return v;
+  static M32x8 submul(const M32x8 &a, const M32x8 &b, const M32x8 &c) {
+    // (a - b) * c
+    auto v = _mm256_sub_epi32(a.v, b.v);
+    v = _mm256_add_epi32(v, mod2x8());
+    return mul_reduce(v, c.v);
+    // return (a - b) * c;
   }
 
-  U32x8 raw() const {
+  u32x8 raw() const {
     return v;
   }
 
   template <i32 imm>
   M32x8 neg() const {
-    auto sub = i32x8::sub(get_mod2x8(), v);
-    return i32x8::blend<imm>(v, sub);
+    auto sub = _mm256_sub_epi32(mod2x8(), v);
+    return _mm256_blend_epi32(v, sub, imm);
   }
 
   auto to_array() const {
-    return i256::to_array<u32>(v);
+    return i256_toarray<u32>(v);
   }
 
   template <i32 imm>
   M32x8 shuffle() const {
-    return i32x8::shuffle<imm>(v);
+    return _mm256_shuffle_epi32(v, imm);
   }
 
   template <i32 imm>
   M32x8 shufflex4() const {
-    return i128x2::shuffle<imm>(v);
+    return _mm256_permute2x128_si256(v, v, imm);
+  }
+
+  static u32x8 irx8() {
+    return i32x8_set1(ModT::Space::ir());
+    // static u32x8 IRx8 = i32x8_set1(ModT::Space::ir());
+    // return IRx8;
+  }
+  static u32x8 mod2x8() {
+    return i32x8_set1(ModT::Space::mod2());
+    // static u32x8 MOD2x8 = i32x8_set1(ModT::Space::mod2());
+    // return MOD2x8;
+  }
+  static u32x8 modx8() {
+    return i32x8_set1(ModT::Space::mod());
+    // static u32x8 MODx8 = i32x8_set1(ModT::Space::mod2());
+    // return MODx8;
   }
 };
 

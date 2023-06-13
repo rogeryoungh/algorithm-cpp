@@ -69,41 +69,35 @@ struct NttClassicalInfoAvx {
 template <montgomery_modint_concept ModT, bool aligned>
 static void ntt_classical_avx(std::span<ModT> f0) { // dif
   using X8 = simd::M32x8<ModT>;
-  static constexpr auto load = simd::i256::load<aligned>;
-  static constexpr auto store = simd::i256::store<aligned>;
-
+  auto *f = std::bit_cast<X8 *>(f0.data());
   static const NttClassicalInfoAvx<X8> info;
 
   i32 n8 = f0.size(), n = n8 / 8;
   assert(n8 % 16 == 0);
-  auto *f = reinterpret_cast<simd::I256 *>(f0.data());
 
   for (i32 l = n / 2; l >= 1 * 1; l /= 2) {
     ModT r = 1;
     for (i32 i = 0, k = 0; i < n; i += l * 2, ++k) {
       X8 r8 = X8::from(r);
       for (i32 j = 0; j < l; ++j) {
-        X8 fx = load(&f[i + j]);
-        X8 fy = load(&f[i + j + l]) * r8;
-
-        X8 rx = fx + fy;
-        X8 ry = fx - fy;
-        store(&f[i + j], rx.v);
-        store(&f[i + j + l], ry.v);
+        X8 fx = f[i + j];
+        X8 fy = f[i + j + l] * r8;
+        f[i + j] = fx + fy;
+        f[i + j + l] = fx - fy;
       }
       r *= info.rate2[std::countr_one<u32>(k)];
     }
   }
   X8 rti = X8::from(ModT(1));
   for (i32 i = 0; i < n; ++i) {
-    X8 fi = load(&f[i]);
+    X8 fi = f[i];
     fi *= rti;
     fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
     fi *= info.rt4;
     fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
     fi *= info.rt2;
     fi = fi.template neg<0b10101010>() + fi.template shuffle<0b10110001>();
-    store(&f[i], fi.v);
+    f[i] = fi;
     rti *= info.rate4ix8[std::countr_one<u32>(i)];
   }
 }
@@ -111,25 +105,22 @@ static void ntt_classical_avx(std::span<ModT> f0) { // dif
 template <montgomery_modint_concept ModT, bool aligned>
 static void intt_classical_avx(std::span<ModT> f0) { // dit
   using X8 = simd::M32x8<ModT>;
-  static constexpr auto load = simd::i256::load<aligned>;
-  static constexpr auto store = simd::i256::store<aligned>;
-
+  auto *f = std::bit_cast<X8 *>(f0.data());
   static const NttClassicalInfoAvx<X8> info;
 
   i32 n8 = f0.size(), n = n8 / 8;
   assert(n8 % 16 == 0);
-  auto *f = reinterpret_cast<simd::I256 *>(f0.data());
 
   X8 rti = X8::from(ModT(1));
   for (i32 i = 0; i < n; ++i) {
-    X8 fi = load(&f[i]);
+    X8 fi = f[i];
     fi = fi.template neg<0b10101010>() + fi.template shuffle<0b10110001>();
     fi *= info.irt2;
     fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
     fi *= info.irt4;
     fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
     fi *= rti;
-    store(&f[i], fi.v);
+    f[i] = fi;
     rti *= info.irate4ix8[std::countr_one<u32>(i)];
   }
   for (i64 l = 1; l < n; l *= 2) {
@@ -137,12 +128,10 @@ static void intt_classical_avx(std::span<ModT> f0) { // dit
     for (i32 i = 0, k = 0; i < n; i += l * 2, ++k) {
       X8 r8 = X8::from(r);
       for (i32 j = 0; j < l; ++j) {
-        X8 fx = load(&f[i + j]);
-        X8 fy = load(&f[i + j + l]);
-        X8 rx = fx + fy;
-        X8 ry = X8::submul(fx, fy, r8);
-        store(&f[i + j], rx.v);
-        store(&f[i + j + l], ry.v);
+        X8 fx = f[i + j];
+        X8 fy = f[i + j + l];
+        f[i + j] = fx + fy;
+        f[i + j + l] = X8::submul(fx, fy, r8);
       }
       r *= info.irate2[std::countr_one<u32>(k)];
     }

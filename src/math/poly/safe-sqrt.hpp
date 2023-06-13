@@ -17,7 +17,8 @@ std::optional<AVec<ModT>> poly_safe_sqrt(std::span<const ModT> f, u32 m) {
   u32 len = it - f.begin();
   if (len % 2 == 1 || !sq.has_value())
     return std::nullopt;
-  auto x = poly_sqrt({it, f.end()}, m - len / 2, sq.value());
+  AVec<ModT> x = {it, f.end()};
+  x = poly_sqrt(x, m - len / 2, sq.value());
   x.insert(x.begin(), len / 2, 0);
   return x;
 }
