@@ -1,9 +1,10 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
+#include "../../src/math/poly/inv-10E-nt-block.hpp"
+#include "../../src/math/poly/div-10E-nt-block.hpp"
 #include "../../src/math/poly/exp-14E-nt-block.hpp"
 #include "../../src/math/poly/pow.hpp"
 #include "../../src/math/poly/ln.hpp"
-#include "../../src/math/poly/div-10E-nt-block.hpp"
 
 #include "../../src/other/modint/montgomery-space.hpp"
 #include "../../src/other/modint/static-modint.hpp"
@@ -15,9 +16,10 @@ using ModT = StaticModint<Space>;
 #include "../benchmark-snippet.hpp"
 #include <random>
 struct BM_POW : TEST_BASE {
-  static constexpr auto m_div = poly_div_10E_block<ModT>;
+  static constexpr auto m_inv = poly_inv_10E_block<ModT>;
+  static constexpr auto m_div = poly_div_10E_block<ModT, m_inv>;
   static constexpr auto m_ln = poly_ln<ModT, m_div>;
-  static constexpr auto m_exp = poly_exp_14E_block<ModT>;
+  static constexpr auto m_exp = poly_exp_14E_block<ModT, m_inv>;
   static constexpr auto m_pow = poly_pow<ModT, m_ln, m_exp>;
 
   void init(int n) {
@@ -29,7 +31,7 @@ struct BM_POW : TEST_BASE {
     }
   }
   int run(int n) {
-    std::vector tf = f;
+    AVec<ModT> tf = f;
     detail::ntt_size = 0;
     m_pow(f, 998244353998244353ull, n);
     benchmark::DoNotOptimize(f[0]);

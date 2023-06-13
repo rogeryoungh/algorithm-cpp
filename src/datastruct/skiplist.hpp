@@ -52,6 +52,7 @@ struct SkipList {
     delete head;
     delete tail;
   }
+  
   /*
       第一层 50 % ， 第二层 25 % ，第三层 12.5% 依此类推， P = 1 / 4
   */

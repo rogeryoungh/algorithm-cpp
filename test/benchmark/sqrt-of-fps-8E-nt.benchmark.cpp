@@ -1,6 +1,7 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
 #include "../../src/math/poly/sqrt-8E-nt-block.hpp"
+#include "../../src/math/poly/inv-10E-nt-block.hpp"
 
 #include "../../src/other/modint/montgomery-space.hpp"
 #include "../../src/other/modint/static-modint.hpp"
@@ -22,9 +23,9 @@ struct BM_SQRT : TEST_BASE {
     }
   }
   int run(int n) {
-    std::vector tf = f;
+    AVec<ModT> tf = f;
     detail::ntt_size = 0;
-    poly_sqrt_8E_block<ModT>(f, n, f[0].sqrt().value());
+    poly_sqrt_8E_block<ModT, poly_inv_10E_block<ModT>>(f, n, f[0].sqrt().value());
     benchmark::DoNotOptimize(f[0]);
     return detail::ntt_size;
   }

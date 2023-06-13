@@ -1,6 +1,11 @@
-#define PROBLEM "https://www.luogu.com.cn/problem/P3803"
+// magic!
+#pragma GCC optimize("O3")
+
+#define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
 #define ALGO_IO_NUMBER_ONLY
+
+#define ALGO_DISABLE_NTT_RADIX_4
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/math/poly/poly-base.hpp"
@@ -16,7 +21,6 @@ i32 main() {
   FastO fout(stdout);
   u32 n, m;
   fin >> n >> m;
-  n++, m++;
   FPS f(n), g(m);
 
   for (auto &i : f)

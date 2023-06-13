@@ -1,11 +1,11 @@
-#define PROBLEM "https://loj.ac/p/143"
+// magic!
+#pragma GCC optimize("O3")
+
+#define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
 #define ALGO_IO_NUMBER_ONLY
 
-// #define ALGO_DISABLE_SIMD_AVX2
-// #define ALGO_DISABLE_NTT_RADIX_4
-// #define ALGO_DISABLE_NTT_CLASSICAL
-// #define ALGO_DYNAMIC_MOD
+#define ALGO_DYNAMIC_MOD
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/math/poly/poly-base.hpp"
@@ -25,19 +25,21 @@ using ModT = DynamicModint<Space>;
 using FPS = Poly<ModT>;
 
 i32 main() {
-  FastI fin(stdin);
-  FastO fout(stdout);
 #ifdef ALGO_DYNAMIC_MOD
   ModT::set_mod(998244353);
 #endif
-  u32 n, k;
-  fin >> n >> k;
-  n++;
-  FPS f(n);
+  FastI fin(stdin);
+  FastO fout(stdout);
+  u32 n, m;
+  fin >> n >> m;
+  FPS f(n), g(m);
+
   for (auto &i : f)
     fin >> i;
-  auto ans = ((f - FPS{f[0] - 2} - f.invsqrt(n).integr(n).exp(n)).ln(n) + FPS{ModT(1)}).pow(k, n).deriv(n - 1);
-  for (const auto &i : ans)
+  for (auto &i : g)
+    fin >> i;
+  for (auto i : f *g)
     fout << i << ' ';
+  std::cerr << std::endl << detail::ntt_size << std::endl;
   return 0;
 }

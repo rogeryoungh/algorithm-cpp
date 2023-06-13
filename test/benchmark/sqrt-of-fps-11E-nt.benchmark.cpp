@@ -22,7 +22,7 @@ struct BM_SQRT : TEST_BASE {
     }
   }
   int run(int n) {
-    std::vector tf = f;
+    AVec<ModT> tf = f;
     detail::ntt_size = 0;
     poly_sqrt_11E<ModT>(f, n, f[0].sqrt().value());
     benchmark::DoNotOptimize(f[0]);

@@ -6,10 +6,12 @@
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/other/modint/static-modint.hpp"
+#include "../../src/other/modint/basic-mod-space.hpp"
 #include "../../src/math/poly/ntt.hpp"
-#include "../../src/math/poly/vec-dots.hpp"
+#include "../../src/other/align-alloc.hpp"
 
-using ModT = BasicStaticModint<u32, 998244353>;
+using Space = BasicModSpace<u32, 998244353>;
+using ModT = StaticModint<Space>;
 
 i32 main() {
   FastI fin(stdin);
@@ -18,7 +20,7 @@ i32 main() {
   fin >> n >> m;
   n++, m++;
   u32 L = std::bit_ceil(n + m - 1);
-  std::vector<ModT> f(L), g(L);
+  AVec<ModT> f(L), g(L);
   for (i32 i = 0; i < n; ++i)
     fin >> f[i];
   for (i32 i = 0; i < m; ++i)
