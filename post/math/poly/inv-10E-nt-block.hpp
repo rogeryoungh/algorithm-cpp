@@ -1,23 +1,17 @@
 #ifndef ALGO_MATH_POLY_INV10E_NTBLOCK
 #define ALGO_MATH_POLY_INV10E_NTBLOCK
 
-#include "../../base.hpp"
-#include "ntt.hpp"
-#include "vec-dots.hpp"
+#include "poly-def.hpp"
 #include "nt-block-helper.hpp"
 
-#include <algorithm>
-#include <vector>
-#include <iostream>
-
-template <static_modint_concept ModT>
-std::vector<ModT> poly_inv_10E_block(std::span<const ModT> self, u32 m) {
+template <class ModT>
+AVec<ModT> poly_inv_10E_block(std::span<const ModT> self, u32 m) {
   if (m == 1)
     return {self[0].inv()};
   auto [n, u] = detail::nt_block_len(m);
-  std::vector<ModT> x = poly_inv_10E_block(self, n);
+  AVec<ModT> x = poly_inv_10E_block(self, n);
   x.resize(n * u);
-  std::vector<ModT> nf0(n * u * 2), ng0(n * u * 2);
+  AVec<ModT> nf0(n * u * 2), ng0(n * u * 2);
   auto nf = detail::nt_block_split(nf0, n * 2);
   auto ng = detail::nt_block_split(ng0, n * 2);
   auto xk = detail::nt_block_split(x, n);
@@ -29,12 +23,17 @@ std::vector<ModT> poly_inv_10E_block(std::span<const ModT> self, u32 m) {
       continue;
     std::copy(xk[k - 1].begin(), xk[k - 1].end(), ng[k - 1].begin());
     ntt<ModT>(ng[k - 1]);
-    std::vector<ModT> psi(n * 2);
+    AVec<ModT> psi(n * 2);
     for (u32 j = 0; j < k; ++j) {
-      for (u32 i = 0; i < n; ++i)
-        psi[i] -= (nf[k - j][i] + nf[k - 1 - j][i]) * ng[j][i];
-      for (u32 i = n; i < n * 2; ++i)
-        psi[i] -= (nf[k - j][i] - nf[k - 1 - j][i]) * ng[j][i];
+      auto psi_p = psi.data(), nf1_p = nf[k - j].data(), nf2_p = nf[k - 1 - j].data(), ng_p = ng[j].data();
+      const auto fn1 = []<class T>(T &pi, T nf1i, T nf2i, T ngi) {
+        pi -= (nf1i + nf2i) * ngi;
+      };
+      vectorization_4<ModT, true>(n, psi_p, nf1_p, nf2_p, ng_p, fn1);
+      const auto fn2 = []<class T>(T &pi, T nf1i, T nf2i, T ngi) {
+        pi -= (nf1i - nf2i) * ngi;
+      };
+      vectorization_4<ModT, true>(n, psi_p + n, nf1_p + n, nf2_p + n, ng_p + n, fn2);
     }
     intt<ModT>(psi);
     std::fill_n(psi.begin() + n, n, 0);

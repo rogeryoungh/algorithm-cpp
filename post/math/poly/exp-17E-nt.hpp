@@ -1,19 +1,14 @@
 #ifndef ALGO_MATH_POLY_EXP17ENT
 #define ALGO_MATH_POLY_EXP17ENT
 
-#include "../../base.hpp"
-#include "ntt.hpp"
+#include "poly-def.hpp"
 #include "../constant/prepare-inv.hpp"
 
-#include <algorithm>
-#include <vector>
-#include <iostream>
-
-template <static_modint_concept ModT>
-std::vector<ModT> poly_exp_17E(std::span<const ModT> self, u32 m) {
+template <class ModT>
+AVec<ModT> poly_exp_17E(std::span<const ModT> self, u32 m) {
   u32 n = std::bit_ceil(m);
   auto &iv = prepare_inv<ModT>(n);
-  std::vector<ModT> f(n), g(n);
+  AVec<ModT> f(n), g(n);
   f[0] = g[0] = 1;
   if (m == 1)
     return f;
@@ -25,7 +20,7 @@ std::vector<ModT> poly_exp_17E(std::span<const ModT> self, u32 m) {
     std::copy_n(f.begin(), t, nf.begin());
     ntt<ModT>(std::span(nf.begin(), t * 2)); // 2E
 
-    std::vector<ModT> q(t * 2);
+    AVec<ModT> q(t * 2);
     std::span qt{q.begin(), t};
     std::copy_n(nf.begin(), t * 2, q.begin());
 

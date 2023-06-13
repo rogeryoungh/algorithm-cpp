@@ -1,18 +1,12 @@
 #ifndef ALGO_MATH_POLY_SQRT11ENT
 #define ALGO_MATH_POLY_SQRT11ENT
 
-#include "../../base.hpp"
-#include "ntt.hpp"
-#include "vec-dots.hpp"
+#include "poly-def.hpp"
 
-#include <algorithm>
-#include <vector>
-#include <iostream>
-
-template <static_modint_concept ModT>
-std::vector<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x0) {
+template <class ModT>
+AVec<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x0) {
   u32 n = std::bit_ceil(m);
-  std::vector<ModT> x(n), g(n), ng(n);
+  AVec<ModT> x(n), g(n), ng(n);
   x[0] = x0;
   if (n == 1)
     return x;
@@ -20,7 +14,7 @@ std::vector<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x
   x[1] = (self[1] * g[0]).shift2();
   ntt<ModT>({ng.begin(), 2});
   for (u32 t = 2; t < n; t *= 2) {
-    std::vector<ModT> f(t * 2), nf(t);
+    AVec<ModT> f(t * 2), nf(t);
     std::copy_n(x.begin(), t, nf.begin());
     ntt<ModT>(nf); // 1E
     std::copy_n(nf.begin(), t, f.begin());
@@ -30,8 +24,9 @@ std::vector<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x
     ntt<ModT>(nf); // 1E
     dot<ModT>(nf, ng);
     intt<ModT>(nf); // 1E
-    for (u32 i = t / 2; i < t; ++i)
-      g[i] = -nf[i];
+    vectorization_2(t / 2, g.data() + t / 2, nf.data() + t / 2, [](auto &gi, auto nfi) {
+      gi = -nfi;
+    });
     dot<ModT>({f.begin(), t}, f);
     intt<ModT>({f.begin(), t}); // 1E
     for (u32 i = t; i < std::min<u32>(self.size(), t * 2); ++i)
@@ -42,8 +37,9 @@ std::vector<ModT> poly_sqrt_11E(std::span<const ModT> self, u32 m, const ModT &x
     ntt<ModT>({ng.begin(), t * 2}); // 2E
     dot<ModT>(f, ng);
     intt<ModT>(f); // 2E
-    for (u32 i = t; i < t * 2; ++i)
-      x[i] = f[i].shift2();
+    vectorization_2(t, x.data() + t, f.data() + t, [](auto &xi, auto fi) {
+      xi = fi.shift2();
+    });
   }
   return x.resize(m), x;
 }

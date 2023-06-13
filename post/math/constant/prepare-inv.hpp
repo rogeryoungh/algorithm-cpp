@@ -2,19 +2,19 @@
 #define ALGO_MATH_CONSTANT_PREPARE_INV
 
 #include "../../base.hpp"
+#include "../../other/align-alloc.hpp"
 
-#include "../../other/modint/modint-concept.hpp"
-#include <vector>
-
-template <static_modint_concept ModT>
+template <class ModT>
 auto &prepare_inv(u32 m) {
-  static std::vector<ModT> iv{1, 1};
-  static constexpr auto P = ModT::mod();
-  while (iv.size() < m) {
-    u32 l = iv.size();
-    iv.resize(l * 2);
-    for (u32 i = l; i < l * 2; ++i)
+  static AVec<ModT> iv{1, 1};
+  const auto P = ModT::mod();
+  m = std::bit_ceil(m);
+  if (iv.size() < m) {
+    u32 n = iv.size();
+    iv.resize(m);
+    for (u32 i = n; i < m; ++i) {
       iv[i] = iv[P % i] * (P - P / i);
+    }
   }
   return iv;
 }

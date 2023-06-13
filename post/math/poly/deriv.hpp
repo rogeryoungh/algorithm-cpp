@@ -1,18 +1,15 @@
 #ifndef ALGO_MATH_POLY_DERIV
 #define ALGO_MATH_POLY_DERIV
 
-#include "../../base.hpp"
-#include "../../other/modint/modint-concept.hpp"
+#include "poly-def.hpp"
+#include "../constant/prepare-inc.hpp"
 
-#include <span>
-#include <vector>
-
-template <static_modint_concept ModT>
+template <class ModT>
 auto poly_deriv(std::span<const ModT> f, u32 m) {
-  std::vector<ModT> x(m);
+  const auto &inc = prepare_inc<ModT>(m);
+  AVec<ModT> x(m);
   std::copy(f.begin() + 1, std::min(f.begin() + m + 1, f.end()), x.begin());
-  for (u32 i = 0; i < m; ++i)
-    x[i] *= i + 1;
+  dot<ModT, false>(x, {inc.begin() + 1, m});
   return x;
 }
 

@@ -2,7 +2,7 @@
 #define ALGO_MATH_POLY_NTT_CLASSICAL_RADIX_4_BASIC
 
 #include "../../base.hpp"
-#include "../../other/modint/modint-concept.hpp"
+#include "vec-dots.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -12,17 +12,15 @@
 
 namespace detail {
 
-template <static_modint_concept ModT>
+template <class ModT>
 struct NttClassicalInfo4 {
   using ValueT = typename ModT::ValueT;
-  static constexpr ValueT P = ModT::mod();
-  static constexpr ValueT g = 3;
-  static constexpr i32 rank2 = std::countr_zero(P - 1);
-  std::array<ModT, rank2 + 1> rt, irt;
-  std::array<ModT, std::max<i32>(0, rank2 - 1)> rate2, irate2;
-  std::array<ModT, std::max<i32>(0, rank2 - 2)> rate3, irate3;
+  std::array<ModT, 64> rt, irt, rate2, irate2, rate3, irate3;
 
-  constexpr NttClassicalInfo4() {
+  NttClassicalInfo4() {
+    const ValueT P = ModT::mod();
+    const ValueT g = 3;
+    const i32 rank2 = std::countr_zero(P - 1);
     rt[rank2] = ModT(g).pow((P - 1) >> rank2);
     irt[rank2] = rt[rank2].inv();
     for (i32 i = rank2; i >= 1; --i) {
@@ -30,14 +28,14 @@ struct NttClassicalInfo4 {
       irt[i - 1] = irt[i] * irt[i];
     }
     ModT prod = 1, iprod = 1;
-    for (i32 i = 0; i < rate2.size(); ++i) {
+    for (i32 i = 0; i < rank2 - 1; ++i) {
       rate2[i] = prod * rt[i + 2];
       irate2[i] = iprod * irt[i + 2];
       prod *= irt[i + 2];
       iprod *= rt[i + 2];
     }
     prod = 1, iprod = 1;
-    for (i32 i = 0; i < rate3.size(); ++i) {
+    for (i32 i = 0; i < rank2 - 2; ++i) {
       rate3[i] = prod * rt[i + 3];
       irate3[i] = iprod * irt[i + 3];
       prod *= irt[i + 3];
@@ -46,9 +44,9 @@ struct NttClassicalInfo4 {
   }
 };
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void ntt_classical_basic4(std::span<ModT> f) { // dif
-  static constexpr NttClassicalInfo4<ModT> info;
+  const NttClassicalInfo4<ModT> info;
   i32 n = f.size(), l = n / 2, n_4b = std::countr_zero<u32>(n) & 1;
   if (n_4b) {
     for (i32 j = 0; j < l; ++j) {
@@ -68,19 +66,21 @@ static void ntt_classical_basic4(std::span<ModT> f) { // dif
         ModT x2 = f[i + j + 2 * l] * r2;
         ModT x3 = f[i + j + 3 * l] * r3;
         ModT x1x3 = (x1 - x3) * img;
-        f[i + j + 0 * l] = x0 + x2 + x1 + x3;
-        f[i + j + 1 * l] = x0 + x2 - x1 - x3;
-        f[i + j + 2 * l] = x0 - x2 + x1x3;
-        f[i + j + 3 * l] = x0 - x2 - x1x3;
+        ModT x02 = x0 + x2, x0_2 = x0 - x2;
+        ModT x13 = x1 + x3;
+        f[i + j + 0 * l] = x02 + x13;
+        f[i + j + 1 * l] = x02 - x13;
+        f[i + j + 2 * l] = x0_2 + x1x3;
+        f[i + j + 3 * l] = x0_2 - x1x3;
       }
       r *= info.rate3[std::countr_one<u32>(k)];
     }
   }
 }
 
-template <static_modint_concept ModT>
+template <class ModT>
 static void intt_classical_basic4(std::span<ModT> f) { // dit
-  static constexpr NttClassicalInfo4<ModT> info;
+  const NttClassicalInfo4<ModT> info;
   i32 n = f.size(), l = 1, n_4b = std::countr_zero<u32>(n) & 1;
   for (; l < (n_4b ? n / 2 : n); l *= 4) {
     ModT r = 1, img = info.irt[2];
@@ -92,10 +92,12 @@ static void intt_classical_basic4(std::span<ModT> f) { // dit
         ModT x2 = f[i + j + 2 * l];
         ModT x3 = f[i + j + 3 * l];
         ModT x2x3 = (x2 - x3) * img;
-        f[i + j + 0 * l] = x0 + x1 + x2 + x3;
-        f[i + j + 1 * l] = (x0 - x1 + x2x3) * r;
-        f[i + j + 2 * l] = (x0 + x1 - x2 - x3) * r2;
-        f[i + j + 3 * l] = (x0 - x1 - x2x3) * r3;
+        ModT x01 = x0 + x1, x0_1 = x0 - x1;
+        ModT x23 = x2 + x3;
+        f[i + j + 0 * l] = x01 + x23;
+        f[i + j + 1 * l] = (x0_1 + x2x3) * r;
+        f[i + j + 2 * l] = (x01 - x23) * r2;
+        f[i + j + 3 * l] = (x0_1 - x2x3) * r3;
       }
       r *= info.irate3[std::countr_one<u32>(k)];
     }
@@ -107,9 +109,7 @@ static void intt_classical_basic4(std::span<ModT> f) { // dit
       f[j + l] = x - y;
     }
   }
-  const ModT ivn = ModT(n).inv();
-  for (i32 i = 0; i < n; i++)
-    f[i] *= ivn;
+  dot_v<ModT>(f, ModT(n).inv());
 }
 
 } // namespace detail

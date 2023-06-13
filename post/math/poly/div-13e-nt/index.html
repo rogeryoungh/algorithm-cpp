@@ -66,23 +66,17 @@
 <pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_DIV13ENT
 #define ALGO_MATH_POLY_DIV13ENT
 
-#include &quot;../../base.hpp&quot;
-#include &quot;ntt.hpp&quot;
-#include &quot;inv-10E-nt.hpp&quot;
+#include &quot;poly-def.hpp&quot;
 
-#include &lt;algorithm&gt;
-#include &lt;vector&gt;
-#include &lt;iostream&gt;
-
-template &lt;static_modint_concept ModT&gt;
-std::vector&lt;ModT&gt; poly_div_13E(std::span&lt;const ModT&gt; lhs, std::span&lt;const ModT&gt; rhs, u32 m) {
+template &lt;class ModT, auto poly_inv&gt;
+AVec&lt;ModT&gt; poly_div_13E(std::span&lt;const ModT&gt; lhs, std::span&lt;const ModT&gt; rhs, u32 m) {
   if (lhs.empty() || rhs.empty())
     return {};
   if (m == 1)
     return {lhs[0] / rhs[0]};
   u32 t = std::bit_ceil(m);
-  std::vector&lt;ModT&gt; g(t), x(t), q(t);
-  std::vector&lt;ModT&gt; u = poly_inv_10E&lt;ModT&gt;(rhs, t / 2); // 5E
+  AVec&lt;ModT&gt; g(t), x(t), q(t);
+  AVec&lt;ModT&gt; u = poly_inv(rhs, t / 2); // 5E
   std::copy(rhs.begin(), std::min(rhs.begin() + t, rhs.end()), g.begin());
   std::copy(lhs.begin(), std::min(lhs.begin() + t / 2, lhs.end()), x.begin());
   u.resize(t);

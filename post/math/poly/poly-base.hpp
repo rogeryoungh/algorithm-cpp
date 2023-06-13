@@ -1,27 +1,23 @@
 #ifndef ALGO_MATH_POLY_BASE
 #define ALGO_MATH_POLY_BASE
 
-#include "../../other/modint/modint-concept.hpp"
-#include "ntt.hpp"
-#include "vec-dots.hpp"
+#include "poly-def.hpp"
+
 #include "inv-10E-nt-block.hpp"
 #include "div-10E-nt-block.hpp"
 #include "ln.hpp"
 #include "exp-14E-nt-block.hpp"
 #include "sqrt-8E-nt-block.hpp"
-#include "sqrt-11E-nt.hpp"
+#include "invsqrt-12E-nt.hpp"
 #include "pow.hpp"
 #include "safe-sqrt.hpp"
 #include "safe-pow.hpp"
 #include "deriv.hpp"
 #include "integr.hpp"
 
-#include <optional>
-#include <vector>
-
-template <static_modint_concept ModT>
-class Poly : public std::vector<ModT> {
-  using Vec = typename std::vector<ModT>;
+template <class ModT>
+class Poly : public AVec<ModT> {
+  using Vec = AVec<ModT>;
 
 public:
   using Vec::empty;
@@ -33,13 +29,14 @@ public:
   using Vec::cend;
   using Vec::end;
 
-  static constexpr auto m_inv = poly_inv_10E<ModT>;
+  static constexpr auto m_inv = poly_inv_10E_block<ModT>;
+  static constexpr auto m_invsqrt = poly_invsqrt_12E<ModT>;
   static constexpr auto m_deriv = poly_deriv<ModT>;
   static constexpr auto m_integr = poly_integr<ModT>;
-  static constexpr auto m_div = poly_div_10E_block<ModT>;
+  static constexpr auto m_div = poly_div_10E_block<ModT, m_inv>;
   static constexpr auto m_ln = poly_ln<ModT, m_div>;
-  static constexpr auto m_exp = poly_exp_14E_block<ModT>;
-  static constexpr auto m_sqrt = poly_sqrt_11E<ModT>;
+  static constexpr auto m_exp = poly_exp_14E_block<ModT, m_inv>;
+  static constexpr auto m_sqrt = poly_sqrt_8E_block<ModT, m_inv>;
   static constexpr auto m_safe_sqrt = poly_safe_sqrt<ModT, m_sqrt>;
   static constexpr auto m_pow = poly_pow<ModT, m_ln, m_exp>;
   static constexpr auto m_safe_pow = poly_safe_pow<ModT, m_pow>;
@@ -48,9 +45,10 @@ public:
 
   Poly(u32 len) : Vec(len) {}
 
-  Poly(const std::vector<u32> &v) : Vec(v) {}
+  Poly(const std::vector<u32> &v) : Vec(v.begin(), v.end()) {}
+  Poly(const std::vector<ModT> &v) : Vec(v.begin(), v.end()) {}
 
-  Poly(const std::vector<ModT> &v) : Vec(v) {}
+  Poly(AVec<ModT> v) : Vec(std::move(v)) {}
 
   Poly(const ModT &v) : Vec({v}) {}
 
@@ -127,6 +125,10 @@ public:
     return m_exp(*this, m);
   }
 
+  Poly invsqrt(u32 m) const {
+    return m_invsqrt(*this, m, this->front().sqrt().value().inv());
+  }
+
   Poly sqrt(u32 m) const {
     return m_sqrt(*this, m, this->front().sqrt().value());
   }
@@ -141,11 +143,6 @@ public:
 
   Poly safe_pow(u64 k, u64 k2, u32 m) const {
     return m_safe_pow(*this, k, k2, m);
-  }
-
-  template <class U = u32>
-  auto to_vec() const {
-    return std::vector<U>{begin(), end()};
   }
 };
 

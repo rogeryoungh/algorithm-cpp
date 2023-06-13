@@ -2,7 +2,8 @@
 #define ALGO_MATH_POLY_NTT_AVX
 
 #include "../../base.hpp"
-#include "../../other/modint/modint-concept.hpp"
+#include "../../other/modint/montgomery-x8.hpp"
+#include "vec-dots.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -10,67 +11,53 @@
 #include <span>
 #include <vector>
 
-#include "../../other/modint/montgomery-x8.hpp"
-
 namespace detail {
 
-template <montgomery_modint_concept ModT>
+template <class X8>
 struct NttTwistedInfoAvx {
-  using X8 = simd::M32x8<ModT>;
+  using ModT = typename X8::ModT;
   using ValueT = typename ModT::ValueT;
 
-  static constexpr ValueT P = ModT::mod();
-  static constexpr ValueT g = 3;
-  static constexpr ValueT max_bit = ValueT(1) << std::countr_zero(ModT::mod() - 1);
-
   std::vector<X8> rt;
+  ValueT P, g, max_bit;
+  X8 rt2, irt2, rt4, irt4;
 
   NttTwistedInfoAvx() {
-    init_rt(64);
+    P = ModT::mod();
+    g = 3;
+    max_bit = ValueT(1) << std::countr_zero(ModT::mod() - 1);
+    prepare_root(16);
+
+    auto rt0 = reinterpret_cast<ModT *>(rt.data());
+
+    alignas(32) std::array<ModT, 8> r;
+
+    std::fill(r.begin(), r.end(), rt0[2]);
+    r[3] = r[7] = rt0[3];
+    rt2 = r;
+    std::fill(r.begin(), r.end(), rt0[4]);
+    r[5] = rt0[5], r[6] = rt0[6], r[7] = rt0[7];
+    rt4 = r;
   }
 
-  void init_rt(i32 m) {
+  void prepare_root(u32 m) {
+    m = std::bit_ceil(m);
     assert(m <= max_bit);
-    rt.resize(m / 8);
-    std::span<ModT> rt0 = as_modt();
-    rt0[0] = rt0[1] = 1;
-    for (i32 n = 2; n < m; n *= 2) {
-      ModT p = ModT(g).pow((P - 1) / n / 2);
-      for (i32 i = n; i < n * 2; i += 2) {
-        rt0[i] = rt0[i / 2], rt0[i + 1] = p * rt0[i];
+
+    u32 n = rt.size() * 8;
+    if (n < m) {
+      rt.resize(m / 8);
+      auto rt0 = reinterpret_cast<ModT *>(rt.data());
+      if (n == 0) {
+        n = 2, rt0[0] = rt0[1] = 1;
+      }
+      for (; n < m; n *= 2) {
+        ModT p = ModT(g).pow((P - 1) / n / 2);
+        for (u32 i = n; i < n * 2; i += 2) {
+          rt0[i] = rt0[i / 2], rt0[i + 1] = p * rt0[i];
+        }
       }
     }
-  }
-
-  auto as_modt() {
-    return std::span{(ModT *)rt.data(), rt.size() * 8};
-  }
-
-  void prepare_root(i32 m) {
-    assert(m <= max_bit);
-    while (rt.size() < m) {
-      u32 n = rt.size();
-      rt.resize(n * 2);
-      ModT p = ModT(g).pow((P - 1) / n / 2 / 8);
-      alignas(32) std::array<ModT, 8> arr{};
-      for (i32 i = 0; i < 8; ++i)
-        arr[i] = i == 0 ? 1 : arr[i - 1] * p;
-      X8 pp = arr, p8 = X8::from((arr[7] * p).raw());
-      for (i32 i = n; i < n * 2; ++i) {
-        rt[i] = pp, pp *= p8;
-      }
-    }
-  }
-  template <i32 L>
-  X8 rt_small() {
-    std::array<ModT, 8> r;
-    std::span<ModT> rt0 = {(ModT *)rt.data(), 64};
-    std::fill(r.begin(), r.end(), rt0[L + 0]);
-    for (i32 i = 0; i < 8; i += L * 2) {
-      for (i32 j = 0; j < L; ++j)
-        r[i + j + L] = rt0[L + j];
-    }
-    return r;
   }
   static NttTwistedInfoAvx &instance() {
     static NttTwistedInfoAvx info{};
@@ -81,82 +68,62 @@ struct NttTwistedInfoAvx {
 template <montgomery_modint_concept ModT, bool aligned>
 static void ntt_twisted_avx(std::span<ModT> f0) { // dif
   using X8 = simd::M32x8<ModT>;
-
-  static auto &info = NttTwistedInfoAvx<ModT>::instance();
+  auto *f = std::bit_cast<X8 *>(f0.data());
+  static auto &info = NttTwistedInfoAvx<X8>::instance();
 
   i32 n8 = f0.size(), n = n8 / 8;
   assert(n8 % 16 == 0);
-  std::span<simd::I256> f{(simd::I256 *)f0.data(), u32(n)};
-  info.prepare_root(n);
-
-  static X8 rt2 = info.template rt_small<2>();
-  static X8 rt4 = info.template rt_small<4>();
+  info.prepare_root(n8);
 
   for (i32 l = n / 2; l > 0; l /= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
       for (i32 j = 0; j < l; ++j) {
-        X8 fx = X8::template load<aligned>(&f[i + j]);
-        X8 fy = X8::template load<aligned>(&f[i + j + l]);
-
-        X8 rx = fx + fy;
-        X8 ry = info.rt[j + l] * (fx - fy);
-        rx.template store<aligned>(&f[i + j]);
-        ry.template store<aligned>(&f[i + j + l]);
+        X8 fx = f[i + j], fy = f[i + j + l];
+        f[i + j] = fx + fy;
+        f[i + j + l] = (fx - fy) * info.rt[j + l];
       }
     }
   }
   for (i32 i = 0; i < n; ++i) {
-    X8 fi = X8::template load<aligned>(&f[i]);
+    X8 fi = f[i];
     fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
-    fi *= rt4;
+    fi *= info.rt4;
     fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
-    fi *= rt2;
+    fi *= info.rt2;
     fi = fi.template neg<0b10101010>() + fi.template shuffle<0b10110001>();
-    fi.template store<aligned>(&f[i]);
+    f[i] = fi;
   }
 }
 
-template <montgomery_modint_concept ModT, bool aligned>
+template <class ModT, bool aligned>
 static void intt_twisted_avx(std::span<ModT> f0) { // dit
   using X8 = simd::M32x8<ModT>;
-
-  static auto &info = NttTwistedInfoAvx<ModT>::instance();
+  auto *f = std::bit_cast<X8 *>(f0.data());
+  static auto &info = NttTwistedInfoAvx<simd::M32x8<ModT>>::instance();
 
   i32 n8 = f0.size(), n = n8 / 8;
   assert(n8 % 16 == 0);
-  std::span<simd::I256> f{(simd::I256 *)f0.data(), u32(n)};
-  info.prepare_root(n);
-
-  static X8 rt2 = info.template rt_small<2>();
-  static X8 rt4 = info.template rt_small<4>();
+  info.prepare_root(n8);
 
   for (i32 i = 0; i < n; ++i) {
-    X8 fi = X8::template load<aligned>(&f[i]);
+    X8 fi = f[i];
     fi = fi.template neg<0b10101010>() + fi.template shuffle<0b10110001>();
-    fi *= rt2;
+    fi *= info.rt2;
     fi = fi.template neg<0b11001100>() + fi.template shuffle<0b01001110>();
-    fi *= rt4;
+    fi *= info.rt4;
     fi = fi.template neg<0b11110000>() + fi.template shufflex4<0b01>();
-    fi.template store<aligned>(&f[i]);
+    f[i] = fi;
   }
   for (i64 l = 1; l < n; l *= 2) {
     for (i32 i = 0; i < n; i += l * 2) {
       for (i32 j = 0; j < l; ++j) {
-        X8 fx = X8::template load<aligned>(&f[i + j]);
-        X8 fy = X8::template load<aligned>(&f[i + j + l]) * info.rt[j + l];
-        X8 rx = fx + fy;
-        X8 ry = fx - fy;
-        rx.template store<aligned>(&f[i + j]);
-        ry.template store<aligned>(&f[i + j + l]);
+        X8 fx = f[i + j], fy = f[i + j + l] * info.rt[j + l];
+        f[i + j] = fx + fy;
+        f[i + j + l] = fx - fy;
       }
     }
   }
-  X8 ivn8 = X8::from(ModT(n8).inv().raw());
-  for (i32 i = 0; i < n; ++i) {
-    X8 fi = X8::template load<aligned>(&f[i]);
-    fi *= ivn8;
-    fi.template store<aligned>(&f[i]);
-  }
+  dot_v<ModT, aligned, false>(f0, ModT(n8).inv());
   std::reverse(f0.begin() + 1, f0.end());
 }
 

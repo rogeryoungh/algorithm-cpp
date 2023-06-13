@@ -66,18 +66,12 @@
 <pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_SQRT11ENT
 #define ALGO_MATH_POLY_SQRT11ENT
 
-#include &quot;../../base.hpp&quot;
-#include &quot;ntt.hpp&quot;
-#include &quot;vec-dots.hpp&quot;
+#include &quot;poly-def.hpp&quot;
 
-#include &lt;algorithm&gt;
-#include &lt;vector&gt;
-#include &lt;iostream&gt;
-
-template &lt;static_modint_concept ModT&gt;
-std::vector&lt;ModT&gt; poly_sqrt_11E(std::span&lt;const ModT&gt; self, u32 m, const ModT &amp;x0) {
+template &lt;class ModT&gt;
+AVec&lt;ModT&gt; poly_sqrt_11E(std::span&lt;const ModT&gt; self, u32 m, const ModT &amp;x0) {
   u32 n = std::bit_ceil(m);
-  std::vector&lt;ModT&gt; x(n), g(n), ng(n);
+  AVec&lt;ModT&gt; x(n), g(n), ng(n);
   x[0] = x0;
   if (n == 1)
     return x;
@@ -85,7 +79,7 @@ std::vector&lt;ModT&gt; poly_sqrt_11E(std::span&lt;const ModT&gt; self, u32 m, c
   x[1] = (self[1] * g[0]).shift2();
   ntt&lt;ModT&gt;({ng.begin(), 2});
   for (u32 t = 2; t &lt; n; t *= 2) {
-    std::vector&lt;ModT&gt; f(t * 2), nf(t);
+    AVec&lt;ModT&gt; f(t * 2), nf(t);
     std::copy_n(x.begin(), t, nf.begin());
     ntt&lt;ModT&gt;(nf); // 1E
     std::copy_n(nf.begin(), t, f.begin());
@@ -95,8 +89,9 @@ std::vector&lt;ModT&gt; poly_sqrt_11E(std::span&lt;const ModT&gt; self, u32 m, c
     ntt&lt;ModT&gt;(nf); // 1E
     dot&lt;ModT&gt;(nf, ng);
     intt&lt;ModT&gt;(nf); // 1E
-    for (u32 i = t / 2; i &lt; t; ++i)
-      g[i] = -nf[i];
+    vectorization_2(t / 2, g.data() + t / 2, nf.data() + t / 2, [](auto &amp;gi, auto nfi) {
+      gi = -nfi;
+    });
     dot&lt;ModT&gt;({f.begin(), t}, f);
     intt&lt;ModT&gt;({f.begin(), t}); // 1E
     for (u32 i = t; i &lt; std::min&lt;u32&gt;(self.size(), t * 2); ++i)
@@ -107,8 +102,9 @@ std::vector&lt;ModT&gt; poly_sqrt_11E(std::span&lt;const ModT&gt; self, u32 m, c
     ntt&lt;ModT&gt;({ng.begin(), t * 2}); // 2E
     dot&lt;ModT&gt;(f, ng);
     intt&lt;ModT&gt;(f); // 2E
-    for (u32 i = t; i &lt; t * 2; ++i)
-      x[i] = f[i].shift2();
+    vectorization_2(t, x.data() + t, f.data() + t, [](auto &amp;xi, auto fi) {
+      xi = fi.shift2();
+    });
   }
   return x.resize(m), x;
 }

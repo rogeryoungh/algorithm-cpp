@@ -66,25 +66,19 @@
 <pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_DIV10E_NTBLOCK
 #define ALGO_MATH_POLY_DIV10E_NTBLOCK
 
-#include &quot;../../base.hpp&quot;
-#include &quot;ntt.hpp&quot;
-#include &quot;inv-10E-nt-block.hpp&quot;
 #include &quot;nt-block-helper.hpp&quot;
+#include &quot;poly-def.hpp&quot;
 
-#include &lt;algorithm&gt;
-#include &lt;vector&gt;
-#include &lt;iostream&gt;
-
-template &lt;static_modint_concept ModT&gt;
-std::vector&lt;ModT&gt; poly_div_10E_block(std::span&lt;const ModT&gt; lhs, std::span&lt;const ModT&gt; rhs, u32 m) {
+template &lt;class ModT, auto poly_inv&gt;
+AVec&lt;ModT&gt; poly_div_10E_block(std::span&lt;const ModT&gt; lhs, std::span&lt;const ModT&gt; rhs, u32 m) {
   if (lhs.empty() || rhs.empty())
     return {};
   if (m == 1)
     return {lhs[0] / rhs[0]};
   auto [n, u] = detail::nt_block_len(m);
-  std::vector&lt;ModT&gt; x = poly_div_10E_block(lhs, rhs, n), h = poly_inv_10E_block(rhs, n);
+  AVec&lt;ModT&gt; x = poly_div_10E_block&lt;ModT, poly_inv&gt;(lhs, rhs, n), h = poly_inv(rhs, n);
   x.resize(n * u), h.resize(n * 2);
-  std::vector&lt;ModT&gt; nf0(n * u * 2), ng0(n * u * 2);
+  AVec&lt;ModT&gt; nf0(n * u * 2), ng0(n * u * 2);
   auto nf = detail::nt_block_split(nf0, n * 2);
   auto ng = detail::nt_block_split(ng0, n * 2);
   auto xk = detail::nt_block_split(x, n);
@@ -97,19 +91,26 @@ std::vector&lt;ModT&gt; poly_div_10E_block(std::span&lt;const ModT&gt; lhs, std:
       continue;
     std::copy(xk[k - 1].begin(), xk[k - 1].end(), ng[k - 1].begin());
     ntt&lt;ModT&gt;(ng[k - 1]);
-    std::vector&lt;ModT&gt; psi(n * 2);
+    AVec&lt;ModT&gt; psi(n * 2);
     for (u32 j = 0; j &lt; k; ++j) {
-      for (u32 i = 0; i &lt; n; ++i)
-        psi[i] -= (nf[k - j][i] + nf[k - 1 - j][i]) * ng[j][i];
-      for (u32 i = n; i &lt; n * 2; ++i)
-        psi[i] -= (nf[k - j][i] - nf[k - 1 - j][i]) * ng[j][i];
+      auto psi_p = psi.data(), nf1_p = nf[k - j].data(), nf2_p = nf[k - 1 - j].data(), ng_p = ng[j].data();
+      const auto fn1 = []&lt;class T&gt;(T &amp;pi, T nf1i, T nf2i, T ngi) {
+        pi -= (nf1i + nf2i) * ngi;
+      };
+      vectorization_4&lt;ModT, true&gt;(n, psi_p, nf1_p, nf2_p, ng_p, fn1);
+      const auto fn2 = []&lt;class T&gt;(T &amp;pi, T nf1i, T nf2i, T ngi) {
+        pi -= (nf1i - nf2i) * ngi;
+      };
+      vectorization_4&lt;ModT, true&gt;(n, psi_p + n, nf1_p + n, nf2_p + n, ng_p + n, fn2);
     }
     intt&lt;ModT&gt;(psi);
     std::fill_n(psi.begin() + n, n, 0);
-    for (u32 j = 0; j &lt; std::min&lt;u32&gt;(n, lhs.size() - n * k); ++j)
-      psi[j] += lhs[n * k + j];
+    vectorization_2&lt;ModT, true&gt;(
+        std::min&lt;u32&gt;(n, lhs.size() - n * k), psi.data(), lhs.data() + n * k, []&lt;class T&gt;(T &amp;pi, T li) {
+          pi += li;
+        });
     ntt&lt;ModT&gt;(psi);
-    dot&lt;ModT&gt;(psi, h);
+    dot&lt;ModT, true&gt;(psi, h);
     intt&lt;ModT&gt;(psi);
     std::copy_n(psi.begin(), n, xk[k].begin());
   }

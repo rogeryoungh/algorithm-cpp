@@ -66,20 +66,15 @@
 <pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_INV10ENT
 #define ALGO_MATH_POLY_INV10ENT
 
-#include &quot;../../base.hpp&quot;
-#include &quot;ntt.hpp&quot;
-#include &quot;vec-dots.hpp&quot;
+#include &quot;poly-def.hpp&quot;
 
-#include &lt;algorithm&gt;
-#include &lt;vector&gt;
-
-template &lt;static_modint_concept ModT&gt;
+template &lt;class ModT&gt;
 auto poly_inv_10E(std::span&lt;const ModT&gt; f, u32 m) {
   u32 n = std::bit_ceil(m);
-  std::vector&lt;ModT&gt; x(n);
+  AVec&lt;ModT&gt; x(n);
   x[0] = f[0].inv();
   for (u32 t = 1; t &lt; n; t *= 2) {
-    std::vector&lt;ModT&gt; f2(t * 2), nx(t * 2);
+    AVec&lt;ModT&gt; f2(t * 2), nx(t * 2);
     std::copy(f.begin(), std::min(f.begin() + t * 2, f.end()), f2.begin());
     std::copy_n(x.begin(), t * 2, nx.begin());
     ntt&lt;ModT&gt;(f2); // 2E
@@ -90,9 +85,9 @@ auto poly_inv_10E(std::span&lt;const ModT&gt; f, u32 m) {
     ntt&lt;ModT&gt;(f2); // 2E
     dot&lt;ModT&gt;(f2, nx);
     intt&lt;ModT&gt;(f2); // 2E
-    for (u32 i = t; i &lt; t * 2; ++i) {
-      x[i] = -f2[i];
-    }
+    vectorization_2&lt;ModT, true&gt;(t, x.data() + t, f2.data() + t, []&lt;class T&gt;(T &amp;xi, T f2) {
+      xi = -f2;
+    });
   }
   return x.resize(m), x;
 }

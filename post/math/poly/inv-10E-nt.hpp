@@ -1,20 +1,15 @@
 #ifndef ALGO_MATH_POLY_INV10ENT
 #define ALGO_MATH_POLY_INV10ENT
 
-#include "../../base.hpp"
-#include "ntt.hpp"
-#include "vec-dots.hpp"
+#include "poly-def.hpp"
 
-#include <algorithm>
-#include <vector>
-
-template <static_modint_concept ModT>
+template <class ModT>
 auto poly_inv_10E(std::span<const ModT> f, u32 m) {
   u32 n = std::bit_ceil(m);
-  std::vector<ModT> x(n);
+  AVec<ModT> x(n);
   x[0] = f[0].inv();
   for (u32 t = 1; t < n; t *= 2) {
-    std::vector<ModT> f2(t * 2), nx(t * 2);
+    AVec<ModT> f2(t * 2), nx(t * 2);
     std::copy(f.begin(), std::min(f.begin() + t * 2, f.end()), f2.begin());
     std::copy_n(x.begin(), t * 2, nx.begin());
     ntt<ModT>(f2); // 2E
@@ -25,9 +20,9 @@ auto poly_inv_10E(std::span<const ModT> f, u32 m) {
     ntt<ModT>(f2); // 2E
     dot<ModT>(f2, nx);
     intt<ModT>(f2); // 2E
-    for (u32 i = t; i < t * 2; ++i) {
-      x[i] = -f2[i];
-    }
+    vectorization_2<ModT, true>(t, x.data() + t, f2.data() + t, []<class T>(T &xi, T f2) {
+      xi = -f2;
+    });
   }
   return x.resize(m), x;
 }

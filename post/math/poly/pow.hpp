@@ -1,23 +1,19 @@
 #ifndef ALGO_MATH_POLY_POW
 #define ALGO_MATH_POLY_POW
 
-#include "../../base.hpp"
+#include "poly-def.hpp"
 #include "../constant/prepare-inv.hpp"
 
-#include <span>
-#include <vector>
-
-template <static_modint_concept ModT, auto poly_ln, auto poly_exp>
+template <class ModT, auto poly_ln, auto poly_exp>
 auto poly_pow(std::span<const ModT> f, u64 k, u32 m) {
   if (k == 0) {
-    std::vector<ModT> x(m);
+    AVec<ModT> x(m);
     x[0] = 1;
     return x;
   } else {
     ModT mk = ModT::safe(k);
     auto x = poly_ln(f, m);
-    for (auto &i : x)
-      i *= mk;
+    dot_v<ModT>(x, mk);
     return poly_exp(std::move(x), m);
   }
 }

@@ -66,19 +66,14 @@
 <pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_EXP17ENT
 #define ALGO_MATH_POLY_EXP17ENT
 
-#include &quot;../../base.hpp&quot;
-#include &quot;ntt.hpp&quot;
+#include &quot;poly-def.hpp&quot;
 #include &quot;../constant/prepare-inv.hpp&quot;
 
-#include &lt;algorithm&gt;
-#include &lt;vector&gt;
-#include &lt;iostream&gt;
-
-template &lt;static_modint_concept ModT&gt;
-std::vector&lt;ModT&gt; poly_exp_17E(std::span&lt;const ModT&gt; self, u32 m) {
+template &lt;class ModT&gt;
+AVec&lt;ModT&gt; poly_exp_17E(std::span&lt;const ModT&gt; self, u32 m) {
   u32 n = std::bit_ceil(m);
   auto &amp;iv = prepare_inv&lt;ModT&gt;(n);
-  std::vector&lt;ModT&gt; f(n), g(n);
+  AVec&lt;ModT&gt; f(n), g(n);
   f[0] = g[0] = 1;
   if (m == 1)
     return f;
@@ -90,7 +85,7 @@ std::vector&lt;ModT&gt; poly_exp_17E(std::span&lt;const ModT&gt; self, u32 m) {
     std::copy_n(f.begin(), t, nf.begin());
     ntt&lt;ModT&gt;(std::span(nf.begin(), t * 2)); // 2E
 
-    std::vector&lt;ModT&gt; q(t * 2);
+    AVec&lt;ModT&gt; q(t * 2);
     std::span qt{q.begin(), t};
     std::copy_n(nf.begin(), t * 2, q.begin());
 

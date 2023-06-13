@@ -39,7 +39,7 @@
 <main class="px-5 flex justify-center">
   <article class="article w-full max-w-210 my-10">
     <header class="my-20">
-      <h1 class="text-8 text-center folt-bold"> 多项式 EXP 14E 分块 </h1>
+      <h1 class="text-8 text-center folt-bold"> 跳表 </h1>
       <a
         class="text-center-my-6 hidden print:block"
         href="https://rogery.dev/">
@@ -48,80 +48,174 @@
       <div class="text-center">
         
         
-        2023 年 1 月 28 日
+        0001 年 1 月 1 日
         
       </div>
     </header>
     
       <h1> 目录 </h1><nav id="TableOfContents">
   <ol>
-    <li><a href="#多项式-exp-14e">多项式 EXP 14E</a></li>
+    <li><a href="#理论">理论</a></li>
+    <li><a href="#代码">代码</a></li>
   </ol>
 </nav>
     <section class="content-frame my-10">
-      <h2 id="多项式-exp-14e">多项式 EXP 14E</h2>
+      <h2 id="理论">理论</h2>
+<p>key-value 键值对快速增删查改,复杂度同红黑树，实现较为简单。</p>
+<h2 id="代码">代码</h2>
 
 
 
-<pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_EXP14E_NTBLOCK
-#define ALGO_MATH_POLY_EXP14E_NTBLOCK
+<pre><code class="language-cpp">#ifndef ALGO_DATASTRUCT_SKIPLIST
+#define ALGO_DATASTRUCT_SKIPLIST
 
-#include &quot;poly-def.hpp&quot;
-#include &quot;nt-block-helper.hpp&quot;
-#include &quot;../constant/prepare-inv.hpp&quot;
-#include &quot;../constant/prepare-inc.hpp&quot;
+#include &quot;../base.hpp&quot;
 
-template &lt;class ModT, auto poly_inv&gt;
-AVec&lt;ModT&gt; poly_exp_14E_block(std::span&lt;const ModT&gt; self, u32 m) {
-  if (m == 1)
-    return {1};
-  auto [n, u] = detail::nt_block_len(m);
-  AVec&lt;ModT&gt; x = poly_exp_14E_block&lt;ModT, poly_inv&gt;(self, n), h = poly_inv(x, n);
-  x.resize(n * u), h.resize(n * 2);
-  AVec&lt;ModT&gt; nf0(n * u * 2), ng0(n * u * 2);
-  auto &amp;iv = prepare_inv&lt;ModT&gt;(n * u);
-  auto &amp;inc = prepare_inc&lt;ModT&gt;(n * u);
-  auto nf = detail::nt_block_split(nf0, n * 2);
-  auto ng = detail::nt_block_split(ng0, n * 2);
-  auto xk = detail::nt_block_split(x, n);
+#include &lt;array&gt;
+#include &lt;optional&gt;
+#include &lt;queue&gt;
+#include &lt;random&gt;
 
-  ntt&lt;ModT&gt;(h);
-  for (u32 k = 0; k &lt; u; ++k) {
-    std::copy(self.begin() + k * n, std::min(self.begin() + (k + 1) * n, self.end()), nf[k].begin());
-    dot&lt;ModT&gt;({nf[k].begin(), n}, {inc.begin() + k * n, n});
-    ntt&lt;ModT&gt;(nf[k]);
-    if (k == 0)
-      continue;
-    std::copy(xk[k - 1].begin(), xk[k - 1].end(), ng[k - 1].begin());
-    ntt&lt;ModT&gt;(ng[k - 1]);
-    AVec&lt;ModT&gt; psi(n * 2);
-    for (u32 j = 0; j &lt; k; ++j) {
-      auto psi_p = psi.data(), nf1_p = nf[k - j].data(), nf2_p = nf[k - 1 - j].data(), ng_p = ng[j].data();
-      const auto fn1 = []&lt;class T&gt;(T &amp;pi, T nf1i, T nf2i, T ngi) {
-        pi += (nf1i + nf2i) * ngi;
-      };
-      vectorization_4&lt;ModT, true&gt;(n, psi_p, nf1_p, nf2_p, ng_p, fn1);
-      const auto fn2 = []&lt;class T&gt;(T &amp;pi, T nf1i, T nf2i, T ngi) {
-        pi += (nf1i - nf2i) * ngi;
-      };
-      vectorization_4&lt;ModT, true&gt;(n, psi_p + n, nf1_p + n, nf2_p + n, ng_p + n, fn2);
+template &lt;typename K, typename V&gt;
+struct SkipList {
+  enum : u64 {
+    MAXL = 32,                                 // 最大层数
+    P = 4,                                     // 概率（1 / 4)
+    S = 0xFFFF,                                // 限制随机值
+    PS = S / P,                                // 概率
+    INVALID = std::numeric_limits&lt;u64&gt;::max(), // 最大值（哨兵）
+  };
+  /*
+      跳表结点（层数，值，指针）
+  */
+  struct SkipListNode {
+    K key;
+    V value;
+    i32 level{};
+    SkipListNode **forward;
+    SkipListNode() = default;
+    SkipListNode(K k, V v, i32 l, SkipListNode *nxt = nullptr) {
+      key = k;
+      value = v;
+      level = l;
+      forward = new SkipListNode *[l + 1];
+      for (i32 i = 0; i &lt;= l; ++i)
+        forward[i] = nxt;
     }
-    intt&lt;ModT&gt;(psi);
-    std::fill_n(psi.begin() + n, n, 0);
-    ntt&lt;ModT&gt;(psi);
-    dot&lt;ModT, true&gt;(psi, h);
-    intt&lt;ModT&gt;(psi);
-    std::fill_n(psi.begin() + n, n, 0);
-    dot&lt;ModT&gt;({psi.begin(), n}, {iv.begin() + n * k, n});
-    ntt&lt;ModT&gt;(psi);
-    dot&lt;ModT&gt;(psi, ng[0]);
-    intt&lt;ModT&gt;(psi);
-    std::copy_n(psi.begin(), n, xk[k].begin());
+    ~SkipListNode() {
+      delete[] forward;
+    }
+  };
+  using Node = SkipListNode;
+  Node *head, *tail; // 两排哨兵
+  i32 length;        // 链表长度 L0 层
+  i32 level;         // 层数
+  std::mt19937 rng;
+  SkipList() : rng(std::random_device{}()) {
+    level = length = 0;
+    tail = new Node(INVALID, 0, 0);
+    head = new Node(INVALID, 0, MAXL, tail);
   }
-  return x.resize(m), x;
-}
+  ~SkipList() {
+    delete head;
+    delete tail;
+  }
+  
+  /*
+      第一层 50 % ， 第二层 25 % ，第三层 12.5% 依此类推， P = 1 / 4
+  */
+  i32 randomLevel() {
+    i32 lv = 1;
+    while ((rng() &amp; S) &lt; PS)
+      ++lv;
+    return MAXL &gt; lv ? lv : MAXL;
+  }
+  /*
+      插入新结点，
+  */
+  V &amp;insert(const K &amp;key, const V &amp;value) {
+    std::array&lt;Node *, MAXL + 1&gt; update{};
+    Node *p = head;
+    for (i32 i = level; i &gt;= 0; --i) {
+      while (p-&gt;forward[i]-&gt;key &lt; key) {
+        p = p-&gt;forward[i];
+      }
+      update[i] = p;
+    }
+    p = p-&gt;forward[0];
+    if (p-&gt;key == key) {
+      return p-&gt;value = value;
+    }
+    i32 lv = randomLevel();
+    if (lv &gt; level) { // 一次只会比当前层数高一层
+      lv = ++level;
+      update[lv] = head;
+    }
+    Node *newNode = new Node(key, value, lv);
+    for (i32 i = lv; i &gt;= 0; --i) {
+      p = update[i];
+      newNode-&gt;forward[i] = p-&gt;forward[i];
+      p-&gt;forward[i] = newNode;
+    }
+    ++length;
+    return newNode-&gt;value;
+  }
+  bool erase(const K &amp;key) {
+    std::array&lt;Node *, MAXL + 1&gt; update;
+    Node *p = head;
+    for (i32 i = level; i &gt;= 0; --i) {
+      while (p-&gt;forward[i]-&gt;key &lt; key) {
+        p = p-&gt;forward[i];
+      }
+      update[i] = p;
+    }
+    p = p-&gt;forward[0];
+    if (p-&gt;key != key)
+      return false;
+    for (i32 i = 0; i &lt;= level; ++i) {
+      if (update[i]-&gt;forward[i] != p) {
+        break;
+      }
+      update[i]-&gt;forward[i] = p-&gt;forward[i];
+    }
+    delete p;
+    while (level &gt; 0 &amp;&amp; head-&gt;forward[level] == tail)
+      --level;
+    --length;
+    return true;
+  }
+  std::optional&lt;V&gt; find(const K &amp;key) {
+    Node *p = head;
+    for (i32 i = level; i &gt;= 0; --i) {
+      while (p-&gt;forward[i]-&gt;key &lt; key) {
+        p = p-&gt;forward[i];
+      }
+    }
+    p = p-&gt;forward[0];
+    if (p-&gt;key == key)
+      return p-&gt;value;
+    return std::nullopt;
+  }
+  V &amp;operator[](const K &amp;key) {
+    Node *p = head;
+    for (i32 i = level; i &gt;= 0; --i) {
+      while (p-&gt;forward[i]-&gt;key &lt; key) {
+        p = p-&gt;forward[i];
+      }
+    }
+    p = p-&gt;forward[0];
+    if (p-&gt;key == key) {
+      return p-&gt;value;
+    } else {
+      return insert(key, 0);
+    }
+  }
+  bool count(const K &amp;key) {
+    return find(key) != tail-&gt;value;
+  }
+};
 
-#endif // ALGO_MATH_POLY_EXP14E_NTBLOCK
+#endif
 
 </code></pre>
 

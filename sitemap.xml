@@ -56,5 +56,7 @@
     <loc>https://algo-cpp.rogery.dev/categories/</loc>
   </url><url>
     <loc>https://algo-cpp.rogery.dev/tags/</loc>
+  </url><url>
+    <loc>https://algo-cpp.rogery.dev/post/datastruct/skiplist/</loc>
   </url>
 </urlset>

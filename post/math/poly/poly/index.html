@@ -66,27 +66,23 @@
 <pre><code class="language-cpp">#ifndef ALGO_MATH_POLY_BASE
 #define ALGO_MATH_POLY_BASE
 
-#include &quot;../../other/modint/modint-concept.hpp&quot;
-#include &quot;ntt.hpp&quot;
-#include &quot;vec-dots.hpp&quot;
+#include &quot;poly-def.hpp&quot;
+
 #include &quot;inv-10E-nt-block.hpp&quot;
 #include &quot;div-10E-nt-block.hpp&quot;
 #include &quot;ln.hpp&quot;
 #include &quot;exp-14E-nt-block.hpp&quot;
 #include &quot;sqrt-8E-nt-block.hpp&quot;
-#include &quot;sqrt-11E-nt.hpp&quot;
+#include &quot;invsqrt-12E-nt.hpp&quot;
 #include &quot;pow.hpp&quot;
 #include &quot;safe-sqrt.hpp&quot;
 #include &quot;safe-pow.hpp&quot;
 #include &quot;deriv.hpp&quot;
 #include &quot;integr.hpp&quot;
 
-#include &lt;optional&gt;
-#include &lt;vector&gt;
-
-template &lt;static_modint_concept ModT&gt;
-class Poly : public std::vector&lt;ModT&gt; {
-  using Vec = typename std::vector&lt;ModT&gt;;
+template &lt;class ModT&gt;
+class Poly : public AVec&lt;ModT&gt; {
+  using Vec = AVec&lt;ModT&gt;;
 
 public:
   using Vec::empty;
@@ -98,13 +94,14 @@ public:
   using Vec::cend;
   using Vec::end;
 
-  static constexpr auto m_inv = poly_inv_10E&lt;ModT&gt;;
+  static constexpr auto m_inv = poly_inv_10E_block&lt;ModT&gt;;
+  static constexpr auto m_invsqrt = poly_invsqrt_12E&lt;ModT&gt;;
   static constexpr auto m_deriv = poly_deriv&lt;ModT&gt;;
   static constexpr auto m_integr = poly_integr&lt;ModT&gt;;
-  static constexpr auto m_div = poly_div_10E_block&lt;ModT&gt;;
+  static constexpr auto m_div = poly_div_10E_block&lt;ModT, m_inv&gt;;
   static constexpr auto m_ln = poly_ln&lt;ModT, m_div&gt;;
-  static constexpr auto m_exp = poly_exp_14E_block&lt;ModT&gt;;
-  static constexpr auto m_sqrt = poly_sqrt_11E&lt;ModT&gt;;
+  static constexpr auto m_exp = poly_exp_14E_block&lt;ModT, m_inv&gt;;
+  static constexpr auto m_sqrt = poly_sqrt_8E_block&lt;ModT, m_inv&gt;;
   static constexpr auto m_safe_sqrt = poly_safe_sqrt&lt;ModT, m_sqrt&gt;;
   static constexpr auto m_pow = poly_pow&lt;ModT, m_ln, m_exp&gt;;
   static constexpr auto m_safe_pow = poly_safe_pow&lt;ModT, m_pow&gt;;
@@ -113,9 +110,10 @@ public:
 
   Poly(u32 len) : Vec(len) {}
 
-  Poly(const std::vector&lt;u32&gt; &amp;v) : Vec(v) {}
+  Poly(const std::vector&lt;u32&gt; &amp;v) : Vec(v.begin(), v.end()) {}
+  Poly(const std::vector&lt;ModT&gt; &amp;v) : Vec(v.begin(), v.end()) {}
 
-  Poly(const std::vector&lt;ModT&gt; &amp;v) : Vec(v) {}
+  Poly(AVec&lt;ModT&gt; v) : Vec(std::move(v)) {}
 
   Poly(const ModT &amp;v) : Vec({v}) {}
 
@@ -192,6 +190,10 @@ public:
     return m_exp(*this, m);
   }
 
+  Poly invsqrt(u32 m) const {
+    return m_invsqrt(*this, m, this-&gt;front().sqrt().value().inv());
+  }
+
   Poly sqrt(u32 m) const {
     return m_sqrt(*this, m, this-&gt;front().sqrt().value());
   }
@@ -206,11 +208,6 @@ public:
 
   Poly safe_pow(u64 k, u64 k2, u32 m) const {
     return m_safe_pow(*this, k, k2, m);
-  }
-
-  template &lt;class U = u32&gt;
-  auto to_vec() const {
-    return std::vector&lt;U&gt;{begin(), end()};
   }
 };
 

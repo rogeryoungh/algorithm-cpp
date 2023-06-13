@@ -1,5 +1,5 @@
-#ifndef ALGO_MODINT_STATIC_MODINT
-#define ALGO_MODINT_STATIC_MODINT
+#ifndef ALGO_MODINT_DYNAMIC_MODINT
+#define ALGO_MODINT_DYNAMIC_MODINT
 
 #include "../../base.hpp"
 #include "../../math/cipolla.hpp"
@@ -12,75 +12,79 @@
 // 封装 Modint，功能由 Space 提供
 
 template <class Space_>
-struct StaticModint {
+struct DynamicModint {
   using Space = Space_;
   using ValueT = typename Space::ValueT;
   using TransT = typename Space::TransT;
-  using isStatic = std::true_type;
+  using isStatic = std::false_type;
   using rawU32 = typename Space::rawU32;
   using isMontgomery = typename Space::isMontgomery;
 
   TransT v;
 
-  constexpr StaticModint() = default;
-  constexpr StaticModint(ValueT v_) : v(Space::trans(v_)) {}
+  DynamicModint() = default;
+  DynamicModint(ValueT v_) : v(Space::trans(v_)) {}
 
-  using Self = StaticModint;
+  using Self = DynamicModint;
+
+  static bool set_mod(u32 mod) {
+    return Space::set_mod(mod);
+  }
 
   explicit operator ValueT() const {
     return val();
   }
 
-  constexpr static Self safe(i64 v) {
+  static Self safe(i64 v) {
     return Space::safe(v);
   }
 
-  constexpr static Self raw(u32 v) {
+  static Self raw(u32 v) {
     Self r;
     r.v = v;
     return r;
   }
 
-  constexpr ValueT val() const {
+  ValueT val() const {
     return Space::val(v);
   }
 
-  constexpr TransT raw() const {
+  TransT raw() const {
     return v;
   }
 
-  constexpr static ValueT mod() {
+  static ValueT mod() {
     return Space::mod();
   }
 
-  constexpr Self &operator+=(const Self &rhs) {
+  Self &operator+=(const Self &rhs) {
     v = Space::add(v, rhs.v);
     return *this;
   }
 
-  constexpr Self &operator-=(const Self &rhs) {
+  Self &operator-=(const Self &rhs) {
     v = Space::sub(v, rhs.v);
     return *this;
   }
 
-  constexpr Self &operator*=(const Self &rhs) {
+  Self &operator*=(const Self &rhs) {
     v = Space::mul(v, rhs.v);
     return *this;
   }
 
-  friend constexpr inline Self operator+(const Self &lhs, const Self &rhs) {
+  friend inline Self operator+(const Self &lhs, const Self &rhs) {
     return Self(lhs) += rhs;
   }
 
-  friend constexpr inline Self operator-(const Self &lhs, const Self &rhs) {
+  friend inline Self operator-(const Self &lhs, const Self &rhs) {
     return Self(lhs) -= rhs;
   }
 
-  friend constexpr inline Self operator*(const Self &lhs, const Self &rhs) {
+  friend inline Self operator*(const Self &lhs, const Self &rhs) {
     return Self(lhs) *= rhs;
   }
 
-  constexpr Self pow(u64 n) const {
+  Self pow(u64 n) const {
     Self r(1), a(*this);
     for (; n > 0; n /= 2) {
       if (n % 2 == 1)
@@ -90,28 +94,28 @@ struct StaticModint {
     return r;
   }
 
-  constexpr Self inv() const {
+  Self inv() const {
     return pow(Space::mod() - 2);
   }
 
-  constexpr Self &operator/=(const Self &rhs) {
+  Self &operator/=(const Self &rhs) {
     return *this *= rhs.inv();
   }
 
-  friend constexpr inline Self operator/(const Self &lhs, const Self &rhs) {
+  friend inline Self operator/(const Self &lhs, const Self &rhs) {
     return Self(lhs) /= rhs;
   }
 
-  constexpr Self operator-() const {
+  Self operator-() const {
     return Self() -= *this;
   }
 
-  constexpr std::optional<Self> sqrt() const {
+  std::optional<Self> sqrt() const {
     return cipola(*this);
   }
 
-  constexpr Self shift2() const {
-    return raw(Space::shift2(v));
+  Self shift2() const {
+    return Space::shift2(v);
   }
 
   friend inline std::istream &operator>>(std::istream &is, Self &m) {

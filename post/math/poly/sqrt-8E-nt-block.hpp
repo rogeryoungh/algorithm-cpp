@@ -1,23 +1,17 @@
 #ifndef ALGO_MATH_POLY_SQRT8E_NTBLOCK
 #define ALGO_MATH_POLY_SQRT8E_NTBLOCK
 
-#include "../../base.hpp"
-#include "ntt.hpp"
-#include "inv-10E-nt.hpp"
+#include "poly-def.hpp"
 #include "nt-block-helper.hpp"
 
-#include <algorithm>
-#include <vector>
-#include <iostream>
-
-template <static_modint_concept ModT>
-std::vector<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const ModT &x0) {
+template <class ModT, auto poly_inv>
+AVec<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const ModT &x0) {
   if (m == 1)
     return {x0};
   auto [n, u] = detail::nt_block_len(m);
-  std::vector<ModT> x = poly_sqrt_8E_block(self, n, x0), h = poly_inv_10E<ModT>(x, n);
+  AVec<ModT> x = poly_sqrt_8E_block<ModT, poly_inv>(self, n, x0), h = poly_inv(x, n);
   x.resize(n * u), h.resize(n * 2);
-  std::vector<ModT> ng0(n * u * 2);
+  AVec<ModT> ng0(n * u * 2);
   auto ng = detail::nt_block_split(ng0, n * 2);
   auto xk = detail::nt_block_split(x, n);
 
@@ -25,24 +19,35 @@ std::vector<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const Mo
   for (u32 k = 1; k < u; ++k) {
     std::copy(xk[k - 1].begin(), xk[k - 1].end(), ng[k - 1].begin());
     ntt<ModT>(ng[k - 1]);
-    std::vector<ModT> psi(n * 2);
+    AVec<ModT> psi(n * 2);
     for (u32 j = 0; j < k; ++j) {
+      auto psi_p = psi.data(), ng1_p = ng[k - j].data(), ng2_p = ng[k - 1 - j].data(), ng_p = ng[j].data();
       if (j == 0) {
-        for (u32 i = 0; i < n; i++)
-          psi[i] += ng[k - 1 - j][i] * ng[j][i];
-        for (u32 i = n; i < n * 2; i++)
-          psi[i] -= ng[k - 1 - j][i] * ng[j][i];
+        const auto fn1 = []<class T>(T &pi, T ng2i, T ngi) {
+          pi += ng2i * ngi;
+        };
+        vectorization_3<ModT, true>(n, psi_p, ng2_p, ng_p, fn1);
+        const auto fn2 = []<class T>(T &pi, T ng2i, T ngi) {
+          pi -= ng2i * ngi;
+        };
+        vectorization_3<ModT, true>(n, psi_p + n, ng2_p + n, ng_p + n, fn2);
+
       } else {
-        for (u32 i = 0; i < n; i++)
-          psi[i] += (ng[k - 1 - j][i] + ng[k - j][i]) * ng[j][i];
-        for (u32 i = n; i < n * 2; i++)
-          psi[i] -= (ng[k - 1 - j][i] - ng[k - j][i]) * ng[j][i];
+        const auto fn1 = []<class T>(T &pi, T ng1i, T ng2i, T ngi) {
+          pi += (ng1i + ng2i) * ngi;
+        };
+        vectorization_4<ModT, true>(n, psi_p, ng1_p, ng2_p, ng_p, fn1);
+        const auto fn2 = []<class T>(T &pi, T ng1i, T ng2i, T ngi) {
+          pi += (ng1i - ng2i) * ngi;
+        };
+        vectorization_4<ModT, true>(n, psi_p + n, ng1_p + n, ng2_p + n, ng_p + n, fn2);
       }
     }
     intt<ModT>(psi);
     std::fill_n(psi.begin() + n, n, 0);
-    for (u32 j = 0; j < std::min<u32>(n, self.size() - n * k); j++)
-      psi[j] = (self[n * k + j] - psi[j]).shift2();
+    vectorization_2(std::min<u32>(n, self.size() - n * k), psi.data(), self.data() + n * k, []<class T>(T &pi, T si) {
+      pi = (si - pi).shift2();
+    });
     ntt<ModT>(psi);
     dot<ModT>(psi, h);
     intt<ModT>(psi);
