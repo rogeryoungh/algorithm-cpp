@@ -114,22 +114,6 @@ struct StaticModint {
     return Space::shift2(v);
   }
 
-  constexpr static Self muladd(const Self &a, const Self &b, const Self &c) { // a * b + c
-    return raw(Space::muladd(a.raw(), b.raw(), c.raw()));
-  }
-
-  constexpr static Self mulsub(const Self &a, const Self &b, const Self &c) { // a * b - c
-    return raw(Space::mulsub(a.raw(), b.raw(), c.raw()));
-  }
-
-  constexpr static Self addmul(const Self &a, const Self &b, const Self &c) { // (a + b) * c
-    return raw(Space::addmul(a.raw(), b.raw(), c.raw()));
-  }
-
-  constexpr static Self submul(const Self &a, const Self &b, const Self &c) { // (a - b) * c
-    return raw(Space::submul(a.raw(), b.raw(), c.raw()));
-  }
-
   friend inline std::istream &operator>>(std::istream &is, Self &m) {
     i64 x;
     is >> x;

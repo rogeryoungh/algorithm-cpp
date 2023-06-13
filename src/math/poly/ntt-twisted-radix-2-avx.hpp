@@ -80,7 +80,7 @@ static void ntt_twisted_avx(std::span<ModT> f0) { // dif
       for (i32 j = 0; j < l; ++j) {
         X8 fx = f[i + j], fy = f[i + j + l];
         f[i + j] = fx + fy;
-        f[i + j + l] = X8::submul(fx, fy, info.rt[j + l]);
+        f[i + j + l] = (fx - fy) * info.rt[j + l];
       }
     }
   }

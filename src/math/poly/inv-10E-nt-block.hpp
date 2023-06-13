@@ -27,11 +27,11 @@ AVec<ModT> poly_inv_10E_block(std::span<const ModT> self, u32 m) {
     for (u32 j = 0; j < k; ++j) {
       auto psi_p = psi.data(), nf1_p = nf[k - j].data(), nf2_p = nf[k - 1 - j].data(), ng_p = ng[j].data();
       const auto fn1 = []<class T>(T &pi, T nf1i, T nf2i, T ngi) {
-        pi -= T::addmul(nf1i, nf2i, ngi);
+        pi -= (nf1i + nf2i) * ngi;
       };
       vectorization_4<ModT, true>(n, psi_p, nf1_p, nf2_p, ng_p, fn1);
       const auto fn2 = []<class T>(T &pi, T nf1i, T nf2i, T ngi) {
-        pi -= T::submul(nf1i, nf2i, ngi);
+        pi -= (nf1i - nf2i) * ngi;
       };
       vectorization_4<ModT, true>(n, psi_p + n, nf1_p + n, nf2_p + n, ng_p + n, fn2);
     }

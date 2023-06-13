@@ -50,7 +50,7 @@ static void ntt_twisted_basic(std::span<ModT> f) { // dif
       for (i32 j = 0; j < l; ++j) {
         ModT x = f[i + j], y = f[i + j + l];
         f[i + j] = x + y;
-        f[i + j + l] = ModT::submul(x, y, rt[j + l]);
+        f[i + j + l] = (x - y) * rt[j + l];
       }
     }
   }

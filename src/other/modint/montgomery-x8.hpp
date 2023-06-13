@@ -112,20 +112,6 @@ struct M32x8 {
   friend M32x8 operator*(const M32x8 &lhs, const M32x8 &rhs) {
     return M32x8(lhs) *= rhs;
   }
-  static M32x8 addmul(const M32x8 &a, const M32x8 &b, const M32x8 &c) {
-    // (a + b) * c
-    auto v = _mm256_add_epi32(a.v, b.v);
-    return mul_reduce(v, c.v);
-    // return (a + b) * c;
-  }
-
-  static M32x8 submul(const M32x8 &a, const M32x8 &b, const M32x8 &c) {
-    // (a - b) * c
-    auto v = _mm256_sub_epi32(a.v, b.v);
-    v = _mm256_add_epi32(v, mod2x8());
-    return mul_reduce(v, c.v);
-    // return (a - b) * c;
-  }
 
   u32x8 raw() const {
     return v;
@@ -153,18 +139,12 @@ struct M32x8 {
 
   static u32x8 irx8() {
     return i32x8_set1(ModT::Space::ir());
-    // static u32x8 IRx8 = i32x8_set1(ModT::Space::ir());
-    // return IRx8;
   }
   static u32x8 mod2x8() {
     return i32x8_set1(ModT::Space::mod2());
-    // static u32x8 MOD2x8 = i32x8_set1(ModT::Space::mod2());
-    // return MOD2x8;
   }
   static u32x8 modx8() {
     return i32x8_set1(ModT::Space::mod());
-    // static u32x8 MODx8 = i32x8_set1(ModT::Space::mod2());
-    // return MODx8;
   }
 };
 

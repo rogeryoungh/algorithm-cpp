@@ -131,7 +131,7 @@ static void intt_classical_avx(std::span<ModT> f0) { // dit
         X8 fx = f[i + j];
         X8 fy = f[i + j + l];
         f[i + j] = fx + fy;
-        f[i + j + l] = X8::submul(fx, fy, r8);
+        f[i + j + l] = (fx - fy) * r8;
       }
       r *= info.irate2[std::countr_one<u32>(k)];
     }

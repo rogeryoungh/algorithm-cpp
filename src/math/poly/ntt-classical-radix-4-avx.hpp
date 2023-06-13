@@ -107,7 +107,7 @@ static void ntt_classical_avx4(std::span<ModT> f0) { // dif
         x1 *= rx8;
         x2 *= r2x8;
         x3 *= r3x8;
-        X8 x1x3 = X8::submul(x1, x3, X8::from(info.rt[2]));
+        X8 x1x3 = (x1 - x3) * X8::from(info.rt[2]);
         X8 x02 = x0 + x2, x0_2 = x0 - x2;
         X8 x13 = x1 + x3;
         f[i + j + 0 * l] = x02 + x13;
@@ -164,13 +164,13 @@ static void intt_classical_avx4(std::span<ModT> f0) { // dit
         X8 x1 = f[i + j + 1 * l];
         X8 x2 = f[i + j + 2 * l];
         X8 x3 = f[i + j + 3 * l];
-        X8 x2x3 = X8::submul(x2, x3, X8::from(info.irt[2]));
+        X8 x2x3 = (x2 - x3) * X8::from(info.irt[2]);
         X8 x01 = x0 + x1, x0_1 = x0 - x1;
         X8 x23 = x2 + x3;
         f[i + j + 0 * l] = x01 + x23;
-        f[i + j + 1 * l] = X8::addmul(x0_1, x2x3, rx8);
-        f[i + j + 2 * l] = X8::submul(x01, x23, r2x8);
-        f[i + j + 3 * l] = X8::submul(x0_1, x2x3, r3x8);
+        f[i + j + 1 * l] = (x0_1 + x2x3) * rx8;
+        f[i + j + 2 * l] = (x01 - x23) * r2x8;
+        f[i + j + 3 * l] = (x0_1 - x2x3) * r3x8;
       }
       r *= info.irate3[std::countr_one<u32>(k)];
       r2 = r * r, r3 = r2 * r;

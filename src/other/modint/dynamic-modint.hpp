@@ -118,22 +118,6 @@ struct DynamicModint {
     return Space::shift2(v);
   }
 
-  static Self muladd(const Self &a, const Self &b, const Self &c) { // a * b + c
-    return raw(Space::muladd(a.raw(), b.raw(), c.raw()));
-  }
-
-  static Self mulsub(const Self &a, const Self &b, const Self &c) { // a * b - c
-    return raw(Space::mulsub(a.raw(), b.raw(), c.raw()));
-  }
-
-  static Self addmul(const Self &a, const Self &b, const Self &c) { // (a + b) * c
-    return raw(Space::addmul(a.raw(), b.raw(), c.raw()));
-  }
-
-  static Self submul(const Self &a, const Self &b, const Self &c) { // (a - b) * c
-    return raw(Space::submul(a.raw(), b.raw(), c.raw()));
-  }
-
   friend inline std::istream &operator>>(std::istream &is, Self &m) {
     i64 x;
     is >> x;

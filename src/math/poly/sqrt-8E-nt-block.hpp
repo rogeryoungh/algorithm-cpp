@@ -34,11 +34,11 @@ AVec<ModT> poly_sqrt_8E_block(std::span<const ModT> self, u32 m, const ModT &x0)
 
       } else {
         const auto fn1 = []<class T>(T &pi, T ng1i, T ng2i, T ngi) {
-          pi += T::addmul(ng1i, ng2i, ngi);
+          pi += (ng1i + ng2i) * ngi;
         };
         vectorization_4<ModT, true>(n, psi_p, ng1_p, ng2_p, ng_p, fn1);
         const auto fn2 = []<class T>(T &pi, T ng1i, T ng2i, T ngi) {
-          pi += T::submul(ng1i, ng2i, ngi);
+          pi += (ng1i - ng2i) * ngi;
         };
         vectorization_4<ModT, true>(n, psi_p + n, ng1_p + n, ng2_p + n, ng_p + n, fn2);
       }

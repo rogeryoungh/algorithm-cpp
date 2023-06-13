@@ -52,22 +52,6 @@ struct BasicModSpace<u32, MOD> {
     return u64(a) * b % MOD;
   }
 
-  constexpr static u32 muladd(u32 a, u32 b, u32 c) { // a * b + c
-    return (u64(a) * b + c) % MOD;
-  }
-
-  constexpr static u32 mulsub(u32 a, u32 b, u32 c) { // a * b - c
-    return (u64(a) * b + MOD - c) % MOD;
-  }
-
-  constexpr static u32 addmul(u32 a, u32 b, u32 c) { // (a + b) * c
-    return u64(a + b) * c % MOD;
-  }
-
-  constexpr static u32 submul(u32 a, u32 b, u32 c) { // (a - b) * c
-    return u64(a + MOD - b) * c % MOD;
-  }
-
   constexpr static u32 safe(i64 x) {
     return reduce_m(x % MOD);
   }

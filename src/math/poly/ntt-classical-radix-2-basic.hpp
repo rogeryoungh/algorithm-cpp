@@ -64,7 +64,7 @@ static void intt_classical_basic(std::span<ModT> f) { // dit
       for (i32 j = 0; j < l; ++j) {
         ModT x = f[i + j], y = f[i + j + l];
         f[i + j] = x + y;
-        f[i + j + l] = ModT::submul(x, y, r);
+        f[i + j + l] = (x - y) * r;
       }
       r *= info.irate2[std::countr_one<u32>(k)];
     }

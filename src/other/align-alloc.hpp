@@ -18,7 +18,7 @@ struct AlignedAllocator {
     using other = AlignedAllocator<U, align>;
   };
   void deallocate(T *p, std::size_t) {
-    ::operator delete[] (p, std::align_val_t(align));
+    ::operator delete[](p, std::align_val_t(align));
   }
 };
 

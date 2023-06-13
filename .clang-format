@@ -12,3 +12,4 @@ AlwaysBreakTemplateDeclarations: Yes
 ColumnLimit: 120
 SortIncludes: false
 AlignEscapedNewlines: Left
+AlignAfterOpenBracket: false
