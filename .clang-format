@@ -1,0 +1,4 @@
+BasedOnStyle: LLVM
+BreakBeforeBraces: Attach
+Language: Cpp
+SortIncludes: false
