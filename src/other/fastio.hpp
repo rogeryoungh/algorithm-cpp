@@ -3,11 +3,11 @@
 
 #include "../base.hpp"
 
+#include <array>
+#include <bit>
 #include <cstring>
 #include <string>
 #include <vector>
-#include <array>
-#include <bit>
 
 // ALGO_IO_NUMBER_ONLY 输入只有 0-9、-、空格、换行
 
@@ -20,32 +20,38 @@ struct FastI {
   const usize bufsz;
   std::vector<char> buf;
   usize p{};
-  FastI(FILE *file, usize size = 1 << 18) : f(file), bufsz(size - 1), buf(size), p(bufsz) {
+  FastI(FILE *file, usize size = 1 << 18) : f(file), bufsz(size), buf(size + 4), p(size) {
     reread();
   }
-  char pop() {
-    char r = buf[p++];
-    if (p == bufsz)
+  void reserve(usize len) {
+    if (bufsz - p < len)
       reread();
-    return r;
+  }
+  char pop() {
+    reserve(8);
+    return buf[p++];
+  }
+  char top() const {
+    return buf[p];
+  }
+  u64 top8() {
+    u64 t;
+    std::memcpy(&t, &buf[p], sizeof(t));
+    return t;
   }
   void reread() {
     std::memmove(&buf[0], &buf[p], bufsz - p);
     u32 cnt = std::fread(&buf[bufsz - p], 1, p, f);
-    buf[cnt] = '\0', p = 0;
+    buf[bufsz - p + cnt] = '\0', p = 0;
   }
-  bool static isspace(char c) {
+  void skipSpace() {
 #ifdef ALGO_IO_NUMBER_ONLY
-    return c <= ' ';
+    while (top() <= ' ')
+      pop();
 #else
-    return std::isspace(c);
+    while (std::isspace(top()))
+      pop();
 #endif
-  }
-  i32 skipSpace() {
-    i32 r = pop();
-    while (isspace(r))
-      r = pop();
-    return r;
   }
 };
 
@@ -62,17 +68,23 @@ struct FastI {
   FastI(FILE *file) {
     i32 fd = fileno(file);
     fstat(fd, &sb);
-    p = (char *)mmap(nullptr, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    p = (char *)mmap(nullptr, sb.st_size + 4, PROT_READ, MAP_PRIVATE, fd, 0);
     madvise(p, sb.st_size, MADV_SEQUENTIAL);
   }
   ~FastI() {
-    munmap(p, sb.st_size);
+    munmap(p, sb.st_size + 4);
   }
   char pop() {
     return *p++;
   }
   char top() {
     return *p;
+  }
+  void reserve(usize) const {}
+  u64 top8() {
+    u64 t;
+    std::memcpy(&t, p, sizeof(t));
+    return t;
   }
   void skipSpace() {
 #ifdef ALGO_IO_NUMBER_ONLY
@@ -93,7 +105,7 @@ struct FastO {
   std::vector<char> buf;
   std::array<u32, 10000> pre;
   usize p{};
-  FastO(FILE *file, u32 size = 1 << 18) : f(file), bufsz(size - 1), buf(size) {
+  FastO(FILE *file, u32 size = 1 << 18) : f(file), bufsz(size), buf(size + 4) {
     for (u32 i = 0; i != 10000; ++i) {
       u32 k = i;
       for (u32 j = 0; j != 4; ++j) {
@@ -115,12 +127,12 @@ struct FastO {
   }
   void push(const char *s, usize len) {
     if (len < bufsz / 2) {
-      reserve(len + 1);
+      reserve(len);
       std::memcpy(&buf[p], s, len);
       p += len;
     } else {
       flush();
-      fwrite(s, 1, len, f);
+      std::fwrite(s, 1, len, f);
     }
   }
   template <u32 check = 1>
@@ -146,13 +158,17 @@ inline FastI &operator>>(FastI &fin, T &x) {
     fin.skipSpace();
     if (std::is_signed_v<T> && fin.top() == '-')
       fin.pop(), neg = true;
-#ifdef ALGO_IO_NUMBER_ONLY
     constexpr std::array<u64, 9> p10 = {u64(1E0), u64(1E1), u64(1E2), u64(1E3), u64(1E4),
                                         u64(1E5), u64(1E6), u64(1E7), u64(1E8)};
     while (true) {
-      u64 u = 0;
-      std::memcpy(&u, fin.p, sizeof(u));
-      u64 len = std::countr_zero((u & 0xf0f0f0f0f0f0f0f0) ^ 0x3030303030303030) >> 3;
+      fin.reserve(8);
+      u64 u = fin.top8();
+#ifdef ALGO_IO_NUMBER_ONLY
+      u64 umask = u & 0xf0f0f0f0f0f0f0f0;
+#else
+      u64 umask = u & (u + 0x0606060606060606) & 0xf0f0f0f0f0f0f0f0;
+#endif
+      u64 len = std::countr_zero(umask ^ 0x3030303030303030) >> 3;
       if (len == 0)
         break;
       u <<= sizeof(u) * 8 - (len << 3);
@@ -164,10 +180,6 @@ inline FastI &operator>>(FastI &fin, T &x) {
       if (len != sizeof(u))
         break;
     }
-#else
-    while (std::isdigit(fin.top()))
-      x = x * 10 + (fin.pop() & 0xf);
-#endif
     if constexpr (std::is_signed_v<T>)
       x = neg ? -x : x;
   }
