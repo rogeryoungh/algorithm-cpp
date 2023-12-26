@@ -28,14 +28,14 @@ struct FastI {
       reread();
   }
   char pop() {
-    reserve(8);
+    reserve(4);
     return buf[p++];
   }
   char top() const {
     return buf[p];
   }
-  u64 top8() {
-    u64 t;
+  u32 top4() {
+    u32 t;
     std::memcpy(&t, &buf[p], sizeof(t));
     return t;
   }
@@ -81,8 +81,8 @@ struct FastI {
     return *p;
   }
   void reserve(usize) const {}
-  u64 top8() {
-    u64 t;
+  u32 top4() {
+    u32 t;
     std::memcpy(&t, p, sizeof(t));
     return t;
   }
@@ -158,23 +158,21 @@ inline FastI &operator>>(FastI &fin, T &x) {
     fin.skipSpace();
     if (std::is_signed_v<T> && fin.top() == '-')
       fin.pop(), neg = true;
-    constexpr std::array<u64, 9> p10 = {u64(1E0), u64(1E1), u64(1E2), u64(1E3), u64(1E4),
-                                        u64(1E5), u64(1E6), u64(1E7), u64(1E8)};
+    constexpr std::array<u32, 5> p10 = {u64(1E0), u64(1E1), u64(1E2), u64(1E3), u64(1E4)};
     while (true) {
-      fin.reserve(8);
-      u64 u = fin.top8();
+      fin.reserve(4);
+      u32 u = fin.top4();
 #ifdef ALGO_IO_NUMBER_ONLY
-      u64 umask = u & 0xf0f0f0f0f0f0f0f0;
+      u32 umask = u & 0xf0f0f0f0;
 #else
-      u64 umask = u & (u + 0x0606060606060606) & 0xf0f0f0f0f0f0f0f0;
+      u32 umask = u & (u + 0x06060606) & 0xf0f0f0f0;
 #endif
-      u64 len = std::countr_zero(umask ^ 0x3030303030303030) >> 3;
+      u32 len = std::countr_zero(umask ^ 0x30303030) >> 3;
       if (len == 0)
         break;
       u <<= sizeof(u) * 8 - (len << 3);
-      u = (u & 0x0f0f0f0f0f0f0f0f) * 0x0a01 >> 0x08;
-      u = (u & 0x00ff00ff00ff00ff) * 0x00640001 >> 0x10;
-      u = (u & 0x0000ffff0000ffff) * 0x271000000001 >> 0x20;
+      u = (u & 0x0f0f0f0f) * 0x0a01 >> 0x08;
+      u = (u & 0x00ff00ff) * 0x00640001 >> 0x10;
       fin.p += len;
       x = x * p10[len] + u;
       if (len != sizeof(u))
