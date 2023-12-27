@@ -12,6 +12,7 @@
 #endif
 
 #include <cstdint>
+#include <bit>
 
 ALGO_BEGIN_NAMESPACE
 

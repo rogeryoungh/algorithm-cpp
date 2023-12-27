@@ -4,7 +4,6 @@
 #include "../base.hpp"
 
 #include <array>
-#include <bit>
 #include <cstring>
 #include <string>
 #include <vector>

@@ -9,3 +9,6 @@ expand src: pre-expand
 
 pre-expand:
 	python3 scripts/generate-system-header.py
+
+fmt:
+	clang-format -i src/*.hpp src/*/*.hpp test/*/*.cpp
