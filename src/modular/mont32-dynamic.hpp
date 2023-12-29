@@ -25,7 +25,11 @@ struct M32D {
   M32D(u32 val = 0) : v(trans(val)) {}
 
   static M32D from_raw(u32 x) {
-    return std::bit_cast<M32D>(x);
+    return reinterpret_cast<M32D>(x);
+  }
+
+  u32 raw() const {
+    return v;
   }
 
   static u32 getNR() {
@@ -35,19 +39,19 @@ struct M32D {
     return x;
   }
 
-  u32 trans(u32 x) const {
-    return (u64(x) << 32) % MOD;
+  static u32 trans(u32 x) {
+    return reduce(u64(x) * R2);
   }
 
-  u32 reduce(u64 x) const {
+  static u32 reduce(u64 x) {
     return (x + u64(u32(x) * IR) * MOD) >> 32;
   }
 
-  u32 reduce_m(u32 n) const {
+  static u32 reduce_m(u32 n) {
     return n >> 31 ? n + MOD : n;
   }
 
-  u32 reduce_2m(u32 n) const {
+  static u32 reduce_2m(u32 n) {
     return n >> 31 ? n + MOD2 : n;
   }
 

@@ -8,7 +8,7 @@ ALGO_BEGIN_NAMESPACE
 template <u32 _M>
 struct M32C {
 
-  inline static constexpr u32 MOD = _M, MOD2 = MOD * 2, R = u64(1) << 32 % MOD;
+  inline static constexpr u32 MOD = _M, MOD2 = MOD * 2, R = (u64(1) << 32) % MOD;
   static constexpr u32 getNR() {
     u32 x = 1;
     for (i32 i = 0; i < 5; ++i)
@@ -22,22 +22,30 @@ struct M32C {
   M32C(u32 val = 0) : v(trans(val)) {}
 
   static constexpr M32C from_raw(u32 x) {
-    return std::bit_cast<M32C>(x);
+    return reinterpret_cast<M32C>(x);
   }
 
-  constexpr u32 trans(u32 x) const {
-    return (u64(x) << 32) % MOD;
+  constexpr u32 raw() const {
+    return v;
   }
 
-  constexpr u32 reduce(u64 x) const {
+  static constexpr u32 trans(u32 x) {
+    return reduce(u64(x) * R2);
+  }
+
+  static constexpr u32 get(u32 x) {
+    return reduce_m(reduce(x) - MOD);
+  }
+
+  static constexpr u32 reduce(u64 x) {
     return (x + u64(u32(x) * IR) * MOD) >> 32;
   }
 
-  constexpr u32 reduce_m(u32 n) const {
+  static constexpr u32 reduce_m(u32 n) {
     return n >> 31 ? n + MOD : n;
   }
 
-  constexpr u32 reduce_2m(u32 n) const {
+  static constexpr u32 reduce_2m(u32 n) {
     return n >> 31 ? n + MOD2 : n;
   }
 
@@ -46,12 +54,14 @@ struct M32C {
   }
 
   constexpr M32C &operator+=(M32C o) {
-    v = reduce_2m(v + o.v - MOD2);
+    u32 v1 = v + o.v, v2 = v1 - MOD2;
+    v = i32(v2) < 0 ? v1 : v2;
     return *this;
   }
 
   constexpr M32C &operator-=(M32C o) {
-    v = reduce_2m(v - o.v);
+    u32 v1 = v - o.v, v2 = v1 + MOD2;
+    v = i32(v1) < 0 ? v2 : v1;
     return *this;
   }
 
