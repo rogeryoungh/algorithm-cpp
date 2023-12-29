@@ -22,7 +22,7 @@ struct M32C {
   M32C(u32 val = 0) : v(trans(val)) {}
 
   static constexpr M32C from_raw(u32 x) {
-    return reinterpret_cast<M32C>(x);
+    return std::bit_cast<M32C>(x);
   }
 
   constexpr u32 raw() const {

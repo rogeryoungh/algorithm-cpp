@@ -25,7 +25,7 @@ struct M32D {
   M32D(u32 val = 0) : v(trans(val)) {}
 
   static M32D from_raw(u32 x) {
-    return reinterpret_cast<M32D>(x);
+    return std::bit_cast<M32D>(x);
   }
 
   u32 raw() const {
