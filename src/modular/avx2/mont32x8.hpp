@@ -48,9 +48,9 @@ struct M32x8 {
     return M32x8(lhs) *= rhs;
   }
 
-  M32x8 operator-() const {
-    u32x8 sub = _mm256_sub_epi32(mod2x8(), v);
-    return _mm256_sign_epi32(sub, v);
+  template <i32 imm>
+  M32x8  neg() const {
+    return u32x8_blend<imm>(v, _mm256_sub_epi32(mod2x8(), v));
   }
 
   static u32x8 reduce(u64x4 x0246, u64x4 x1357) {
@@ -60,7 +60,7 @@ struct M32x8 {
     auto z0246 = _mm256_add_epi64(x0246, y0246);
     z0246 = i32x8_swap_lohi(z0246);
     auto z1357 = _mm256_add_epi64(x1357, y1357);
-    return _mm256_blend_epi32(z0246, z1357, 0b10101010);
+    return u32x8_blend<0xaa>(z0246, z1357);
   }
 
   static u32x8 mul_reduce(u32x8 a, u32x8 b) {

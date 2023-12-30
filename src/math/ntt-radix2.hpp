@@ -35,21 +35,21 @@ struct NttR2 {
           f[i + j] = x + y;
           f[i + j + l] = x - y;
         }
-        r *= rate2[std::countr_one<u32>(k)];
+        r *= rate2[std::countr_one(k)];
       }
     }
   }
   static void intt(void *p, u32 n) {
     auto *f = reinterpret_cast<ModT *>(p);
-    for (u32 l = 1; l < n; l *= 2) {
+    for (u32 l = 1; l != n; l *= 2) {
       ModT r = 1;
-      for (u32 i = 0, k = 0; i < n; i += l * 2, ++k) {
-        for (u32 j = 0; j < l; ++j) {
+      for (u32 i = 0, k = 0; i != n; i += l * 2, ++k) {
+        for (u32 j = 0; j != l; ++j) {
           ModT x = f[i + j], y = f[i + j + l];
           f[i + j] = x + y;
           f[i + j + l] = (x - y) * r;
         }
-        r *= irate2[std::countr_one<u32>(k)];
+        r *= irate2[std::countr_one(k)];
       }
     }
   }

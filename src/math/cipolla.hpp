@@ -19,7 +19,7 @@ i64 cipolla(ModT n) {
     return -1;
   if (ModT::MOD == 2)
     return 1;
-  for (u64 a = 0; a < ModT::MOD; a++) {
+  for (u64 a = 0; a != ModT::MOD; a++) {
     ModT i = a;
     i = i * i - n;
     using FP2 = std::pair<ModT, ModT>;
