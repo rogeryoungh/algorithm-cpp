@@ -8,7 +8,7 @@
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/modular/mont32-const.hpp"
-#include "../../src/math/avx512f/ntt-radix2.hpp"
+#include "../../src/math/avx512f/ntt-radix2-avx512f.hpp"
 
 using ModT = M32C<998244353>;
 using Ntt = Ntt32R2Avx512F<ModT, 3>;
