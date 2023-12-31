@@ -59,7 +59,7 @@ struct NttR4 {
           f[i + j + 2 * l] = x0_2 + x1x3;
           f[i + j + 3 * l] = x0_2 - x1x3;
         }
-        r *= rate3[std::countr_one<u32>(k)];
+        r *= rate3[std::countr_one(k)];
       }
     }
   }
@@ -83,7 +83,7 @@ struct NttR4 {
           f[i + j + 2 * l] = (x01 - x23) * r2;
           f[i + j + 3 * l] = (x0_1 - x2x3) * r3;
         }
-        r *= irate3[std::countr_one<u32>(k)];
+        r *= irate3[std::countr_one(k)];
       }
     }
     if (n4b) {
