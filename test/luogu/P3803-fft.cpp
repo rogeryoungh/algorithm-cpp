@@ -1,0 +1,36 @@
+#define PROBLEM "https://www.luogu.com.cn/problem/P3803"
+
+#define ALGO_IO_NUMBER_ONLY
+
+#define ALGO_NO_NAMESPACE
+#define ALGO_IO_NUMBER_ONLY
+
+#include "../../src/other/fastio.hpp"
+#include "../../src/math/fft-radix2.hpp"
+
+i32 main() {
+  FastI fin(stdin);
+  FastO fout(stdout);
+  u32 n, m;
+  fin >> n >> m;
+  n++, m++;
+  u32 l = std::bit_ceil(n + m - 1);
+  auto *f = new (std::align_val_t(32)) CP64[l];
+  for (u32 i = 0; i != n; ++i) {
+    u32 t;
+    fin >> t, f[i].x = t;
+  }
+  for (u32 i = 0; i != m; ++i) {
+    u32 t;
+    fin >> t, f[i].y = t;
+  }
+  FftR2 fft;
+  fft.fft(f, l);
+  fft.dot(f, f, l);
+  fft.ifft(f, l);
+  fft.dot2(f, l);
+  for (u32 i = 0; i != n + m - 1; ++i)
+    fout << u32(f[i].y / 2 + 0.5) << ' ';
+  operator delete[](f, std::align_val_t(32));
+  return 0;
+}

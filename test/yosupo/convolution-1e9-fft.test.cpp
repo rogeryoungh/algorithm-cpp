@@ -7,9 +7,8 @@
 #define ALGO_IO_NUMBER_ONLY
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/math/fft-radix2-twisted.hpp"
+#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
 
-using Fft = FftR2T;
 constexpr u32 B = 1 << 14, P = 1E9 + 7, X = 8; // B * B * N <= M
 
 i32 main() {
@@ -36,7 +35,7 @@ i32 main() {
       g[i * X + j] = CP64{f64(t % B)}, t /= B;
     }
   }
-  FftR2T fft;
+  FftR2Avx2T fft;
   fft.fft(f, l * X);
   fft.fft(g, l * X);
   fft.dot(f, g, l * X);
