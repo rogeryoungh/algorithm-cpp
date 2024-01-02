@@ -7,6 +7,7 @@
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/math/fft-radix2.hpp"
+#include "../../src/other/align-alloc.hpp"
 
 i32 main() {
   FastI fin(stdin);
@@ -15,7 +16,7 @@ i32 main() {
   fin >> n >> m;
   n++, m++;
   u32 l = std::bit_ceil(n + m - 1);
-  auto *f = new (std::align_val_t(32)) CP64[l];
+  AVec<CP64> f(l);
   for (u32 i = 0; i != n; ++i) {
     u32 t;
     fin >> t, f[i].x = t;
@@ -25,12 +26,11 @@ i32 main() {
     fin >> t, f[i].y = t;
   }
   FftR2 fft;
-  fft.fft(f, l);
-  fft.dot(f, f, l);
-  fft.ifft(f, l);
-  fft.dot2(f, l);
+  fft.fft(f.data(), l);
+  fft.dot(f.data(), f.data(), l);
+  fft.ifft(f.data(), l);
+  fft.dot2(f.data(), l);
   for (u32 i = 0; i != n + m - 1; ++i)
     fout << u32(f[i].y / 2 + 0.5) << ' ';
-  operator delete[](f, std::align_val_t(32));
   return 0;
 }

@@ -8,7 +8,7 @@
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT, u32 G>
-struct Ntt32R2AVX2 {
+struct Ntt32R2Avx2 {
   using M32x8 = struct M32x8<ModT>;
   inline static std::array<ModT, 32> rt, irt, rate2, irate2;
   inline static M32x8 rate4ix8[32], irate4ix8[32];

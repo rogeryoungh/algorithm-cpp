@@ -9,6 +9,7 @@
 #include "../../src/other/fastio.hpp"
 #include "../../src/modular/mont64-const.hpp"
 #include "../../src/math/ntt-radix4.hpp"
+#include "../../src/other/align-alloc.hpp"
 
 using ModT = M64C<2053641430080946177>;
 using Ntt = NttR4<ModT, 7>;
@@ -21,9 +22,7 @@ i32 main() {
   u32 n, m;
   fin >> n >> m;
   u32 l = std::bit_ceil(n + m - 1);
-  // std::vector<ModT> f(l * X), g(l * X);
-  auto *f = new (std::align_val_t(32)) ModT[l * X];
-  auto *g = new (std::align_val_t(32)) ModT[l * X];
+  AVec<ModT> f(l * X), g(l * X);
 
   for (u32 i = 0; i != n; ++i) {
     u32 t;
@@ -40,11 +39,11 @@ i32 main() {
     }
   }
   Ntt::setMod();
-  Ntt::ntt(f, l * X);
-  Ntt::ntt(g, l * X);
-  Ntt::dot(f, g, l * X);
-  Ntt::intt(f, l * X);
-  Ntt::dot2(f, l * X);
+  Ntt::ntt(f.data(), l * X);
+  Ntt::ntt(g.data(), l * X);
+  Ntt::dot(f.data(), g.data(), l * X);
+  Ntt::intt(f.data(), l * X);
+  Ntt::dot2(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {
@@ -52,7 +51,5 @@ i32 main() {
     }
     fout << t << ' ';
   }
-  operator delete[](f, std::align_val_t(32));
-  operator delete[](g, std::align_val_t(32));
   return 0;
 }

@@ -23,13 +23,13 @@ inline u64x4 u32x8_mul0246(u32x8 a, u32x8 b) { // 5, 0.5
   return _mm256_mul_epu32(a, b);
 }
 
-inline i32x8 i32x8_swap_lohi(i32x8 a) { // 1, 0.5
+inline i32x8 i32x8_permute2301(i32x8 a) { // 1, 0.5
   return u32x8_shuffle<0xf5>(a);
 }
 
 inline u64x4 u32x8_mul1357(u32x8 a, u32x8 b) { // 7, 0.5
-  a = i32x8_swap_lohi(a);
-  b = i32x8_swap_lohi(b);
+  a = i32x8_permute2301(a);
+  b = i32x8_permute2301(b);
   return u32x8_mul0246(a, b);
 }
 

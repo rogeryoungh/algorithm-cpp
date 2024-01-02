@@ -9,9 +9,10 @@
 #include "../../src/other/fastio.hpp"
 #include "../../src/modular/mont32-const.hpp"
 #include "../../src/math/avx2/ntt-radix2-avx2.hpp"
+#include "../../src/other/align-alloc.hpp"
 
 using ModT = M32C<998244353>;
-using Ntt = Ntt32R2AVX2<ModT, 3>;
+using Ntt = Ntt32R2Avx2<ModT, 3>;
 
 i32 main() {
   FastI fin(stdin);
@@ -19,8 +20,7 @@ i32 main() {
   u32 n, m;
   fin >> n >> m;
   u32 l = std::bit_ceil(n + m - 1);
-  auto *f = new (std::align_val_t(32)) ModT[l];
-  auto *g = new (std::align_val_t(32)) ModT[l];
+  AVec<ModT> f(l), g(l);
   for (u32 i = 0; i != n; ++i) {
     u32 t;
     fin >> t, f[i] = t;
@@ -30,14 +30,12 @@ i32 main() {
     fin >> t, g[i] = t;
   }
   Ntt::setMod();
-  Ntt::ntt(f, l);
-  Ntt::ntt(g, l);
-  Ntt::dot(f, g, l);
-  Ntt::intt(f, l);
-  Ntt::dot2(f, l);
+  Ntt::ntt(f.data(), l);
+  Ntt::ntt(g.data(), l);
+  Ntt::dot(f.data(), g.data(), l);
+  Ntt::intt(f.data(), l);
+  Ntt::dot2(f.data(), l);
   for (u32 i = 0; i != n + m - 1; ++i)
     fout << f[i].get() << ' ';
-  operator delete[](f, std::align_val_t(32));
-  operator delete[](g, std::align_val_t(32));
   return 0;
 }

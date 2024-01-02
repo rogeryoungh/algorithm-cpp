@@ -58,7 +58,7 @@ struct M32x8 {
     auto y0246 = u32x8_mul0246(u32x8_mul0246(x0246, irx8()), modx8());
     auto y1357 = u32x8_mul0246(u32x8_mul0246(x1357, irx8()), modx8());
     auto z0246 = _mm256_add_epi64(x0246, y0246);
-    z0246 = i32x8_swap_lohi(z0246);
+    z0246 = i32x8_permute2301(z0246);
     auto z1357 = _mm256_add_epi64(x1357, y1357);
     return u32x8_blend<0xaa>(z0246, z1357);
   }

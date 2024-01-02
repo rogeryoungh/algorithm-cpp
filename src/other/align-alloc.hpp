@@ -3,9 +3,7 @@
 
 #include "../base.hpp"
 
-#include <cstdlib>
 #include <vector>
-#include <new>
 
 ALGO_BEGIN_NAMESPACE
 
