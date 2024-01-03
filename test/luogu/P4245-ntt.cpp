@@ -8,7 +8,7 @@
 #include "../../src/math/avx2/ntt-radix4-avx2.hpp"
 
 using ModT = M64C<2053641430080946177>;
-using NTT = NTT32Radix4AVX2<ModT, 7>;
+auto ntt = NTT32Radix4AVX2<ModT>(7);
 
 constexpr u32 B = 1 << 18, X = 4; // B * B * N <= M
 
@@ -35,12 +35,11 @@ i32 main() {
       g[i * X + j] = t % B, t /= B;
     }
   }
-  NTT::set_mod();
-  NTT::ntt(f.data(), l * X);
-  NTT::ntt(g.data(), l * X);
-  NTT::dot(f.data(), g.data(), l * X);
-  NTT::intt(f.data(), l * X);
-  NTT::dot2(f.data(), l * X);
+  ntt.ntt(f.data(), l * X);
+  ntt.ntt(g.data(), l * X);
+  dot(f.data(), g.data(), l * X);
+  ntt.intt(f.data(), l * X);
+  div2n(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {

@@ -77,24 +77,14 @@ struct FFT64Radix2TwistedAVX2 {
       f[j + l] = x - y;
     }
   }
-  void fft_base(CP64x2 *f, u32 m, CP64x2 *rt2) {
-    for (u32 l = m / 2; l != 0; l /= 2) {
-      for (u32 i = 0; i != m; i += l * 2) {
-        fft_butterfly(f + i, l, rt2 + l);
-      }
-    }
-  }
-  void ifft_base(CP64x2 *f, u32 m, CP64x2 *rt2) {
-    for (u32 l = 1; l != m; l *= 2) {
-      for (u32 i = 0; i != m; i += l * 2) {
-        ifft_butterfly(f + i, l, rt2 + l);
-      }
-    }
-  }
   void fft_rec(CP64x2 *f, u32 m, CP64x2 *rt2) {
     constexpr u32 N = 1 << 6;
     if (m <= N) {
-      fft_base(f, m, rt2);
+      for (u32 l = m / 2; l != 0; l /= 2) {
+        for (u32 i = 0; i != m; i += l * 2) {
+          fft_butterfly(f + i, l, rt2 + l);
+        }
+      }
     } else {
       u32 l = m / 2;
       fft_butterfly(f, l, rt2 + l);
@@ -102,59 +92,62 @@ struct FFT64Radix2TwistedAVX2 {
       fft_rec(f + l, l, rt2);
     }
   }
-  void ifft_rec(CP64x2 *f, u32 n, CP64x2 *rt2) {
+  void ifft_rec(CP64x2 *f, u32 m, CP64x2 *rt2) {
     constexpr u32 N = 1 << 6;
-    if (n <= N) {
-      ifft_base(f, n, rt2);
+    if (m <= N) {
+      for (u32 l = 1; l != m; l *= 2) {
+        for (u32 i = 0; i != m; i += l * 2) {
+          ifft_butterfly(f + i, l, rt2 + l);
+        }
+      }
     } else {
-      u32 l = n / 2;
+      u32 l = m / 2;
       ifft_rec(f + 0, l, rt2);
       ifft_rec(f + l, l, rt2);
       ifft_butterfly(f, l, rt2 + l);
     }
   }
-  void fft(void *p, u32 n) {
+  void fft(CP64 *f, u32 n) {
     prepare_root(n);
     if (n <= 64)
-      return fft_small(reinterpret_cast<CP64 *>(p), n);
+      return fft_small(f, n);
     u32 m = n / 2;
-    auto *f = reinterpret_cast<CP64x2 *>(p);
-    auto *rt2 = reinterpret_cast<CP64x2 *>(rt.data());
-    fft_rec(f, m, rt2);
-    fft_layer_last(f, m);
+    auto *fx = reinterpret_cast<CP64x2 *>(f);
+    auto *rtx = reinterpret_cast<CP64x2 *>(rt.data());
+    fft_rec(fx, m, rtx);
+    fft_layer_last(fx, m);
   }
-  void ifft(void *p, u32 n) {
+  void ifft(CP64 *f, u32 n) {
     prepare_root(n);
     if (n <= 64)
-      return ifft_small(reinterpret_cast<CP64 *>(p), n);
+      return ifft_small(f, n);
     u32 m = n / 2;
-    auto *f = reinterpret_cast<CP64x2 *>(p);
-    auto *rt2 = reinterpret_cast<CP64x2 *>(rt.data());
-    fft_layer_last(f, m);
-    ifft_rec(f, m, rt2);
+    auto *fx = reinterpret_cast<CP64x2 *>(f);
+    auto *rtx = reinterpret_cast<CP64x2 *>(rt.data());
+    fft_layer_last(fx, m);
+    ifft_rec(fx, m, rtx);
   }
-  void dot(void *p1, const void *p2, u32 n) {
+  void dot(CP64 *f, const CP64 *g, u32 n) {
     if (n <= 16) {
-      auto *f = reinterpret_cast<CP64 *>(p1);
-      auto *g = reinterpret_cast<const CP64 *>(p2);
       for (u32 i = 0; i != n; ++i)
         f[i] *= g[i];
     } else {
-      auto *f2 = reinterpret_cast<CP64x2 *>(p1);
-      auto *g2 = reinterpret_cast<const CP64x2 *>(p2);
+      auto *fx = reinterpret_cast<CP64x2 *>(f);
+      auto *gx = reinterpret_cast<const CP64x2 *>(g);
       for (u32 i = 0; i != n / 2; ++i)
-        f2[i] *= g2[i];
+        fx[i] *= gx[i];
     }
   }
-  void dot2(void *p, u32 n) {
+  void div2n(CP64 *f, u32 n) {
+    f64 ivn = f64(1) / n;
     if (n <= 16) {
-      auto *f = reinterpret_cast<CP64 *>(p);
       for (u32 i = 0; i != n; ++i)
-        f[i] /= n;
+        f[i] *= ivn;
     } else {
-      auto *f2 = reinterpret_cast<CP64x2 *>(p);
+      auto *fx = reinterpret_cast<CP64x2 *>(f);
+      f64x4 ivnx = _mm256_set1_pd(ivn);
       for (u32 i = 0; i != n / 2; ++i)
-        f2[i] /= n;
+        fx[i] *= ivnx;
     }
   }
 };

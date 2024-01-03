@@ -2,14 +2,15 @@
 #define ALGO_H_MATH_NTT_RADIX4
 
 #include "../base.hpp"
+#include "./mont-vec-dots.hpp"
 #include <array>
 
 ALGO_BEGIN_NAMESPACE
 
-template <class ModT, u32 G>
+template <class ModT>
 struct NTTRadix4 {
-  inline static std::array<ModT, 64> rt, irt, rate2, irate2, rate3, irate3;
-  static void set_mod() {
+  std::array<ModT, 64> rt, irt, rate2, irate2, rate3, irate3;
+  NTTRadix4(u32 G) {
     const u32 rank2 = std::countr_zero(ModT::MOD - 1);
     rt[rank2] = ModT(G).pow((ModT::MOD - 1) >> rank2);
     irt[rank2] = rt[rank2].inv();
@@ -32,8 +33,7 @@ struct NTTRadix4 {
       iprod *= rt[i + 3];
     }
   }
-  static void ntt(void *p, u32 n) {
-    auto *f = reinterpret_cast<ModT *>(p);
+  void ntt(ModT *f, u32 n) {
     u32 l = n / 2, n4b = std::countr_zero(n) & 1;
     if (n4b) {
       for (u32 j = 0; j != l; ++j) {
@@ -63,8 +63,7 @@ struct NTTRadix4 {
       }
     }
   }
-  static void intt(void *p, u32 n) {
-    auto *f = reinterpret_cast<ModT *>(p);
+  void intt(ModT *f, u32 n) {
     u32 l = 1, n4b = std::countr_zero(n) & 1;
     for (; l != (n4b ? n / 2 : n); l *= 4) {
       ModT r = 1, img = irt[2];
@@ -92,18 +91,6 @@ struct NTTRadix4 {
         f[j] = x + y, f[j + l] = x - y;
       }
     }
-  }
-  static void dot(void *p1, const void *p2, u32 n) {
-    auto *f = reinterpret_cast<ModT *>(p1);
-    auto *g = reinterpret_cast<const ModT *>(p2);
-    for (u32 i = 0; i != n; ++i)
-      f[i] *= g[i];
-  }
-  static void dot2(void *p, u32 n) {
-    auto *f = reinterpret_cast<ModT *>(p);
-    ModT ivn = ModT::MOD - (ModT::MOD - 1) / n;
-    for (u32 i = 0; i != n; ++i)
-      f[i] *= ivn;
   }
 };
 

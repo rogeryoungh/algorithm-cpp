@@ -8,11 +8,11 @@
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/modular/mont64-const.hpp"
-#include "../../src/math/ntt-radix2-twisted.hpp"
 #include "../../src/other/align-alloc.hpp"
+#include "../../src/math/ntt-radix2-twisted.hpp"
 
 using ModT = M64C<2053641430080946177>;
-using NTT = NTTRadix2Twisted<ModT, 7>;
+auto ntt = NTTRadix2Twisted<ModT>(7);
 
 constexpr u32 B = 1 << 19, X = 8; // B * B * N <= M
 
@@ -22,8 +22,8 @@ i32 main() {
   u32 n, m;
   fin >> n >> m;
   u32 l = std::bit_ceil(n + m - 1);
-  AVec<ModT> f(l * X), g(l * X);
 
+  AVec<ModT> f(l * X), g(l * X);
   for (u32 i = 0; i != n; ++i) {
     u64 t;
     fin >> t;
@@ -38,12 +38,11 @@ i32 main() {
       g[i * X + j] = t % B, t /= B;
     }
   }
-  NTT::set_mod();
-  NTT::ntt(f.data(), l * X);
-  NTT::ntt(g.data(), l * X);
-  NTT::dot(f.data(), g.data(), l * X);
-  NTT::intt(f.data(), l * X);
-  NTT::dot2(f.data(), l * X);
+  ntt.ntt(f.data(), l * X);
+  ntt.ntt(g.data(), l * X);
+  dot(f.data(), g.data(), l * X);
+  ntt.intt(f.data(), l * X);
+  div2n(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {

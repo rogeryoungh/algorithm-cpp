@@ -7,8 +7,10 @@
 #define ALGO_IO_NUMBER_ONLY
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
 #include "../../src/other/align-alloc.hpp"
+#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
+
+auto fft = FFT64Radix2TwistedAVX2();
 
 constexpr u32 B = 1 << 15, X = 4; // luogu only
 // constexpr u32 B = 1 << 14, X = 8;
@@ -41,7 +43,7 @@ i32 main() {
   fft.fft(g.data(), l * X);
   fft.dot(f.data(), g.data(), l * X);
   fft.ifft(f.data(), l * X);
-  fft.dot2(f.data(), l * X);
+  fft.div2n(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {

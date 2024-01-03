@@ -44,24 +44,14 @@ struct FFTRadix2Twisted {
       f[j + l] = x - y;
     }
   }
-  void fft_base(CP64 *f, u32 n) {
-    for (u32 l = n / 2; l != 0; l /= 2) {
-      for (u32 i = 0; i != n; i += l * 2) {
-        fft_butterfly(f + i, l, rt.data() + l);
-      }
-    }
-  }
-  void ifft_base(CP64 *f, u32 n) {
-    for (u32 l = 1; l != n; l *= 2) {
-      for (u32 i = 0; i != n; i += l * 2) {
-        ifft_butterfly(f + i, l, rt.data() + l);
-      }
-    }
-  }
-   void fft_rec(CP64 *f, u32 n) {
+  void fft_rec(CP64 *f, u32 n) {
     constexpr u32 N = 1 << 10;
     if (n <= N) {
-      fft_base(f, n);
+      for (u32 l = n / 2; l != 0; l /= 2) {
+        for (u32 i = 0; i != n; i += l * 2) {
+          fft_butterfly(f + i, l, rt.data() + l);
+        }
+      }
     } else {
       u32 l = n / 2;
       fft_butterfly(f, l, rt.data() + l);
@@ -72,7 +62,11 @@ struct FFTRadix2Twisted {
   void ifft_rec(CP64 *f, u32 n) {
     constexpr u32 N = 1 << 10;
     if (n <= N) {
-      ifft_base(f, n);
+      for (u32 l = 1; l != n; l *= 2) {
+        for (u32 i = 0; i != n; i += l * 2) {
+          ifft_butterfly(f + i, l, rt.data() + l);
+        }
+      }
     } else {
       u32 l = n / 2;
       ifft_rec(f + 0, l);
@@ -92,9 +86,10 @@ struct FFTRadix2Twisted {
     for (u32 i = 0; i != n; ++i)
       f[i] *= g[i];
   }
-  void dot2(CP64 *f, u32 n) {
+  void div2n(CP64 *f, u32 n) {
+    f64 ivn = f64(1) / n;
     for (u32 i = 0; i != n; ++i)
-      f[i] /= n;
+      f[i] *= ivn;
   }
 };
 

@@ -53,9 +53,10 @@ struct FFTRadix2 {
     for (u32 i = 0; i != n; ++i)
       f[i] *= g[i];
   }
-  void dot2(CP64 *f, u32 n) {
+  void div2n(CP64 *f, u32 n) {
+    f64 ivn = f64(1) / n;
     for (u32 i = 0; i != n; ++i)
-      f[i] /= n;
+      f[i] *= ivn;
   }
 };
 

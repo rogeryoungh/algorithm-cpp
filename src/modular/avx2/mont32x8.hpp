@@ -49,7 +49,7 @@ struct M32x8 {
   }
 
   template <i32 imm>
-  M32x8  neg() const {
+  M32x8 neg() const {
     return u32x8_blend<imm>(v, _mm256_sub_epi32(mod2x8(), v));
   }
 

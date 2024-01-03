@@ -69,7 +69,7 @@ struct CP64 {
     return CP64(l) /= r;
   }
   constexpr static CP64 cmul(const CP64 &l, const CP64 &r) {
-    f64 x = l.x * r.x + l.y * r.y, y = l.y * r.x -l.x * r.y;
+    f64 x = l.x * r.x + l.y * r.y, y = l.y * r.x - l.x * r.y;
     return CP64{x, y};
   }
 

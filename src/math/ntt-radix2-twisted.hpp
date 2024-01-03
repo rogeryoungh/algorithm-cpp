@@ -2,18 +2,20 @@
 #define ALGO_H_MATH_NTT_RADIX2_TWISTED
 
 #include "../base.hpp"
+#include "./mont-vec-dots.hpp"
 #include <algorithm>
 #include <vector>
 
 ALGO_BEGIN_NAMESPACE
 
-template <class ModT, u32 G>
+template <class ModT>
 struct NTTRadix2Twisted {
-  inline static std::vector<ModT> rt;
-  static void set_mod() {
+  u32 G;
+  std::vector<ModT> rt;
+  NTTRadix2Twisted(u32 g) : G(g) {
     rt = {ModT{1}, ModT{1}};
   }
-  static void prepare_root(u32 m) {
+  void prepare_root(u32 m) {
     u32 n = rt.size();
     if (n >= m)
       return;
@@ -25,35 +27,35 @@ struct NTTRadix2Twisted {
       }
     }
   }
-  static void ntt_butterfly(ModT *f, u32 l, ModT *w) {
+  void ntt_butterfly(ModT *f, u32 l, ModT *w) {
     for (u32 j = 0; j != l; ++j) {
       ModT x = f[j], y = f[j + l];
       f[j] = x + y;
       f[j + l] = (x - y) * w[j];
     }
   }
-  static void intt_butterfly(ModT *f, u32 l, ModT *w) {
+  void intt_butterfly(ModT *f, u32 l, ModT *w) {
     for (u32 j = 0; j != l; ++j) {
       ModT x = f[j], y = f[j + l] * w[j];
       f[j] = x + y;
       f[j + l] = x - y;
     }
   }
-  static void ntt_base(ModT *f, u32 n) {
+  void ntt_base(ModT *f, u32 n) {
     for (u32 l = n / 2; l != 0; l /= 2) {
       for (u32 i = 0; i != n; i += l * 2) {
         ntt_butterfly(f + i, l, rt.data() + l);
       }
     }
   }
-  static void intt_base(ModT *f, u32 n) {
+  void intt_base(ModT *f, u32 n) {
     for (u32 l = 1; l != n; l *= 2) {
       for (u32 i = 0; i != n; i += l * 2) {
         intt_butterfly(f + i, l, rt.data() + l);
       }
     }
   }
-  static void ntt_rec(ModT *f, u32 n) {
+  void ntt_rec(ModT *f, u32 n) {
     constexpr u32 N = 1 << 10;
     if (n <= N) {
       ntt_base(f, n);
@@ -64,7 +66,7 @@ struct NTTRadix2Twisted {
       ntt_rec(f + l, l);
     }
   }
-  static void intt_rec(ModT *f, u32 n) {
+  void intt_rec(ModT *f, u32 n) {
     constexpr u32 N = 1 << 10;
     if (n <= N) {
       intt_base(f, n);
@@ -75,28 +77,14 @@ struct NTTRadix2Twisted {
       intt_butterfly(f, l, rt.data() + l);
     }
   }
-  static void ntt(void *p, u32 n) {
-    auto *f = reinterpret_cast<ModT *>(p);
+  void ntt(ModT *f, u32 n) {
     prepare_root(n);
     ntt_base(f, n);
   }
-  static void intt(void *p, u32 n) {
+  void intt(ModT *f, u32 n) {
     prepare_root(n);
-    auto *f = reinterpret_cast<ModT *>(p);
     intt_base(f, n);
     std::reverse(f + 1, f + n);
-  }
-  static void dot(void *p1, const void *p2, u32 n) {
-    auto *f = reinterpret_cast<ModT *>(p1);
-    auto *g = reinterpret_cast<const ModT *>(p2);
-    for (u32 i = 0; i != n; ++i)
-      f[i] *= g[i];
-  }
-  static void dot2(void *p, u32 n) {
-    auto *f = reinterpret_cast<ModT *>(p);
-    ModT ivn = ModT::MOD - (ModT::MOD - 1) / n;
-    for (u32 i = 0; i != n; ++i)
-      f[i] *= ivn;
   }
 };
 

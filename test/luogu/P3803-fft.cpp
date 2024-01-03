@@ -6,8 +6,8 @@
 #define ALGO_IO_NUMBER_ONLY
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
 #include "../../src/other/align-alloc.hpp"
+#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
 
 i32 main() {
   FastI fin(stdin);
@@ -29,7 +29,7 @@ i32 main() {
   fft.fft(f.data(), l);
   fft.dot(f.data(), f.data(), l);
   fft.ifft(f.data(), l);
-  fft.dot2(f.data(), l);
+  fft.div2n(f.data(), l);
   for (u32 i = 0; i != n + m - 1; ++i)
     fout << u32(f[i].y / 2 + 0.5) << ' ';
   return 0;

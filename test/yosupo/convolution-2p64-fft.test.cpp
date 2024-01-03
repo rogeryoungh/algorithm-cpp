@@ -7,8 +7,10 @@
 #define ALGO_IO_NUMBER_ONLY
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
 #include "../../src/other/align-alloc.hpp"
+#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
+
+FFT64Radix2TwistedAVX2 fft;
 
 constexpr u32 B = 1 << 14, X = 16; // B * B * N <= M
 
@@ -18,8 +20,8 @@ i32 main() {
   u32 n, m;
   fin >> n >> m;
   u32 l = std::bit_ceil(n + m - 1);
-  AVec<CP64> f(l * X), g(l * X);
 
+  AVec<CP64> f(l * X), g(l * X);
   for (u32 i = 0; i != n; ++i) {
     u64 t;
     fin >> t;
@@ -34,12 +36,11 @@ i32 main() {
       g[i * X + j] = CP64{f64(t % B)}, t /= B;
     }
   }
-  FFT64Radix2TwistedAVX2 fft;
   fft.fft(f.data(), l * X);
   fft.fft(g.data(), l * X);
   fft.dot(f.data(), g.data(), l * X);
   fft.ifft(f.data(), l * X);
-  fft.dot2(f.data(), l * X);
+  fft.div2n(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {

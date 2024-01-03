@@ -11,7 +11,7 @@
 #include "../../src/math/avx2/ntt-radix2-twisted-avx2.hpp"
 
 using ModT = M32C<998244353>;
-using NTT = NTT32Radix2TwistedAVX2<ModT, 3>;
+auto ntt = NTT32Radix2TwistedAVX2<ModT>(3);
 
 i32 main() {
   FastI fin(stdin);
@@ -28,12 +28,11 @@ i32 main() {
     u32 t;
     fin >> t, g[i] = t;
   }
-  NTT::set_mod();
-  NTT::ntt(f.data(), l);
-  NTT::ntt(g.data(), l);
-  NTT::dot(f.data(), g.data(), l);
-  NTT::intt(f.data(), l);
-  NTT::dot2(f.data(), l);
+  ntt.ntt(f.data(), l);
+  ntt.ntt(g.data(), l);
+  dot(f.data(), g.data(), l);
+  ntt.intt(f.data(), l);
+  div2n(f.data(), l);
   for (u32 i = 0; i != n + m - 1; ++i)
     fout << f[i].get() << ' ';
   return 0;
