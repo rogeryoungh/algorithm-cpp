@@ -8,9 +8,9 @@
 
 ALGO_BEGIN_NAMESPACE
 
-struct FftR2Avx2T {
+struct FFT64Radix2TwistedAVX2 {
   AVec<CP64> rt;
-  FftR2Avx2T() : rt(2) {
+  FFT64Radix2TwistedAVX2() : rt(2) {
     rt[0] = rt[1] = CP64{1};
   }
   void prepare_root(u32 m) {
@@ -117,7 +117,6 @@ struct FftR2Avx2T {
     prepare_root(n);
     if (n <= 64)
       return fft_small(reinterpret_cast<CP64 *>(p), n);
-    // fft_rec(f, n);
     u32 m = n / 2;
     auto *f = reinterpret_cast<CP64x2 *>(p);
     auto *rt2 = reinterpret_cast<CP64x2 *>(rt.data());

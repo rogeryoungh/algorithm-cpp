@@ -9,13 +9,13 @@ template <u64 _M>
 struct M64C {
 
   inline static constexpr u64 MOD = _M, MOD2 = MOD * 2, R = (u128(1) << 64) % MOD;
-  static constexpr u64 getNR() {
+  static constexpr u64 get_nr() {
     u64 x = 1;
     for (i64 i = 0; i < 7; ++i)
       x *= 2 - x * MOD;
     return x;
   }
-  inline static constexpr u64 R2 = u128(R) * R % MOD, IR = -getNR();
+  inline static constexpr u64 R2 = u128(R) * R % MOD, IR = -get_nr();
 
   u64 v;
 

@@ -17,7 +17,7 @@ i32 main() {
   while (T--) {
     u32 n, p;
     fin >> n >> p;
-    ModT::setMod(p);
+    ModT::set_mod(p);
     auto ret = cipolla(ModT(n));
     if (ret != -1) {
       if (ret == -ret)

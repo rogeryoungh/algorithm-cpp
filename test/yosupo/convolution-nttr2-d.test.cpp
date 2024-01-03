@@ -11,14 +11,14 @@
 #include "../../src/math/ntt-radix2.hpp"
 
 using ModT = M32D<1>;
-using Ntt = NttR2<ModT, 3>;
+using NTT = NTTRadix2<ModT, 3>;
 
 i32 main() {
   FastI fin(stdin);
   FastO fout(stdout);
   u32 n, m;
   fin >> n >> m;
-  ModT::setMod(998244353);
+  ModT::set_mod(998244353);
   u32 l = std::bit_ceil(n + m - 1);
   std::vector<ModT> f(l), g(l);
   for (u32 i = 0; i != n; ++i) {
@@ -29,12 +29,12 @@ i32 main() {
     u32 t;
     fin >> t, g[i] = t;
   }
-  Ntt::setMod();
-  Ntt::ntt(f.data(), l);
-  Ntt::ntt(g.data(), l);
-  Ntt::dot(f.data(), g.data(), l);
-  Ntt::intt(f.data(), l);
-  Ntt::dot2(f.data(), l);
+  NTT::set_mod();
+  NTT::ntt(f.data(), l);
+  NTT::ntt(g.data(), l);
+  NTT::dot(f.data(), g.data(), l);
+  NTT::intt(f.data(), l);
+  NTT::dot2(f.data(), l);
   for (u32 i = 0; i != n + m - 1; ++i)
     fout << f[i].get() << ' ';
   return 0;

@@ -74,8 +74,6 @@ struct CP64 {
   }
 
   constexpr static CP64 polar(f64 t) {
-    // auto tmp = std::polar<f64>(1, t);
-    // return CP64{tmp.real(), tmp.imag()};
     return CP64{std::cos(t), std::sin(t)};
   }
 

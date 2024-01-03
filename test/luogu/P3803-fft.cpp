@@ -6,7 +6,7 @@
 #define ALGO_IO_NUMBER_ONLY
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/math/fft-radix2.hpp"
+#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
 #include "../../src/other/align-alloc.hpp"
 
 i32 main() {
@@ -25,7 +25,7 @@ i32 main() {
     u32 t;
     fin >> t, f[i].y = t;
   }
-  FftR2 fft;
+  FFT64Radix2TwistedAVX2 fft;
   fft.fft(f.data(), l);
   fft.dot(f.data(), f.data(), l);
   fft.ifft(f.data(), l);

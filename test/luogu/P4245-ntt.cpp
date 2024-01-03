@@ -5,10 +5,10 @@
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/modular/mont64-const.hpp"
-#include "../../src/math/ntt-radix4.hpp"
+#include "../../src/math/avx2/ntt-radix4-avx2.hpp"
 
 using ModT = M64C<2053641430080946177>;
-using Ntt = NttR4<ModT, 7>;
+using NTT = NTT32Radix4AVX2<ModT, 7>;
 
 constexpr u32 B = 1 << 18, X = 4; // B * B * N <= M
 
@@ -35,12 +35,12 @@ i32 main() {
       g[i * X + j] = t % B, t /= B;
     }
   }
-  Ntt::setMod();
-  Ntt::ntt(f.data(), l * X);
-  Ntt::ntt(g.data(), l * X);
-  Ntt::dot(f.data(), g.data(), l * X);
-  Ntt::intt(f.data(), l * X);
-  Ntt::dot2(f.data(), l * X);
+  NTT::set_mod();
+  NTT::ntt(f.data(), l * X);
+  NTT::ntt(g.data(), l * X);
+  NTT::dot(f.data(), g.data(), l * X);
+  NTT::intt(f.data(), l * X);
+  NTT::dot2(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {

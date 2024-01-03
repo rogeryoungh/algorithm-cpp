@@ -8,12 +8,12 @@
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT, u32 G>
-struct Ntt32R2Avx2 {
+struct NTT32Radix2AVX2 {
   using M32x8 = struct M32x8<ModT>;
   inline static std::array<ModT, 32> rt, irt, rate2, irate2;
   inline static M32x8 rate4ix8[32], irate4ix8[32];
   inline static M32x8 rt2, irt2, rt4, irt4;
-  static void setMod() {
+  static void set_mod() {
     const u32 rank2 = std::countr_zero(ModT::MOD - 1);
     rt[rank2] = ModT(G).pow((ModT::MOD - 1) >> rank2);
     irt[rank2] = rt[rank2].inv();

@@ -34,7 +34,7 @@ i32 main() {
       g[i * X + j] = CP64{f64(t % B)}, t /= B;
     }
   }
-  FftR2Avx2T fft;
+  FFT64Radix2TwistedAVX2 fft;
   fft.fft(f.data(), l * X);
   fft.fft(g.data(), l * X);
   fft.dot(f.data(), g.data(), l * X);

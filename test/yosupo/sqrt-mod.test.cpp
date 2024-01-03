@@ -21,7 +21,7 @@ i32 main() {
     if (p == 998244353)
       fout << cipolla(M2(n)) << '\n';
     else {
-      M1::setMod(p);
+      M1::set_mod(p);
       fout << cipolla(M1(n)) << '\n';
     }
   }

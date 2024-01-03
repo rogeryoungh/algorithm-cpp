@@ -9,13 +9,13 @@ template <u32 _M>
 struct M32C {
 
   inline static constexpr u32 MOD = _M, MOD2 = MOD * 2, R = (u64(1) << 32) % MOD;
-  static constexpr u32 getNR() {
+  static constexpr u32 get_nr() {
     u32 x = 1;
     for (i32 i = 0; i < 5; ++i)
       x *= 2 - x * MOD;
     return x;
   }
-  inline static constexpr u32 R2 = u64(R) * R % MOD, IR = -getNR();
+  inline static constexpr u32 R2 = u64(R) * R % MOD, IR = -get_nr();
 
   u32 v;
 

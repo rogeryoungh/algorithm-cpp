@@ -3,48 +3,49 @@
 
 #include "../base.hpp"
 #include "./complex64.hpp"
-#include <array>
 #include <numbers>
+#include <vector>
 
 ALGO_BEGIN_NAMESPACE
 
-struct FftR2 {
-  std::array<CP64, 64> rate2;
-  FftR2() {
-    constexpr u32 rank2 = 22;
-    std::array<CP64, rank2 + 1> rt;
-    for (u32 i = 0; i != rank2 + 1; ++i) {
-      rt[i] = i == 0 ? CP64{1} : CP64::polar(2 * std::numbers::pi / (u64(1) << i));
-    }
-    CP64 prod = CP64{1};
-    for (u32 i = 0; i != rank2 - 1; ++i) {
-      rate2[i] = prod * rt[i + 2];
-      prod = CP64::cmul(prod, rt[i + 2]);
-    }
+struct FFTRadix2 {
+  std::vector<CP64> rt;
+  FFTRadix2() {
+    rt = {CP64{1}};
   }
-  void fft(CP64 *f, u32 n) const {
-    for (u32 l = n / 2; l != 0; l /= 2) {
-      CP64 r = CP64{1};
-      for (u32 i = 0, k = 0; i != n; i += l * 2, ++k) {
-        for (u32 j = 0; j != l; ++j) {
-          CP64 x = f[i + j], y = f[i + j + l] * r;
-          f[i + j] = x + y;
-          f[i + j + l] = x - y;
-        }
-        r *= rate2[std::countr_one(k)];
+  void prepare_root(u32 m) {
+    u32 n = rt.size();
+    if (n >= m)
+      return;
+    rt.resize(m);
+    for (; n != m; n *= 2) {
+      CP64 w = CP64::polar(std::numbers::pi / n / 2);
+      for (u32 i = n; i != n * 2; ++i) {
+        rt[i] = rt[i - n] * w;
       }
     }
   }
-  void ifft(CP64 *f, u32 n) const {
+  void fft(CP64 *f, u32 n) {
+    prepare_root(n);
+    for (u32 l = n / 2; l != 0; l /= 2) {
+      for (u32 i = 0, k = 0; i != n; i += l * 2, ++k) {
+        for (u32 j = 0; j != l; ++j) {
+          CP64 x = f[i + j], y = f[i + j + l] * rt[k];
+          f[i + j] = x + y;
+          f[i + j + l] = x - y;
+        }
+      }
+    }
+  }
+  void ifft(CP64 *f, u32 n) {
+    prepare_root(n);
     for (u32 l = 1; l != n; l *= 2) {
-      CP64 r = CP64{1};
       for (u32 i = 0, k = 0; i != n; i += l * 2, ++k) {
         for (u32 j = 0; j != l; ++j) {
           CP64 x = f[i + j], y = f[i + j + l];
           f[i + j] = x + y;
-          f[i + j + l] = CP64::cmul(x - y, r);
+          f[i + j + l] = CP64::cmul(x - y, rt[k]);
         }
-        r *= rate2[std::countr_one(k)];
       }
     }
   }

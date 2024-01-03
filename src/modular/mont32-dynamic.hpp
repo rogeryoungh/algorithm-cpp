@@ -10,7 +10,7 @@ struct M32D {
   inline static u32 MOD, MOD2, R, IR, R2;
   u32 v;
 
-  static bool setMod(u32 mod) {
+  static bool set_mod(u32 mod) {
     if (mod <= 1 || mod >= (1u << 30))
       return false;
     if (mod % 2 == 0)
@@ -18,7 +18,7 @@ struct M32D {
     MOD = mod, MOD2 = MOD * 2;
     R = (u64(1) << 32) % MOD;
     R2 = (u64(R) * R) % MOD;
-    IR = -getNR();
+    IR = -get_nr();
     return true;
   }
 
@@ -32,7 +32,7 @@ struct M32D {
     return v;
   }
 
-  static u32 getNR() {
+  static u32 get_nr() {
     u32 x = 1;
     for (i32 i = 0; i < 5; ++i)
       x *= 2 - x * MOD;

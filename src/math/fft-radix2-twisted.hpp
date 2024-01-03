@@ -8,24 +8,24 @@
 
 ALGO_BEGIN_NAMESPACE
 
-struct FftR2T {
+struct FFTRadix2Twisted {
   std::vector<CP64> rt;
-  FftR2T() : rt(2) {
+  FFTRadix2Twisted() : rt(2) {
     rt[0] = rt[1] = CP64{1};
   }
   void prepare_root(u32 m) {
     u32 n = rt.size();
-    if (n < m) {
-      rt.resize(m);
-      for (; n != m; n *= 2) {
-        CP64 w = CP64::polar(std::numbers::pi / n);
-        for (u32 i = n; i != n * 2; i += 2) {
-          rt[i] = rt[i / 2];
-          if (i < (1 << 4)) {
-            rt[i + 1] = CP64::polar(std::numbers::pi * (i + 1 - n) / n);
-          } else {
-            rt[i + 1] = rt[i] * w;
-          }
+    if (n >= m)
+      return;
+    rt.resize(m);
+    for (; n != m; n *= 2) {
+      CP64 w = CP64::polar(std::numbers::pi / n);
+      for (u32 i = n; i != n * 2; i += 2) {
+        rt[i] = rt[i / 2];
+        if (i < (1 << 4)) {
+          rt[i + 1] = CP64::polar(std::numbers::pi * (i + 1 - n) / n);
+        } else {
+          rt[i + 1] = rt[i] * w;
         }
       }
     }
