@@ -2,6 +2,7 @@
 #define ALGO_H_MATH_NTT_RADIX2_TWISTED
 
 #include "../base.hpp"
+#include <algorithm>
 #include <vector>
 
 ALGO_BEGIN_NAMESPACE
@@ -9,21 +10,18 @@ ALGO_BEGIN_NAMESPACE
 template <class ModT, u32 G>
 struct NttR2T {
   // inline static std::array<ModT, 64> rt, irt, rate2, irate2;
-  inline static std::vector<ModT> rt, irt;
+  inline static std::vector<ModT> rt;
   static void setMod() {
-    irt = rt = {ModT{1}, ModT{1}};
+    rt = {ModT{1}, ModT{1}};
   }
   static void prepare_root(u32 m) {
     u32 n = rt.size();
     if (n < m) {
       rt.resize(m);
-      irt.resize(m);
       for (; n != m; n *= 2) {
         ModT w = ModT(G).pow((ModT::MOD - 1) / n / 2);
-        ModT iw = w.inv();
         for (u32 i = n; i != n * 2; i += 2) {
           rt[i] = rt[i / 2], rt[i + 1] = w * rt[i];
-          irt[i] = irt[i / 2], irt[i + 1] = iw * irt[i];
         }
       }
     }
@@ -52,7 +50,7 @@ struct NttR2T {
   static void intt_base(ModT *f, u32 n) {
     for (u32 l = 1; l != n; l *= 2) {
       for (u32 i = 0; i != n; i += l * 2) {
-        intt_butterfly(f + i, l, irt.data() + l);
+        intt_butterfly(f + i, l, rt.data() + l);
       }
     }
   }
@@ -75,18 +73,19 @@ struct NttR2T {
       u32 l = n / 2;
       intt_rec(f + 0, l);
       intt_rec(f + l, l);
-      intt_butterfly(f, l, irt.data() + l);
+      intt_butterfly(f, l, rt.data() + l);
     }
   }
   static void ntt(void *p, u32 n) {
     auto *f = reinterpret_cast<ModT *>(p);
     prepare_root(n);
-    ntt_rec(f, n);
+    ntt_base(f, n);
   }
   static void intt(void *p, u32 n) {
     prepare_root(n);
     auto *f = reinterpret_cast<ModT *>(p);
-    intt_rec(f, n);
+    intt_base(f, n);
+    std::reverse(f + 1, f + n);
   }
   static void dot(void *p1, const void *p2, u32 n) {
     auto *f = reinterpret_cast<ModT *>(p1);
