@@ -1,29 +1,27 @@
-#define PROBLEM "https://www.luogu.com.cn/problem/P4245"
+// magic!
+#pragma GCC optimize("O3")
 
-#define ALGO_NO_NAMESPACE
-#define ALGO_IO_NUMBER_ONLY
+#define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod_1000000007"
 
 #define ALGO_NO_NAMESPACE
 #define ALGO_IO_NUMBER_ONLY
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/other/align-alloc.hpp"
-#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
+#include "../../src/math/fft-radix2-twisted.hpp"
 
-auto fft = FFT64Radix2TwistedAVX2();
+FFTRadix2Twisted fft;
 
-constexpr u32 B = 1 << 15, X = 4; // luogu only
-// constexpr u32 B = 1 << 14, X = 8;
+constexpr u32 B = 1 << 14, P = 1E9 + 7, X = 8; // B * B * N <= M
 
 i32 main() {
   FastI fin(stdin);
   FastO fout(stdout);
-  u32 n, m, P;
-  fin >> n >> m >> P;
-  n++, m++;
+  u32 n, m;
+  fin >> n >> m;
   u32 l = std::bit_ceil(n + m - 1);
-  AVec<CP64> f(l * X);
 
+  AVec<CP64> f(l * X);
   for (u32 i = 0; i != n; ++i) {
     u32 t;
     fin >> t;
@@ -38,7 +36,6 @@ i32 main() {
       f[i * X + j].y = t % B, t /= B;
     }
   }
-  FFT64Radix2TwistedAVX2 fft;
   fft.fft(f.data(), l * X);
   fft.dot(f.data(), f.data(), l * X);
   fft.ifft(f.data(), l * X);

@@ -21,30 +21,29 @@ i32 main() {
   fin >> n >> m;
   u32 l = std::bit_ceil(n + m - 1);
 
-  AVec<CP64> f(l * X), g(l * X);
+  AVec<CP64> f(l * X);
   for (u32 i = 0; i != n; ++i) {
     u64 t;
     fin >> t;
     for (u32 j = 0; j != X; ++j) {
-      f[i * X + j] = CP64{f64(t % B)}, t /= B;
+      f[i * X + j].x = t % B, t /= B;
     }
   }
   for (u32 i = 0; i != m; ++i) {
     u64 t;
     fin >> t;
     for (u32 j = 0; j != X; ++j) {
-      g[i * X + j] = CP64{f64(t % B)}, t /= B;
+      f[i * X + j].y = t % B, t /= B;
     }
   }
   fft.fft(f.data(), l * X);
-  fft.fft(g.data(), l * X);
-  fft.dot(f.data(), g.data(), l * X);
+  fft.dot(f.data(), f.data(), l * X);
   fft.ifft(f.data(), l * X);
   fft.div2n(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {
-      t = (t * B + std::llround(f[i * X + j - 1].x));
+      t = (t * B + std::llround(f[i * X + j - 1].y / 2));
     }
     fout << t << ' ';
   }

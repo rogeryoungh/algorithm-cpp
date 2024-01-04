@@ -109,7 +109,7 @@ struct FFT64Radix2TwistedAVX2 {
   }
   void fft(CP64 *f, u32 n) {
     prepare_root(n);
-    if (n <= 64)
+    if (n <= 8)
       return fft_small(f, n);
     u32 m = n / 2;
     auto *fx = reinterpret_cast<CP64x2 *>(f);
@@ -119,7 +119,7 @@ struct FFT64Radix2TwistedAVX2 {
   }
   void ifft(CP64 *f, u32 n) {
     prepare_root(n);
-    if (n <= 64)
+    if (n <= 8)
       return ifft_small(f, n);
     u32 m = n / 2;
     auto *fx = reinterpret_cast<CP64x2 *>(f);
@@ -145,9 +145,8 @@ struct FFT64Radix2TwistedAVX2 {
         f[i] *= ivn;
     } else {
       auto *fx = reinterpret_cast<CP64x2 *>(f);
-      f64x4 ivnx = _mm256_set1_pd(ivn);
       for (u32 i = 0; i != n / 2; ++i)
-        fx[i] *= ivnx;
+        fx[i] *= ivn;
     }
   }
 };
