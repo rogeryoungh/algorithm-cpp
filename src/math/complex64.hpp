@@ -43,6 +43,10 @@ struct CP64 {
     return std::atan2(y, x);
   }
 
+  constexpr CP64 mulj() const {
+    return CP64{-y, x};
+  }
+
   constexpr CP64 &operator/=(const CP64 &o) {
     f64 r = x * o.x + y * o.y, i = -y * o.x + x * o.y;
     f64 n = o.norm();
