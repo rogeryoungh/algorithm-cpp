@@ -19,7 +19,7 @@ struct M32C {
 
   u32 v;
 
-  M32C(u32 val = 0) : v(trans(val)) {}
+  constexpr M32C(u32 val = 0) : v(trans(val)) {}
 
   static constexpr M32C from_raw(u32 x) {
     return std::bit_cast<M32C>(x);
@@ -105,16 +105,16 @@ struct M32C {
     return get() != o.get();
   }
 
-  friend M32C operator+(const M32C &l, const M32C &r) {
+  friend constexpr M32C operator+(const M32C &l, const M32C &r) {
     return M32C(l) += r;
   }
-  friend M32C operator-(const M32C &l, const M32C &r) {
+  friend constexpr M32C operator-(const M32C &l, const M32C &r) {
     return M32C(l) -= r;
   }
-  friend M32C operator*(const M32C &l, const M32C &r) {
+  friend constexpr M32C operator*(const M32C &l, const M32C &r) {
     return M32C(l) *= r;
   }
-  friend M32C operator/(const M32C &l, const M32C &r) {
+  friend constexpr M32C operator/(const M32C &l, const M32C &r) {
     return M32C(l) /= r;
   }
 };

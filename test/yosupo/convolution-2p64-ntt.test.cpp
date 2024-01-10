@@ -9,10 +9,10 @@
 #include "../../src/other/fastio.hpp"
 #include "../../src/modular/mont64-const.hpp"
 #include "../../src/other/align-alloc.hpp"
-#include "../../src/math/ntt-radix2-twisted.hpp"
+#include "../../src/math/ntt-radix2-split-radix.hpp"
 
 using ModT = M64C<2053641430080946177>;
-auto ntt = NTTRadix2Twisted<ModT>(7);
+auto ntt = NTTRadix2Split<ModT>(7);
 
 constexpr u32 B = 1 << 19, X = 8; // B * B * N <= M
 
