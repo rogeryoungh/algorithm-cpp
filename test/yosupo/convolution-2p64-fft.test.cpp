@@ -8,9 +8,9 @@
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/other/align-alloc.hpp"
-#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
+#include "../../src/math/fft-radix2-split-radix.hpp"
 
-FFT64Radix2TwistedAVX2 fft;
+FFTRadix2Split fft;
 
 constexpr u32 B = 1 << 14, X = 16; // B * B * N <= M
 

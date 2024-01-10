@@ -8,9 +8,9 @@
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/other/align-alloc.hpp"
-#include "../../src/math/fft-radix2-twisted-rec.hpp"
+#include "../../src/math/fft-radix2-split-radix.hpp"
 
-auto fft = FFTRadix2Twisted();
+auto fft = FFTRadix2Split();
 
 constexpr u32 B = 1 << 14, P = 1E9 + 7, X = 8; // B * B * N <= M
 
@@ -21,7 +21,7 @@ i32 main() {
   fin >> n >> m;
   u32 l = std::bit_ceil(n + m - 1);
 
-  AVec<CP64> f(l * X), g(l * X);
+  AVec<CP64> f(l * X);
   for (u32 i = 0; i != n; ++i) {
     u32 t;
     fin >> t;

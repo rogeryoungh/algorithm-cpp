@@ -32,17 +32,19 @@ struct FFTRadix2Twisted {
   }
   template <u32 n>
   inline void fft_rec_t(CP64 *f) {
-    if constexpr (n == 2) {
-      CP64 ek = f[0];
-      CP64 ok = f[1];
-      f[0] = ek + ok;
-      f[1] = ek - ok;
+    if constexpr (n <= 1) {
+      return;
+    } else if constexpr (n == 2) {
+      CP64 f0 = f[0];
+      CP64 f1 = f[1];
+      f[0] = f0 + f1;
+      f[1] = f0 - f1;
     } else {
       for (u32 k = 0; k != n / 2; ++k) {
-        CP64 ek = f[k];
-        CP64 ok = f[k + n / 2];
-        f[k] = ek + ok;
-        f[k + n / 2] = CP64::cmul(ek - ok, rt[n / 2 + k]);
+        CP64 f0 = f[k];
+        CP64 f1 = f[k + n / 2];
+        f[k] = f0 + f1;
+        f[k + n / 2] = CP64::cmul(f0 - f1, rt[n / 2 + k]);
       }
       fft_rec_t<n / 2>(f);
       fft_rec_t<n / 2>(f + n / 2);
@@ -50,49 +52,51 @@ struct FFTRadix2Twisted {
   }
   template <u32 n>
   inline void ifft_rec_t(CP64 *f) {
-    if constexpr (n == 2) {
-      CP64 ek = f[0];
-      CP64 ok = f[1];
-      f[0] = ek + ok;
-      f[1] = ek - ok;
+    if constexpr (n <= 1) {
+      return;
+    } else if constexpr (n == 2) {
+      CP64 f0 = f[0];
+      CP64 f1 = f[1];
+      f[0] = f0 + f1;
+      f[1] = f0 - f1;
     } else {
       ifft_rec_t<n / 2>(f);
       ifft_rec_t<n / 2>(f + n / 2);
       for (u32 k = 0; k != n / 2; ++k) {
-        CP64 ek = f[k];
-        CP64 ok = f[k + n / 2] * rt[n / 2 + k];
-        f[k] = ek + ok;
-        f[k + n / 2] = ek - ok;
+        CP64 f0 = f[k];
+        CP64 f1 = f[k + n / 2] * rt[n / 2 + k];
+        f[k] = f0 + f1;
+        f[k + n / 2] = f0 - f1;
       }
     }
   }
   template <u32 n>
-  void fft_rec(CP64 *f, int len) {
-    if constexpr (n <= 1) {
-      return;
-    } else if (n == len) {
-      return fft_rec_t<n>(f);
-    } else {
-      return fft_rec<n / 2>(f, len);
+  void fft_rec(CP64 *f, u32 len) {
+    if constexpr (n > 0) {
+      if (n == len) {
+        fft_rec_t<n>(f);
+      } else {
+        fft_rec<n * 2>(f, len);
+      }
     }
   }
   template <u32 n>
-  void ifft_rec(CP64 *f, int len) {
-    if constexpr (n <= 1) {
-      return;
-    } else if (n == len) {
-      return ifft_rec_t<n>(f);
-    } else {
-      return ifft_rec<n / 2>(f, len);
+  void ifft_rec(CP64 *f, u32 len) {
+    if constexpr (n > 0) {
+      if (n == len) {
+        ifft_rec_t<n>(f);
+      } else {
+        ifft_rec<n * 2>(f, len);
+      }
     }
   }
   void fft(CP64 *f, u32 n) {
     prepare_root(n);
-    fft_rec<(1u << 25)>(f, n);
+    fft_rec<1>(f, n);
   }
   void ifft(CP64 *f, u32 n) {
     prepare_root(n);
-    ifft_rec<(1u << 25)>(f, n);
+    ifft_rec<1>(f, n);
   }
   void dot(CP64 *f, const CP64 *g, u32 n) {
     for (u32 i = 0; i != n; ++i)

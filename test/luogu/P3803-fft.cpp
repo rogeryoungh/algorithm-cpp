@@ -7,7 +7,9 @@
 
 #include "../../src/other/fastio.hpp"
 #include "../../src/other/align-alloc.hpp"
-#include "../../src/math/avx2/fft-radix2-twisted-avx2.hpp"
+#include "../../src/math/fft-radix2-split-radix.hpp"
+
+auto fft = FFTRadix2Split();
 
 i32 main() {
   FastI fin(stdin);
@@ -25,7 +27,6 @@ i32 main() {
     u32 t;
     fin >> t, f[i].y = t;
   }
-  FFT64Radix2TwistedAVX2 fft;
   fft.fft(f.data(), l);
   fft.dot(f.data(), f.data(), l);
   fft.ifft(f.data(), l);
