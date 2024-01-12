@@ -2,7 +2,7 @@
 #define ALGO_H_MATH_NTT_BASE
 
 #include "../base.hpp"
-#include "../modular/mont-vec-dots.hpp"
+#include "../number/mont-vec-dots.hpp"
 
 ALGO_BEGIN_NAMESPACE
 

@@ -4,8 +4,8 @@
 #define ALGO_NO_NAMESPACE
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/modular/mont32-dynamic.hpp"
-#include "../../src/modular/mont32-const.hpp"
+#include "../../src/number/mont32-dynamic.hpp"
+#include "../../src/number/mont32-const.hpp"
 #include "../../src/math/cipolla.hpp"
 
 i32 main() {

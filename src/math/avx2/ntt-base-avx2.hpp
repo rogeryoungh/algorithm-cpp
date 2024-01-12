@@ -2,8 +2,8 @@
 #define ALGO_H_MATH_AVX2_NTT_BASE
 
 #include "../../base.hpp"
-#include "../../modular/avx2/mont32x8.hpp"
-#include "../../modular/mont-vec-dots.hpp"
+#include "../../number/avx2/mont32x8.hpp"
+#include "../../number/mont-vec-dots.hpp"
 
 ALGO_BEGIN_NAMESPACE
 

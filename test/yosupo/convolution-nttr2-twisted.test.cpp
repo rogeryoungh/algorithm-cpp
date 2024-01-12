@@ -7,7 +7,7 @@
 #define ALGO_IO_NUMBER_ONLY
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/modular/mont32-const.hpp"
+#include "../../src/number/mont32-const.hpp"
 #include "../../src/math/ntt-radix2-twisted.hpp"
 
 using ModT = M32C<998244353>;

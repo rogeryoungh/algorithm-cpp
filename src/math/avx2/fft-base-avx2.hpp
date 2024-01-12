@@ -1,7 +1,7 @@
 #ifndef ALGO_H_MATH_AVX2_FFT_BASE
 #define ALGO_H_MATH_AVX2_FFT_BASE
 
-#include "./complex64x2.hpp"
+#include "../../number/avx2/complex64x2.hpp"
 
 ALGO_BEGIN_NAMESPACE
 

@@ -2,7 +2,7 @@
 #define ALGO_H_MATH_FFT_BASE
 
 #include "../base.hpp"
-#include "./complex64.hpp"
+#include "../number/complex64.hpp"
 
 ALGO_BEGIN_NAMESPACE
 

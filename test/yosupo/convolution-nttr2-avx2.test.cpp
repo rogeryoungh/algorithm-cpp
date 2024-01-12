@@ -7,7 +7,7 @@
 #define ALGO_IO_NUMBER_ONLY
 
 #include "../../src/other/fastio.hpp"
-#include "../../src/modular/mont32-const.hpp"
+#include "../../src/number/mont32-const.hpp"
 #include "../../src/other/align-alloc.hpp"
 #include "../../src/math/avx2/ntt-radix2-avx2.hpp"
 
