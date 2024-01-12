@@ -114,12 +114,23 @@ struct M32x8 {
     for (u32 i = 0; i != n / 8; ++i)
       fx[i] *= gx[i];
   }
-
   static void dot1(ModT *f, u32 n, const ModT g0) {
     auto *fx = reinterpret_cast<M32x8 *>(f);
     M32x8 gx = from(g0);
     for (u32 i = 0; i != n / 8; ++i)
       fx[i] *= gx;
+  }
+  static void trans(ModT *out, const u32 *in, u32 n) {
+    auto *ix = reinterpret_cast<const u32x8 *>(in);
+    auto *ox = reinterpret_cast<u32x8 *>(out);
+    for (u32 i = 0; i != n / 8; ++i)
+      ox[i] = trans(ix[i]);
+  }
+  static void get(u32 *out, const ModT *in, u32 n) {
+    auto *ix = reinterpret_cast<const u32x8 *>(in);
+    auto *ox = reinterpret_cast<u32x8 *>(out);
+    for (u32 i = 0; i != n / 8; ++i)
+      ox[i] = get(ix[i]);
   }
 };
 

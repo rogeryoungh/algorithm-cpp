@@ -7,6 +7,7 @@
 #include "../../src/number/mont32-const.hpp"
 #include "../../src/other/align-alloc.hpp"
 #include "../../src/math/avx2/ntt-radix2-twisted-avx2.hpp"
+#include "../../src/number/avx2/mont-trans-helper-avx2.hpp"
 
 constexpr std::array M = {167772161, 469762049, 754974721};
 constexpr std::array G = {3, 3, 11};
@@ -15,22 +16,23 @@ template <u32 P, u32 G>
 auto mul3(const AVec<u32> &f, const AVec<u32> &g, u32 l) {
   using ModT = M32C<P>;
 
-  AVec<ModT> a(l), b(l);
+  AVec<u32> a(l), b(l);
   auto ntt = NTT32Radix2TwistedAVX2<ModT>(G);
 
-  std::copy(f.begin(), f.end(), a.begin());
-  std::copy(g.begin(), g.end(), b.begin());
-  ntt.ntt(a.data(), l);
-  ntt.ntt(b.data(), l);
-  ntt.dot(a.data(), b.data(), l);
-  ntt.intt(a.data(), l);
-  ntt.rescale(a.data(), l);
+  auto *ma = reinterpret_cast<ModT *>(a.data());
+  auto *mb = reinterpret_cast<ModT *>(b.data());
 
-  AVec<u32> ans(l);
-  for (u32 i = 0; i != l; ++i) {
-    ans[i] = a[i].get();
-  }
-  return ans;
+  mont32_trans_avx2(ma, f.data(), l);
+  mont32_trans_avx2(mb, g.data(), l);
+
+  ntt.ntt(ma, l);
+  ntt.ntt(mb, l);
+  ntt.dot(ma, mb, l);
+  ntt.intt(ma, l);
+  ntt.rescale(ma, l);
+
+  mont32_get_avx2(a.data(), ma, l);
+  return a;
 }
 
 i32 main() {

@@ -10,6 +10,7 @@
 #include "../../src/number/mont32-dynamic.hpp"
 #include "../../src/math/avx2/ntt-radix2-twisted-avx2.hpp"
 #include "../../src/other/align-alloc.hpp"
+#include "../../src/number/avx2/mont-io-helper-avx2.hpp"
 
 using ModT = M32D<1>;
 
@@ -23,20 +24,13 @@ i32 main() {
   fin >> n >> m;
   u32 l = std::bit_ceil(n + m - 1);
   AVec<ModT> f(l), g(l);
-  for (u32 i = 0; i != n; ++i) {
-    u32 t;
-    fin >> t, f[i] = t;
-  }
-  for (u32 i = 0; i != m; ++i) {
-    u32 t;
-    fin >> t, g[i] = t;
-  }
+  mont_read(fin, f.data(), n);
+  mont_read(fin, g.data(), m);
   ntt.ntt(f.data(), l);
   ntt.ntt(g.data(), l);
   ntt.dot(f.data(), g.data(), l);
   ntt.intt(f.data(), l);
   ntt.rescale(f.data(), l);
-  for (u32 i = 0; i != n + m - 1; ++i)
-    fout << f[i].get() << ' ';
+  mont_write(fout, f.data(), n + m - 1);
   return 0;
 }

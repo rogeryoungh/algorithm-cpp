@@ -8,7 +8,13 @@ ALGO_BEGIN_NAMESPACE
 template <i32>
 struct M32D {
   inline static u32 MOD, MOD2, R, IR, R2;
-  u32 v;
+
+  static u32 get_nr() {
+    u32 x = 1;
+    for (i32 i = 0; i < 5; ++i)
+      x *= 2 - x * MOD;
+    return x;
+  }
 
   static bool set_mod(u32 mod) {
     if (mod <= 1 || mod >= (1u << 30))
@@ -21,6 +27,7 @@ struct M32D {
     IR = -get_nr();
     return true;
   }
+  u32 v;
 
   M32D(u32 val = 0) : v(trans(val)) {}
 
@@ -32,40 +39,32 @@ struct M32D {
     return v;
   }
 
-  static u32 get_nr() {
-    u32 x = 1;
-    for (i32 i = 0; i < 5; ++i)
-      x *= 2 - x * MOD;
-    return x;
-  }
-
   static u32 trans(u32 x) {
     return reduce(u64(x) * R2);
+  }
+
+  static u32 get(u32 x) {
+    u32 x1 = reduce(x), x2 = x1 - MOD;
+    return i32(x2) < 0 ? x1 : x2;
   }
 
   static u32 reduce(u64 x) {
     return (x + u64(u32(x) * IR) * MOD) >> 32;
   }
 
-  static u32 reduce_m(u32 n) {
-    return n >> 31 ? n + MOD : n;
-  }
-
-  static u32 reduce_2m(u32 n) {
-    return n >> 31 ? n + MOD2 : n;
-  }
-
   u32 get() const {
-    return reduce_m(reduce(v) - MOD);
+    return get(v);
   }
 
   M32D &operator+=(M32D o) {
-    v = reduce_2m(v + o.v - MOD2);
+    u32 v1 = v + o.v, v2 = v1 - MOD2;
+    v = i32(v2) < 0 ? v1 : v2;
     return *this;
   }
 
   M32D &operator-=(M32D o) {
-    v = reduce_2m(v - o.v);
+    u32 v1 = v - o.v, v2 = v1 + MOD2;
+    v = i32(v1) < 0 ? v2 : v1;
     return *this;
   }
 

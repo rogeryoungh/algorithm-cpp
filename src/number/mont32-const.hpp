@@ -34,23 +34,16 @@ struct M32C {
   }
 
   static constexpr u32 get(u32 x) {
-    return reduce_m(reduce(x) - MOD);
+    u32 x1 = reduce(x), x2 = x1 - MOD;
+    return i32(x2) < 0 ? x1 : x2;
   }
 
   static constexpr u32 reduce(u64 x) {
     return (x + u64(u32(x) * IR) * MOD) >> 32;
   }
 
-  static constexpr u32 reduce_m(u32 n) {
-    return n >> 31 ? n + MOD : n;
-  }
-
-  static constexpr u32 reduce_2m(u32 n) {
-    return n >> 31 ? n + MOD2 : n;
-  }
-
   constexpr u32 get() const {
-    return reduce_m(reduce(v) - MOD);
+    return get(v);
   }
 
   constexpr M32C &operator+=(M32C o) {

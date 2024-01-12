@@ -8,7 +8,7 @@
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT>
-struct NTTRadix2Split  : NTTBase<ModT> {
+struct NTTRadix2Split : NTTBase<ModT> {
   u32 G;
   ModT J;
   std::vector<ModT> rt, irt;

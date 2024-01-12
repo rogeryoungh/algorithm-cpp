@@ -9,7 +9,7 @@
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT>
-struct NTTRadix2Twisted  : NTTBase<ModT> {
+struct NTTRadix2Twisted : NTTBase<ModT> {
   u32 G;
   std::vector<ModT> rt, irt;
   NTTRadix2Twisted(u32 g) : G(g) {
