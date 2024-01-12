@@ -1,15 +1,13 @@
 #ifndef ALGO_H_MATH_AVX2_NTT_RADIX2
 #define ALGO_H_MATH_AVX2_NTT_RADIX2
 
-#include "../../base.hpp"
-#include "../../modular/avx2/mont32x8.hpp"
-#include "./mont32-vec-dots-avx2.hpp"
+#include "./ntt-base-avx2.hpp"
 #include <array>
 
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT>
-struct NTT32Radix2AVX2 {
+struct NTT32Radix2AVX2 : NTT32BaseAVX2<ModT> {
   using M32x8 = struct M32x8<ModT>;
   std::array<ModT, 32> rt, irt, rate2, irate2;
   M32x8 rate4ix[32], irate4ix[32];

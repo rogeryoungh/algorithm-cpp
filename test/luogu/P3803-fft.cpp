@@ -30,7 +30,7 @@ i32 main() {
   fft.fft(f.data(), l);
   fft.dot(f.data(), f.data(), l);
   fft.ifft(f.data(), l);
-  fft.div2n(f.data(), l);
+  fft.rescale(f.data(), l);
   for (u32 i = 0; i != n + m - 1; ++i)
     fout << u32(f[i].y / 2 + 0.5) << ' ';
   return 0;

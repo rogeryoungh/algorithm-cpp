@@ -33,9 +33,9 @@ i32 main() {
   }
   ntt.ntt(f.data(), l);
   ntt.ntt(g.data(), l);
-  dot(f.data(), g.data(), l);
+  ntt.dot(f.data(), g.data(), l);
   ntt.intt(f.data(), l);
-  div2n(f.data(), l);
+  ntt.rescale(f.data(), l);
   for (u32 i = 0; i != n + m - 1; ++i)
     fout << f[i].get() << ' ';
   return 0;

@@ -22,9 +22,9 @@ auto mul3(const AVec<u32> &f, const AVec<u32> &g, u32 l) {
   std::copy(g.begin(), g.end(), b.begin());
   ntt.ntt(a.data(), l);
   ntt.ntt(b.data(), l);
-  dot(a.data(), b.data(), l);
+  ntt.dot(a.data(), b.data(), l);
   ntt.intt(a.data(), l);
-  div2n(a.data(), l);
+  ntt.rescale(a.data(), l);
 
   AVec<u32> ans(l);
   for (u32 i = 0; i != l; ++i) {

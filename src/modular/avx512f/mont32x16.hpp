@@ -107,6 +107,20 @@ struct M32x16 {
   static u32x16 modx16() {
     return _mm512_set1_epi32(ModT::MOD);
   }
+
+  static void dot(ModT *f, const ModT *g, u32 n) {
+    auto *fx = reinterpret_cast<M32x16 *>(f);
+    auto *gx = reinterpret_cast<const M32x16 *>(g);
+    for (u32 i = 0; i != n / 8; ++i)
+      fx[i] *= gx[i];
+  }
+
+  static void dot1(ModT *f, u32 n, const ModT g0) {
+    auto *fx = reinterpret_cast<M32x16 *>(f);
+    auto gx = from(g0);
+    for (u32 i = 0; i != n / 8; ++i)
+      f[i] *= gx;
+  }
 };
 
 ALGO_END_NAMESPACE

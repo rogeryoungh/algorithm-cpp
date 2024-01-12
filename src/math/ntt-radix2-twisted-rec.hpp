@@ -2,14 +2,14 @@
 #define ALGO_H_MATH_NTT_RADIX2_TWISTED_REC
 
 #include "../base.hpp"
-#include "./mont-vec-dots.hpp"
+#include "./ntt-base.hpp"
 #include <vector>
 #include <iostream>
 
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT>
-struct NTTRadix2Twisted {
+struct NTTRadix2Twisted  : NTTBase<ModT> {
   u32 G;
   std::vector<ModT> rt, irt;
   NTTRadix2Twisted(u32 g) : G(g) {

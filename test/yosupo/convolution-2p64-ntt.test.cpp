@@ -40,9 +40,9 @@ i32 main() {
   }
   ntt.ntt(f.data(), l * X);
   ntt.ntt(g.data(), l * X);
-  dot(f.data(), g.data(), l * X);
+  ntt.dot(f.data(), g.data(), l * X);
   ntt.intt(f.data(), l * X);
-  div2n(f.data(), l * X);
+  ntt.rescale(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {

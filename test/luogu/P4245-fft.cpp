@@ -42,7 +42,7 @@ i32 main() {
   fft.fft(f.data(), l * X);
   fft.dot(f.data(), f.data(), l * X);
   fft.ifft(f.data(), l * X);
-  fft.div2n(f.data(), l * X);
+  fft.rescale(f.data(), l * X);
   for (u32 i = 0; i != n + m - 1; ++i) {
     u64 t = 0;
     for (u32 j = X; j != 0; --j) {

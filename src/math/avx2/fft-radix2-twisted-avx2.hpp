@@ -1,14 +1,13 @@
 #ifndef ALGO_H_MATH_AVX2_FFT_RADIX2_TWISTED
 #define ALGO_H_MATH_AVX2_FFT_RADIX2_TWISTED
 
-#include "../../base.hpp"
-#include "./complex64x2.hpp"
+#include "./fft-base-avx2.hpp"
 #include "../../other/align-alloc.hpp"
 #include <numbers>
 
 ALGO_BEGIN_NAMESPACE
 
-struct FFT64Radix2TwistedAVX2 {
+struct FFT64Radix2TwistedAVX2 : FFT64BaseAVX2 {
   AVec<CP64> rt;
   FFT64Radix2TwistedAVX2() : rt(2) {
     rt[0] = rt[1] = CP64{1};
@@ -126,28 +125,6 @@ struct FFT64Radix2TwistedAVX2 {
     auto *rtx = reinterpret_cast<CP64x2 *>(rt.data());
     fft_layer_last(fx, m);
     ifft_rec(fx, m, rtx);
-  }
-  void dot(CP64 *f, const CP64 *g, u32 n) {
-    if (n <= 16) {
-      for (u32 i = 0; i != n; ++i)
-        f[i] *= g[i];
-    } else {
-      auto *fx = reinterpret_cast<CP64x2 *>(f);
-      auto *gx = reinterpret_cast<const CP64x2 *>(g);
-      for (u32 i = 0; i != n / 2; ++i)
-        fx[i] *= gx[i];
-    }
-  }
-  void div2n(CP64 *f, u32 n) {
-    f64 ivn = f64(1) / n;
-    if (n <= 16) {
-      for (u32 i = 0; i != n; ++i)
-        f[i] *= ivn;
-    } else {
-      auto *fx = reinterpret_cast<CP64x2 *>(f);
-      for (u32 i = 0; i != n / 2; ++i)
-        fx[i] *= ivn;
-    }
   }
 };
 

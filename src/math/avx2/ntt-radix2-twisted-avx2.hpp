@@ -1,16 +1,14 @@
 #ifndef ALGO_H_MATH_AVX2_NTT_RADIX2_TWISTED
 #define ALGO_H_MATH_AVX2_NTT_RADIX2_TWISTED
 
-#include "../../base.hpp"
-#include "../../modular/avx2/mont32x8.hpp"
+#include "./ntt-base-avx2.hpp"
 #include "../../other/align-alloc.hpp"
-#include "./mont32-vec-dots-avx2.hpp"
 #include <algorithm>
 
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT>
-struct NTT32Radix2TwistedAVX2 {
+struct NTT32Radix2TwistedAVX2 : NTT32BaseAVX2<ModT> {
   using M32x8 = struct M32x8<ModT>;
   u32 G;
   AVec<ModT> rt;

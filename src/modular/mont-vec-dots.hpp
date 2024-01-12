@@ -6,17 +6,17 @@
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT>
-void dot(ModT *f, const ModT *g, u32 n) {
+void mont_dot(ModT *f, const ModT *g, u32 n) {
   for (u32 i = 0; i != n; ++i)
     f[i] *= g[i];
 }
 
 template <class ModT>
-void div2n(ModT *f, u32 n) {
-  ModT ivn = ModT::MOD - (ModT::MOD - 1) / n;
+void mont_dot1(ModT *f, u32 n, const ModT g0) {
   for (u32 i = 0; i != n; ++i)
-    f[i] *= ivn;
+    f[i] *= g0;
 }
+
 ALGO_END_NAMESPACE
 
 #endif

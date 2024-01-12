@@ -107,6 +107,20 @@ struct M32x8 {
   static u32x8 modx8() {
     return _mm256_set1_epi32(ModT::MOD);
   }
+
+  static void dot(ModT *f, const ModT *g, u32 n) {
+    auto *fx = reinterpret_cast<M32x8 *>(f);
+    auto *gx = reinterpret_cast<const M32x8 *>(g);
+    for (u32 i = 0; i != n / 8; ++i)
+      fx[i] *= gx[i];
+  }
+
+  static void dot1(ModT *f, u32 n, const ModT g0) {
+    auto *fx = reinterpret_cast<M32x8 *>(f);
+    M32x8 gx = from(g0);
+    for (u32 i = 0; i != n / 8; ++i)
+      fx[i] *= gx;
+  }
 };
 
 ALGO_END_NAMESPACE

@@ -2,13 +2,13 @@
 #define ALGO_H_MATH_NTT_RADIX2_SPLIT_RADIX
 
 #include "../base.hpp"
-#include "./mont-vec-dots.hpp"
+#include "./ntt-base.hpp"
 #include <vector>
 
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT>
-struct NTTRadix2Split {
+struct NTTRadix2Split  : NTTBase<ModT> {
   u32 G;
   ModT J;
   std::vector<ModT> rt, irt;

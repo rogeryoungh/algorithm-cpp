@@ -1,14 +1,13 @@
 #ifndef ALGO_H_MATH_FFT_RADIX2_SPLITRADIX
 #define ALGO_H_MATH_FFT_RADIX2_SPLITRADIX
 
-#include "../base.hpp"
-#include "./complex64.hpp"
+#include "./fft-base.hpp"
 #include <vector>
 #include <numbers>
 
 ALGO_BEGIN_NAMESPACE
 
-struct FFTRadix2Split {
+struct FFTRadix2Split : FFTBase {
   std::vector<CP64> rt;
   FFTRadix2Split() : rt(2) {
     rt[0] = rt[1] = CP64{1};
@@ -113,15 +112,6 @@ struct FFTRadix2Split {
   void ifft(CP64 *f, u32 n) {
     prepare_root(n / 2);
     ifft_rec<1>(f, n);
-  }
-  void dot(CP64 *f, const CP64 *g, u32 n) {
-    for (u32 i = 0; i != n; ++i)
-      f[i] *= g[i];
-  }
-  void div2n(CP64 *f, u32 n) {
-    f64 ivn = f64(1) / n;
-    for (u32 i = 0; i != n; ++i)
-      f[i] *= ivn;
   }
 };
 

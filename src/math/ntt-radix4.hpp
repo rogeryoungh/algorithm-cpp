@@ -2,13 +2,13 @@
 #define ALGO_H_MATH_NTT_RADIX4
 
 #include "../base.hpp"
-#include "./mont-vec-dots.hpp"
+#include "./ntt-base.hpp"
 #include <array>
 
 ALGO_BEGIN_NAMESPACE
 
 template <class ModT>
-struct NTTRadix4 {
+struct NTTRadix4  : NTTBase<ModT> {
   std::array<ModT, 64> rt, irt, rate2, irate2, rate3, irate3;
   NTTRadix4(u32 G) {
     const u32 rank2 = std::countr_zero(ModT::MOD - 1);
