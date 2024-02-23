@@ -1,7 +1,7 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/sqrt_mod"
 
 #define ALGO_NO_NAMESPACE
-#include "../../include/algo/math/cipolla32.hpp"
+#include "../../include/algo/math/cipolla.hpp"
 
 #include <iostream>
 
@@ -15,9 +15,9 @@ i32 main() {
     u32 n, p;
     std::cin >> n >> p;
     if (p == 998244353) {
-      std::cout << cipolla32(M9, n) << '\n';
+      std::cout << cipolla(M9, n) << '\n';
     } else {
-      std::cout << cipolla32(Mont32{p}, n) << '\n';
+      std::cout << cipolla(Mont32{p}, n) << '\n';
     }
   }
   return 0;

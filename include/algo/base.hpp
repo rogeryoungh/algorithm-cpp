@@ -10,6 +10,7 @@
 #define ALGO_END_NAMESPACE
 #endif
 
+#include <type_traits>
 #include <cstdint>
 
 ALGO_BEGIN_NAMESPACE
@@ -31,5 +32,9 @@ using usize = std::size_t;
 using f32 = float;
 using f64 = double;
 using f80 = long double;
+
+
+template <class T>
+using TI = std::type_identity_t<T>;
 
 ALGO_END_NAMESPACE
