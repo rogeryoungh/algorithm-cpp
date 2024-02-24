@@ -1,11 +1,9 @@
 #pragma once
 
 #include "../base.hpp"
+#include "./itoa-helper.hpp"
 
-#include <algorithm>
-#include <array>
 #include <cassert>
-#include <concepts>
 #include <string>
 #include <vector>
 
@@ -14,6 +12,7 @@ ALGO_BEGIN_NAMESPACE
 struct Writer {
   std::FILE *const f;
   std::vector<u8> buf;
+  ItoaHelper itoa;
   u8 *p, *end;
   Writer(std::FILE *const f, usize size = 1 << 18) : f(f), buf(size) {
     assert(size >= 0x100);
@@ -30,21 +29,13 @@ struct Writer {
     if (end - p < i64(n))
       flush();
   }
-  void _put_u(u64 x) {
-    std::array<u8, 32> tmp;
-    u8 *s0 = tmp.data() + 30, *s1 = s0;
-    do {
-      *--s0 = x % 10 + '0', x /= 10;
-    } while (x > 0);
-    p = std::copy(s0, s1, p);
-  }
   void _put_s(const char *s, usize n) {
     if (n >= buf.size() / 4) {
       flush();
       std::fwrite(s, 1, n, f);
     } else {
       reserve(n);
-      p = std::copy_n(s, n, p);
+      p = std::copy(s, s + n, p);
     }
   }
   template <std::integral T>
@@ -52,9 +43,9 @@ struct Writer {
     reserve(0x40);
     if (std::signed_integral<T> && x < 0) {
       *p++ = '-';
-      _put_u(-x);
+      itoa.putu(-x, p);
     } else {
-      _put_u(x);
+      itoa.putu(x, p);
     }
     return *this;
   }
