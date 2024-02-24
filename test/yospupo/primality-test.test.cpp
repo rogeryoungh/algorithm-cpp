@@ -1,19 +1,23 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/primality_test"
 
 #define ALGO_NO_NAMESPACE
+
+#include "../../include/algo/other/mmap-buffer.hpp"
+#include "../../include/algo/other/int-only-reader.hpp"
+#include "../../include/algo/other/writer.hpp"
+
 #include "../../include/algo/math/miller-rabin.hpp"
 
-#include <iostream>
-
 i32 main() {
-  std::cin.tie(nullptr)->sync_with_stdio(false);
+  Reader<MmapBuf> fin(stdin);
+  Writer fout(stdout);
 
   u32 Q;
-  std::cin >> Q;
+  fin >> Q;
   while (Q--) {
     u64 n;
-    std::cin >> n;
-    std::cout << (miller_rabin(n) ? "Yes\n" : "No\n");
+    fin >> n;
+    fout << (miller_rabin(n) ? "Yes\n" : "No\n");
   }
   return 0;
 }

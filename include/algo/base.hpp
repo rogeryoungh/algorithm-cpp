@@ -33,7 +33,6 @@ using f32 = float;
 using f64 = double;
 using f80 = long double;
 
-
 template <class T>
 using TI = std::type_identity_t<T>;
 

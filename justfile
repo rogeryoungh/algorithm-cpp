@@ -11,4 +11,4 @@ pre-expand:
 	python3 scripts/generate-system-header.py
 
 fmt:
-	clang-format -i src/*.hpp src/*/*.hpp src/*/*/*.hpp test/*/*.cpp
+	clang-format -i include/algo/*.hpp include/algo/*/*.hpp test/*/*.cpp
