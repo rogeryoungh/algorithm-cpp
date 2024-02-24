@@ -2,6 +2,7 @@
 
 #include "../base.hpp"
 
+#include <cstring>
 #include <vector>
 
 ALGO_BEGIN_NAMESPACE
@@ -23,7 +24,8 @@ struct AtoiHelper {
     const u8 *p = p0;
     u64 x = c & 0xf;
     while (true) {
-      u16 t = *reinterpret_cast<const u16 *>(p);
+      u16 t;
+      std::memcpy(&t, p, 2);
       auto ft = pre[t];
       p += 2;
       if (ft < 100) { // len = 2
