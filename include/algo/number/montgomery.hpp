@@ -35,7 +35,7 @@ struct Mont {
   }
   inline constexpr U sub(U a, U b) const {
     U v1 = a - b, v2 = v1 + MOD2;
-    return S(v2) >= 0 ? v2 : v1;
+    return S(v1) >= 0 ? v1 : v2;
   }
   inline constexpr U mul(U a, U b) const {
     return reduce(UU(a) * b);
