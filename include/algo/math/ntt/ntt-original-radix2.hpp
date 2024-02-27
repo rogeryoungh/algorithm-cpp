@@ -29,13 +29,20 @@ struct NTTOriginalRadix2 {
   }
   void ntt(U *f, usize n) {
     const auto M = _M;
-    for (u32 l = n / 2; l != 0; l /= 2) {
-      U r = M.ONE;
-      for (u32 i = 0, k = 0; i != n; i += l * 2, ++k) {
+    for (u32 l = n / 2; l >= 1; l /= 2) {
+      U *fx = f, *fy = fx + l;
+      for (u32 j = 0; j != l; ++j) {
+        U x = fx[j], y = fy[j];
+        fx[j] = M.add(x, y);
+        fy[j] = M.sub(x, y);
+      }
+      U r = rate2[0];
+      for (u32 i = l * 2, k = 1; i != n; i += l * 2, ++k) {
+        fx = f + i, fy = fx + l;
         for (u32 j = 0; j != l; ++j) {
-          U x = f[i + j], y = M.mul(f[i + j + l], r);
-          f[i + j] = M.add(x, y);
-          f[i + j + l] = M.sub(x, y);
+          U x = fx[j], y = M.mul(fy[j], r);
+          fx[j] = M.add(x, y);
+          fy[j] = M.sub(x, y);
         }
         r = M.mul(r, rate2[std::countr_one(k)]);
       }
@@ -43,20 +50,26 @@ struct NTTOriginalRadix2 {
   }
   void intt(U *f, usize n) {
     const auto M = _M;
-    for (u32 l = 1; l != n; l *= 2) {
-      U r = M.ONE;
-      for (u32 i = 0, k = 0; i != n; i += l * 2, ++k) {
+    U ivn = M.trans(M.MOD - (M.MOD - 1) / n);
+    for (u32 l = 1; l <= n / 2; l *= 2) {
+      U *fx = f, *fy = fx + l;
+      for (u32 j = 0; j != l; ++j) {
+        U x = fx[j], y = fy[j];
+        if (l == n / 2)
+          x = M.mul(x, ivn), y = M.mul(y, ivn); // div n here !!!
+        fx[j] = M.add(x, y);
+        fy[j] = M.sub(x, y);
+      }
+      U r = irate2[0];
+      for (u32 i = l * 2, k = 1; i != n; i += l * 2, ++k) {
+        fx = f + i, fy = fx + l;
         for (u32 j = 0; j != l; ++j) {
-          U x = f[i + j], y = f[i + j + l];
-          f[i + j] = M.add(x, y);
-          f[i + j + l] = M.mul(M.sub(x, y), r);
+          U x = fx[j], y = fy[j];
+          fx[j] = M.add(x, y);
+          fy[j] = M.mul(M.sub(x, y), r);
         }
         r = M.mul(r, irate2[std::countr_one(k)]);
       }
-    }
-    U ivn = M.trans(M.MOD - (M.MOD - 1) / n);
-    for (u32 i = 0; i != n; ++i) {
-      f[i] = M.mul(f[i], ivn);
     }
   }
   void conv(U *f, U *g, u32 n) {
