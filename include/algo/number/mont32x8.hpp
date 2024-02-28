@@ -14,7 +14,7 @@ struct Mont32x8 {
   }
 
   static void storeu(u32 *p, u32x8 v) {
-    _mm256_storeu_si256(reinterpret_cast<u32x8 *>(p), v);
+    _mm256_storeu_si256(reinterpret_cast<i256 *>(p), v);
   }
 
   static u32x8 set1(u32 v) {
@@ -54,7 +54,7 @@ struct Mont32x8 {
     auto y0246 = _mm256_mul_epu32(_mm256_mul_epu32(x0246, IR), MOD);
     auto y1357 = _mm256_mul_epu32(_mm256_mul_epu32(x1357, IR), MOD);
     auto z0246 = _mm256_add_epi64(x0246, y0246);
-    z0246 = i32x8_permute2301(z0246);
+    z0246 = u32x8_permute2301(z0246);
     auto z1357 = _mm256_add_epi64(x1357, y1357);
     return u32x8_blend<0xaa>(z0246, z1357);
   }
@@ -62,8 +62,8 @@ struct Mont32x8 {
   u32x8 mul(u32x8 a, u32x8 b) const {
     // return reduce(u64(a) * b);
     u64x4 x0246 = _mm256_mul_epu32(a, b);
-    a = i32x8_permute2301(a);
-    b = i32x8_permute2301(b);
+    a = u32x8_permute2301(a);
+    b = u32x8_permute2301(b);
     u64x4 x1357 = _mm256_mul_epu32(a, b);
     return reduce(x0246, x1357);
   }

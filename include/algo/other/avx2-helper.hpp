@@ -14,7 +14,7 @@ inline u32x8 u32x8_blend(u32x8 a, u32x8 b) {
   return _mm256_blend_epi32(a, b, imm);
 }
 
-inline i32x8 i32x8_permute2301(i32x8 a) { // 1, 0.5
+inline u32x8 u32x8_permute2301(u32x8 a) { // 1, 0.5
   return u32x8_shuffle<0xf5>(a);
 }
 
