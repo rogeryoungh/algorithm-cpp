@@ -27,7 +27,7 @@ struct NTT32OriginalRadix2AVX512F {
       iprod = M.mul(iprod, rt[i + 2]);
     }
     prod = M.ONE, iprod = M.ONE;
-    u32 arr[16];
+    alignas(i512) u32 arr[16];
     auto rotate = [&M, &arr](u32 x) {
       for (u32 i = 0; i != 16; ++i)
         arr[i] = i == 0 ? M.ONE : M.mul(x, arr[i - 1]);

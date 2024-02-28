@@ -14,7 +14,7 @@ struct Mont32x16 {
   }
 
   static void storeu(u32 *p, u32x16 v) {
-   _mm512_storeu_si512(reinterpret_cast<i512 *>(p), v);
+    _mm512_storeu_si512(reinterpret_cast<i512 *>(p), v);
   }
 
   static u32x16 set1(u32 v) {
