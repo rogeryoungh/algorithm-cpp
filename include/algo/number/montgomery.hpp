@@ -22,25 +22,29 @@ struct Mont {
       x *= 2 - x * mod;
     return x;
   }
-  inline constexpr U trans(U x) const {
+  constexpr U trans(U x) const {
     // return (u64(x) << 32) % MOD;
     return reduce(UU(x) * R2);
   }
-  inline constexpr U reduce(UU x) const {
+  constexpr U reduce(UU x) const {
     return (x + UU(U(x) * IR) * MOD) >> (sizeof(U) * 8);
   }
-  inline constexpr U add(U a, U b) const {
+  constexpr U norm(U v) const {
+    U v2 = v - MOD;
+    return S(v2) < 0 ? v : v2;
+  }
+  constexpr U add(U a, U b) const {
     U v1 = a + b, v2 = v1 - MOD2;
     return S(v2) < 0 ? v1 : v2;
   }
-  inline constexpr U sub(U a, U b) const {
+  constexpr U sub(U a, U b) const {
     U v1 = a - b, v2 = v1 + MOD2;
     return S(v1) >= 0 ? v1 : v2;
   }
-  inline constexpr U mul(U a, U b) const {
+  constexpr U mul(U a, U b) const {
     return reduce(UU(a) * b);
   }
-  inline constexpr U qpow(U a, u64 n, U r) const {
+  constexpr U qpow(U a, u64 n, U r) const {
     for (; n > 0; n /= 2) {
       if (n % 2 == 1)
         r = mul(r, a);
@@ -48,29 +52,28 @@ struct Mont {
     }
     return r;
   }
-  inline constexpr U qpow(U a, u64 n) const {
+  constexpr U qpow(U a, u64 n) const {
     return qpow(a, n, ONE);
   }
-  inline constexpr U inv(U x) const {
+  constexpr U inv(U x) const {
     return qpow(x, MOD - 2);
   }
-  inline constexpr U div(U a, U b) const {
+  constexpr U div(U a, U b) const {
     return reduce(qpow(b, MOD - 2, a));
   }
-  inline constexpr U get(U x) const {
-    U v1 = reduce(x), v2 = v1 - MOD;
-    return S(v2) < 0 ? v1 : v2;
+  constexpr U get(U x) const {
+    return norm(reduce(x));
   }
-  inline constexpr U div2(U x) const {
+  constexpr U div2(U x) const {
     return (x % 2 == 1 ? x + MOD : x) >> 1;
   }
-  inline constexpr bool cmp(U a, U b) const {
+  constexpr bool cmp(U a, U b) const {
     return get(a) == get(b);
   }
-  inline constexpr bool ncmp(U a, U b) const {
+  constexpr bool ncmp(U a, U b) const {
     return !cmp(a, b);
   }
-  inline constexpr U neg(U x) const {
+  constexpr U neg(U x) const {
     return x != 0 ? MOD2 - x : 0;
   }
 };

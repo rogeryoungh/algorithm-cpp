@@ -20,12 +20,12 @@ i32 main() {
 
   std::vector<u32> f(L), g(L);
   for (u32 i = 0; i != n; ++i)
-    fin >> f[i], f[i] = M.trans(f[i]);
+    fin >> f[i];
   for (u32 i = 0; i != m; ++i)
-    fin >> g[i], g[i] = M.trans(g[i]);
+    fin >> g[i];
   ntt.conv(f.data(), g.data(), L);
   for (u32 i = 0; i != n + m - 1; ++i)
-    fout << M.get(f[i]);
+    fout << f[i];
 
   return 0;
 }

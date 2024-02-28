@@ -157,21 +157,32 @@ struct NTT32OriginalRadix2AVX2 {
     }
   }
   void conv(u32 *f, u32 *g, u32 n) {
-    ntt(f, n);
-    if (f != g)
-      ntt(g, n);
     if (n < 8) {
       const auto M = _MX.M;
       for (u32 i = 0; i != n; ++i)
+        f[i] = M.trans(f[i]), g[i] = M.trans(g[i]);
+      ntt(f, n), ntt(g, n);
+      for (u32 i = 0; i != n; ++i)
         f[i] = M.mul(f[i], g[i]);
+      intt(f, n);
+      for (u32 i = 0; i != n; ++i)
+        f[i] = M.get(f[i]);
     } else {
       const auto MX = _MX;
+      for (u32 i = 0; i != n; i += 8) {
+        MX.storeu(f + i, MX.trans(MX.loadu(f + i)));
+        MX.storeu(g + i, MX.trans(MX.loadu(g + i)));
+      }
+      ntt(f, n), ntt(g, n);
       for (u32 i = 0; i != n; i += 8) {
         u32x8 fx = MX.loadu(f + i), gx = MX.loadu(g + i);
         MX.storeu(f + i, MX.mul(fx, gx));
       }
+      intt(f, n);
+      for (u32 i = 0; i != n; i += 8) {
+        MX.storeu(f + i, MX.get(MX.loadu(f + i)));
+      }
     }
-    intt(f, n);
   }
 };
 

@@ -74,12 +74,14 @@ struct NTTOriginalRadix2 {
   }
   void conv(U *f, U *g, u32 n) {
     const auto M = _M;
-    ntt(f, n);
-    if (f != g)
-      ntt(g, n);
+    for (u32 i = 0; i != n; ++i)
+      f[i] = M.trans(f[i]), g[i] = M.trans(g[i]);
+    ntt(f, n), ntt(g, n);
     for (u32 i = 0; i != n; ++i)
       f[i] = M.mul(f[i], g[i]);
     intt(f, n);
+    for (u32 i = 0; i != n; ++i)
+      f[i] = M.get(f[i]);
   }
 };
 
