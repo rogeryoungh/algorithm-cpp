@@ -1,10 +1,12 @@
 #define PROBLEM "https://judge.yosupo.jp/problem/convolution_mod"
 
 #define ALGO_NO_NAMESPACE
+#define ALGO_AVEC_ALIGN 64
 
 #include "../../include/algo/other/mmap-buffer.hpp"
 #include "../../include/algo/other/int-only-reader.hpp"
 #include "../../include/algo/other/int-only-writer.hpp"
+#include "../../include/algo/other/align-alloc.hpp"
 
 #include "../../include/algo/math/ntt/ntt32-original-radix2-avx512f.hpp"
 
@@ -18,7 +20,7 @@ i32 main() {
   const auto M = Mont32{998244353};
   NTT32OriginalRadix2AVX512F ntt(M, 3);
 
-  std::vector<u32> f(L), g(L);
+  AVec<u32> f(L), g(L);
   for (u32 i = 0; i != n; ++i)
     fin >> f[i], f[i] = M.trans(f[i]);
   for (u32 i = 0; i != m; ++i)

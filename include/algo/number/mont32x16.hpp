@@ -9,12 +9,12 @@ struct Mont32x16 {
   Mont32 M;
   u32x16 IR, R2, MOD, MOD2, ONE;
 
-  static u32x16 loadu(const u32 *p) {
-    return _mm512_loadu_si512(reinterpret_cast<const i512 *>(p));
+  static u32x16 load(const u32 *p) {
+    return _mm512_load_si512(reinterpret_cast<const i512 *>(p));
   }
 
-  static void storeu(u32 *p, u32x16 v) {
-    _mm512_storeu_si512(reinterpret_cast<i512 *>(p), v);
+  static void store(u32 *p, u32x16 v) {
+    _mm512_store_si512(reinterpret_cast<i512 *>(p), v);
   }
 
   static u32x16 set1(u32 v) {

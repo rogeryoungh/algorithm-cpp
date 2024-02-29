@@ -9,12 +9,12 @@ struct Mont32x8 {
   Mont32 M;
   u32x8 IR, R2, MOD, MOD2, ONE;
 
-  static u32x8 loadu(const u32 *p) {
-    return _mm256_loadu_si256(reinterpret_cast<const i256 *>(p));
+  static u32x8 load(const u32 *p) {
+    return _mm256_load_si256(reinterpret_cast<const i256 *>(p));
   }
 
-  static void storeu(u32 *p, u32x8 v) {
-    _mm256_storeu_si256(reinterpret_cast<i256 *>(p), v);
+  static void store(u32 *p, u32x8 v) {
+    _mm256_store_si256(reinterpret_cast<i256 *>(p), v);
   }
 
   static u32x8 set1(u32 v) {

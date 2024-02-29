@@ -34,9 +34,9 @@ struct NTT32OriginalRadix2AVX512F {
     };
     for (u32 i = 0; i != rank2 - 4; ++i) {
       rotate(M.mul(prod, rt[i + 5]));
-      rate5ix[i] = _MX.loadu(arr);
+      rate5ix[i] = _MX.load(arr);
       rotate(M.mul(iprod, irt[i + 5]));
-      irate5ix[i] = _MX.loadu(arr);
+      irate5ix[i] = _MX.load(arr);
       prod = M.mul(prod, irt[i + 5]);
       iprod = M.mul(iprod, rt[i + 5]);
     }
@@ -45,12 +45,12 @@ struct NTT32OriginalRadix2AVX512F {
         for (u32 j = 0; j != k; ++j)
           arr[i + j] = (j <= k / 2) ? M.ONE : M.mul(x, arr[i + j - 1]);
     };
-    rotatex(rt[2], 4), _rt2 = _MX.loadu(arr);
-    rotatex(irt[2], 4), _irt2 = _MX.loadu(arr);
-    rotatex(rt[3], 8), _rt4 = _MX.loadu(arr);
-    rotatex(irt[3], 8), _irt4 = _MX.loadu(arr);
-    rotatex(rt[4], 16), _rt8 = _MX.loadu(arr);
-    rotatex(irt[4], 16), _irt8 = _MX.loadu(arr);
+    rotatex(rt[2], 4), _rt2 = _MX.load(arr);
+    rotatex(irt[2], 4), _irt2 = _MX.load(arr);
+    rotatex(rt[3], 8), _rt4 = _MX.load(arr);
+    rotatex(irt[3], 8), _irt4 = _MX.load(arr);
+    rotatex(rt[4], 16), _rt8 = _MX.load(arr);
+    rotatex(irt[4], 16), _irt8 = _MX.load(arr);
   }
   void ntt_small(u32 *f, usize n) {
     const auto M = _MX.M;
@@ -93,18 +93,18 @@ struct NTT32OriginalRadix2AVX512F {
     for (u32 l = n / 2; l >= 16; l /= 2) {
       u32 *f0 = f, *f1 = f + l;
       for (u32 j = 0; j != l; j += 16) {
-        u32x16 x = MX.loadu(f0 + j), y = MX.loadu(f1 + j);
-        MX.storeu(f0 + j, MX.add(x, y));
-        MX.storeu(f1 + j, MX.sub(x, y));
+        u32x16 x = MX.load(f0 + j), y = MX.load(f1 + j);
+        MX.store(f0 + j, MX.add(x, y));
+        MX.store(f1 + j, MX.sub(x, y));
       }
       u32 r = rate2[0];
       for (u32 i = l * 2, k = 1; i != n; i += l * 2, ++k) {
         u32x16 rx = MX.set1(r);
         f0 = f + i, f1 = f0 + l;
         for (u32 j = 0; j != l; j += 16) {
-          u32x16 x = MX.loadu(f0 + j), y = MX.mul(rx, MX.loadu(f1 + j));
-          MX.storeu(f0 + j, MX.add(x, y));
-          MX.storeu(f1 + j, MX.sub(x, y));
+          u32x16 x = MX.load(f0 + j), y = MX.mul(rx, MX.load(f1 + j));
+          MX.store(f0 + j, MX.add(x, y));
+          MX.store(f1 + j, MX.sub(x, y));
         }
         r = M.mul(r, rate2[std::countr_one(k)]);
       }
@@ -112,7 +112,7 @@ struct NTT32OriginalRadix2AVX512F {
     u32x16 rtix = MX.ONE, rt2 = _rt2, rt4 = _rt4, rt8 = _rt8;
     i512 id1x = _mm512_set_epi64(3, 2, 1, 0, 7, 6, 5, 4);
     for (u32 i = 0; i != n; i += 16) {
-      u32x16 fi = MX.mul(rtix, MX.loadu(f + i)), a, b;
+      u32x16 fi = MX.mul(rtix, MX.load(f + i)), a, b;
       a = MX.neg<0xff00>(fi), b = _mm512_permutexvar_epi64(id1x, fi);
       fi = MX.mul(rt8, MX.add(a, b));
       a = MX.neg<0xf0f0>(fi), b = _mm512_permutex_epi64(fi, 0x4e);
@@ -120,7 +120,7 @@ struct NTT32OriginalRadix2AVX512F {
       a = MX.neg<0xcccc>(fi), b = u32x16_shuffle<_MM_PERM_BADC>(fi);
       fi = MX.mul(rt2, MX.add(a, b));
       a = MX.neg<0xaaaa>(fi), b = u32x16_shuffle<_MM_PERM_CDAB>(fi);
-      MX.storeu(f + i, MX.add(a, b));
+      MX.store(f + i, MX.add(a, b));
       rtix = MX.mul(rtix, rate5ix[std::countr_one(i / 16)]);
     }
   }
@@ -133,7 +133,7 @@ struct NTT32OriginalRadix2AVX512F {
     u32x16 irt2 = _irt2, irt4 = _irt4, irt8 = _irt8;
     i512 id1x = _mm512_set_epi64(3, 2, 1, 0, 7, 6, 5, 4);
     for (u32 i = 0; i != n; i += 16) {
-      u32x16 fi = MX.loadu(f + i), a, b;
+      u32x16 fi = MX.load(f + i), a, b;
       a = MX.neg<0xaaaa>(fi), b = u32x16_shuffle<_MM_PERM_CDAB>(fi);
       fi = MX.mul(irt2, MX.add(a, b));
       a = MX.neg<0xcccc>(fi), b = u32x16_shuffle<_MM_PERM_BADC>(fi);
@@ -141,24 +141,24 @@ struct NTT32OriginalRadix2AVX512F {
       a = MX.neg<0xf0f0>(fi), b = _mm512_permutex_epi64(fi, 0x4e);
       fi = MX.mul(irt8, MX.add(a, b));
       a = MX.neg<0xff00>(fi), b = _mm512_permutexvar_epi64(id1x, fi);
-      MX.storeu(f + i, MX.mul(MX.add(a, b), rtix));
+      MX.store(f + i, MX.mul(MX.add(a, b), rtix));
       rtix = MX.mul(rtix, irate5ix[std::countr_one(i / 16)]);
     }
     for (u32 l = 16; l <= n / 2; l *= 2) {
       u32 *f0 = f, *f1 = f + l;
       for (u32 j = 0; j != l; j += 16) {
-        u32x16 x = MX.loadu(f0 + j), y = MX.loadu(f1 + j);
-        MX.storeu(f0 + j, MX.add(x, y));
-        MX.storeu(f1 + j, MX.sub(x, y));
+        u32x16 x = MX.load(f0 + j), y = MX.load(f1 + j);
+        MX.store(f0 + j, MX.add(x, y));
+        MX.store(f1 + j, MX.sub(x, y));
       }
       u32 r = irate2[0];
       for (u32 i = l * 2, k = 1; i != n; i += l * 2, ++k) {
         u32x16 rx = MX.set1(r);
         f0 = f + i, f1 = f0 + l;
         for (u32 j = 0; j != l; j += 16) {
-          u32x16 x = MX.loadu(f0 + j), y = MX.loadu(f1 + j);
-          MX.storeu(f0 + j, MX.add(x, y));
-          MX.storeu(f1 + j, MX.mul(MX.sub(x, y), rx));
+          u32x16 x = MX.load(f0 + j), y = MX.load(f1 + j);
+          MX.store(f0 + j, MX.add(x, y));
+          MX.store(f1 + j, MX.mul(MX.sub(x, y), rx));
         }
         r = M.mul(r, irate2[std::countr_one(k)]);
       }
@@ -178,17 +178,17 @@ struct NTT32OriginalRadix2AVX512F {
     } else {
       const auto MX = _MX;
       for (u32 i = 0; i != n; i += 16) {
-        MX.storeu(f + i, MX.trans(MX.loadu(f + i)));
-        MX.storeu(g + i, MX.trans(MX.loadu(g + i)));
+        MX.store(f + i, MX.trans(MX.load(f + i)));
+        MX.store(g + i, MX.trans(MX.load(g + i)));
       }
       ntt(f, n), ntt(g, n);
       for (u32 i = 0; i != n; i += 16) {
-        u32x16 fx = MX.loadu(f + i), gx = MX.loadu(g + i);
-        MX.storeu(f + i, MX.mul(fx, gx));
+        u32x16 fx = MX.load(f + i), gx = MX.load(g + i);
+        MX.store(f + i, MX.mul(fx, gx));
       }
       intt(f, n);
       for (u32 i = 0; i != n; i += 16) {
-        MX.storeu(f + i, MX.get(MX.loadu(f + i)));
+        MX.store(f + i, MX.get(MX.load(f + i)));
       }
     }
   }

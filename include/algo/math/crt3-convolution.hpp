@@ -2,28 +2,28 @@
 
 #include "../base.hpp"
 #include "../number/montgomery.hpp"
+#include "../other/align-alloc.hpp"
 
 #include <algorithm>
 #include <span>
-#include <vector>
 
 ALGO_BEGIN_NAMESPACE
 
 template <class NTT>
 struct CRT3Convolution {
-  u32 P1 = 167772161, G1 = 3;
-  u32 P2 = 469762049, G2 = 3;
-  u32 P3 = 754974721, G3 = 11;
-  Mont32 M1{P1}, M2{P2}, M3{P3};
+  static constexpr u32 P1 = 167772161, G1 = 3;
+  static constexpr u32 P2 = 469762049, G2 = 3;
+  static constexpr u32 P3 = 754974721, G3 = 11;
+  static constexpr Mont32 M1{P1}, M2{P2}, M3{P3};
+  static constexpr u64 iv2 = M2.get(M2.inv(M2.trans(P1)));
+  static constexpr u64 iv3 = M3.get(M3.inv(M3.trans(P2)));
+  static constexpr u64 iv23 = M3.get(M3.inv(M3.mul(M3.trans(P1), M3.trans(P2))));
   NTT ntt1{M1, G1}, ntt2{M2, G2}, ntt3{M3, G3};
-  u64 iv2 = M2.get(M2.inv(M2.trans(P1)));
-  u64 iv3 = M3.get(M3.inv(M3.trans(P2)));
-  u64 iv23 = M3.get(M3.inv(M3.mul(M3.trans(P1), M3.trans(P2))));
-  std::vector<u32> conv(std::span<const u32> f, std::span<const u32> g, u32 mod) {
-    u32 L = std::bit_ceil(f.size() + g.size() - 1);
+  auto conv(std::span<const u32> f, std::span<const u32> g, u32 mod) {
 
+    u32 L = std::bit_ceil(f.size() + g.size() - 1);
     auto conv3 = [L, &f, &g](auto &&ntt) {
-      std::vector<u32> f1(L), g1(L);
+      AVec<u32> f1(L), g1(L);
       std::ranges::copy(f, f1.begin());
       std::ranges::copy(g, g1.begin());
       ntt.conv(f1.data(), g1.data(), L);
