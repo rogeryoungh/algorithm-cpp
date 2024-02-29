@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../number/mont32x16.hpp"
+#include "./conv-ntt3.hpp"
+#include "./conv-ntt3-simd.hpp"
 #include <array>
 #include <bit>
 
@@ -10,8 +12,9 @@ struct NTT32OriginalRadix2AVX512F {
   std::array<u32, 32> rt, irt, rate2, irate2;
   u32x16 rate5ix[32], irate5ix[32];
   u32x16 _rt2, _irt2, _rt4, _irt4, _rt8, _irt8;
+  Mont32 _M;
   Mont32x16 _MX;
-  NTT32OriginalRadix2AVX512F(Mont32 M, u32 G) : _MX(M) {
+  NTT32OriginalRadix2AVX512F(Mont32 M, u32 G) : _M(M), _MX(M) {
     const u32 rank2 = std::countr_zero(M.MOD - 1);
     rt[rank2] = M.qpow(M.trans(G), (M.MOD - 1) >> rank2);
     irt[rank2] = M.inv(rt[rank2]);
@@ -53,7 +56,7 @@ struct NTT32OriginalRadix2AVX512F {
     rotatex(irt[4], 16), _irt8 = _MX.load(arr);
   }
   void ntt_small(u32 *f, usize n) {
-    const auto M = _MX.M;
+    const auto M = _M;
     for (u32 l = n / 2; l >= 1; l /= 2) {
       u32 r = M.ONE;
       for (u32 i = 0, k = 0; i != n; i += l * 2, ++k) {
@@ -68,7 +71,7 @@ struct NTT32OriginalRadix2AVX512F {
     }
   }
   void intt_small(u32 *f, usize n) {
-    const auto M = _MX.M;
+    const auto M = _M;
     u32 ivn = M.trans(M.MOD - (M.MOD - 1) / n);
     for (u32 l = 1; l <= n / 2; l *= 2) {
       u32 r = M.ONE;
@@ -89,7 +92,7 @@ struct NTT32OriginalRadix2AVX512F {
     if (n < 16)
       return ntt_small(f, n);
     const auto MX = _MX;
-    const auto M = MX.M;
+    const auto M = _M;
     for (u32 l = n / 2; l >= 16; l /= 2) {
       u32 *f0 = f, *f1 = f + l;
       for (u32 j = 0; j != l; j += 16) {
@@ -128,7 +131,7 @@ struct NTT32OriginalRadix2AVX512F {
     if (n < 16)
       return intt_small(f, n);
     const auto MX = _MX;
-    const auto M = MX.M;
+    const auto M = _M;
     u32x16 rtix = MX.set1(M.trans(M.MOD - (M.MOD - 1) / n));
     u32x16 irt2 = _irt2, irt4 = _irt4, irt8 = _irt8;
     i512 id1x = _mm512_set_epi64(3, 2, 1, 0, 7, 6, 5, 4);
@@ -165,32 +168,10 @@ struct NTT32OriginalRadix2AVX512F {
     }
   }
   void conv(u32 *f, u32 *g, u32 n) {
-    if (n < 16) {
-      const auto M = _MX.M;
-      for (u32 i = 0; i != n; ++i)
-        f[i] = M.trans(f[i]), g[i] = M.trans(g[i]);
-      ntt(f, n), ntt(g, n);
-      for (u32 i = 0; i != n; ++i)
-        f[i] = M.mul(f[i], g[i]);
-      intt(f, n);
-      for (u32 i = 0; i != n; ++i)
-        f[i] = M.get(f[i]);
-    } else {
-      const auto MX = _MX;
-      for (u32 i = 0; i != n; i += 16) {
-        MX.store(f + i, MX.trans(MX.load(f + i)));
-        MX.store(g + i, MX.trans(MX.load(g + i)));
-      }
-      ntt(f, n), ntt(g, n);
-      for (u32 i = 0; i != n; i += 16) {
-        u32x16 fx = MX.load(f + i), gx = MX.load(g + i);
-        MX.store(f + i, MX.mul(fx, gx));
-      }
-      intt(f, n);
-      for (u32 i = 0; i != n; i += 16) {
-        MX.store(f + i, MX.get(MX.load(f + i)));
-      }
-    }
+    if (n < 16)
+      conv_ntt3(f, g, n, *this);
+    else
+      conv_ntt3_simd<16>(f, g, n, *this);
   }
 };
 

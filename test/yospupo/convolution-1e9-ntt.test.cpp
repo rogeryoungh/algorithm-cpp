@@ -16,14 +16,13 @@ i32 main() {
   u32 n, m;
   constexpr u32 P = 1E9 + 7;
   fin >> n >> m;
-  CRT3Convolution<NTT32OriginalRadix2AVX2> crt3;
 
   std::vector<u32> f(n), g(m);
   for (u32 i = 0; i != n; ++i)
     fin >> f[i];
   for (u32 i = 0; i != m; ++i)
     fin >> g[i];
-  auto ret = crt3.conv(f, g, P);
+  auto ret = convolution_crt3<NTT32OriginalRadix2AVX2>(f, g, P);
   for (u32 i = 0; i != n + m - 1; ++i)
     fout << ret[i];
 

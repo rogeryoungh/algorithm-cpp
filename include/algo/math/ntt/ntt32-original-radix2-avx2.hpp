@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../number/mont32x8.hpp"
+#include "./conv-ntt3.hpp"
+#include "./conv-ntt3-simd.hpp"
 #include <array>
 #include <bit>
 
@@ -10,8 +12,9 @@ struct NTT32OriginalRadix2AVX2 {
   std::array<u32, 32> rt, irt, rate2, irate2;
   u32x8 rate4ix[32], irate4ix[32];
   u32x8 _rt2, _irt2, _rt4, _irt4;
+  Mont32 _M;
   Mont32x8 _MX;
-  NTT32OriginalRadix2AVX2(Mont32 M, u32 G) : _MX(M) {
+  NTT32OriginalRadix2AVX2(Mont32 M, u32 G) : _M(M), _MX(M) {
     const u32 rank2 = std::countr_zero(M.MOD - 1);
     rt[rank2] = M.qpow(M.trans(G), (M.MOD - 1) >> rank2);
     irt[rank2] = M.inv(rt[rank2]);
@@ -51,7 +54,7 @@ struct NTT32OriginalRadix2AVX2 {
     rotatex(irt[3], 8), _irt4 = _MX.load(arr);
   }
   void ntt_small(u32 *f, usize n) {
-    const auto M = _MX.M;
+    const auto M = _M;
     for (u32 l = n / 2; l >= 1; l /= 2) {
       u32 r = M.ONE;
       for (u32 i = 0, k = 0; i != n; i += l * 2, ++k) {
@@ -66,7 +69,7 @@ struct NTT32OriginalRadix2AVX2 {
     }
   }
   void intt_small(u32 *f, usize n) {
-    const auto M = _MX.M;
+    const auto M = _M;
     u32 ivn = M.trans(M.MOD - (M.MOD - 1) / n);
     for (u32 l = 1; l <= n / 2; l *= 2) {
       u32 r = M.ONE;
@@ -87,7 +90,7 @@ struct NTT32OriginalRadix2AVX2 {
     if (n < 8)
       return ntt_small(f, n);
     const auto MX = _MX;
-    const auto M = MX.M;
+    const auto M = _M;
     for (u32 l = n / 2; l >= 8; l /= 2) {
       u32 *f0 = f, *f1 = f + l;
       for (u32 j = 0; j != l; j += 8) {
@@ -123,7 +126,7 @@ struct NTT32OriginalRadix2AVX2 {
     if (n < 8)
       return intt_small(f, n);
     const auto MX = _MX;
-    const auto M = MX.M;
+    const auto M = _M;
     u32x8 rtix = MX.set1(M.trans(M.MOD - (M.MOD - 1) / n));
     u32x8 irt2 = _irt2, irt4 = _irt4;
     for (u32 i = 0; i != n; i += 8) {
@@ -157,32 +160,10 @@ struct NTT32OriginalRadix2AVX2 {
     }
   }
   void conv(u32 *f, u32 *g, u32 n) {
-    if (n < 8) {
-      const auto M = _MX.M;
-      for (u32 i = 0; i != n; ++i)
-        f[i] = M.trans(f[i]), g[i] = M.trans(g[i]);
-      ntt(f, n), ntt(g, n);
-      for (u32 i = 0; i != n; ++i)
-        f[i] = M.mul(f[i], g[i]);
-      intt(f, n);
-      for (u32 i = 0; i != n; ++i)
-        f[i] = M.get(f[i]);
-    } else {
-      const auto MX = _MX;
-      for (u32 i = 0; i != n; i += 8) {
-        MX.store(f + i, MX.trans(MX.load(f + i)));
-        MX.store(g + i, MX.trans(MX.load(g + i)));
-      }
-      ntt(f, n), ntt(g, n);
-      for (u32 i = 0; i != n; i += 8) {
-        u32x8 fx = MX.load(f + i), gx = MX.load(g + i);
-        MX.store(f + i, MX.mul(fx, gx));
-      }
-      intt(f, n);
-      for (u32 i = 0; i != n; i += 8) {
-        MX.store(f + i, MX.get(MX.load(f + i)));
-      }
-    }
+    if (n < 8)
+      conv_ntt3(f, g, n, *this);
+    else
+      conv_ntt3_simd<8>(f, g, n, *this);
   }
 };
 

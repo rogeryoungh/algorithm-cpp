@@ -6,7 +6,6 @@
 ALGO_BEGIN_NAMESPACE
 
 struct Mont32x16 {
-  Mont32 M;
   u32x16 IR, R2, MOD, MOD2, ONE;
 
   static u32x16 load(const u32 *p) {
@@ -21,7 +20,7 @@ struct Mont32x16 {
     return _mm512_set1_epi32(v);
   }
 
-  Mont32x16(Mont32 mod) : M(mod) {
+  Mont32x16(Mont32 mod) {
     IR = set1(mod.IR), R2 = set1(mod.R2);
     MOD = set1(mod.MOD), MOD2 = set1(mod.MOD2);
     ONE = set1(mod.ONE);
