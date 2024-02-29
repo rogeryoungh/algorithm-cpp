@@ -3,6 +3,7 @@
 #include "../base.hpp"
 #include "../number/montgomery.hpp"
 #include "../other/align-alloc.hpp"
+#include "../number/barrett64.hpp"
 
 #include <algorithm>
 #include <span>
@@ -11,15 +12,15 @@ ALGO_BEGIN_NAMESPACE
 
 template <class NTT>
 struct CRT3Convolution {
-  static constexpr u32 P1 = 167772161, G1 = 3;
-  static constexpr u32 P2 = 469762049, G2 = 3;
-  static constexpr u32 P3 = 754974721, G3 = 11;
-  static constexpr Mont32 M1{P1}, M2{P2}, M3{P3};
-  static constexpr u64 iv2 = M2.get(M2.inv(M2.trans(P1)));
-  static constexpr u64 iv3 = M3.get(M3.inv(M3.trans(P2)));
-  static constexpr u64 iv23 = M3.get(M3.inv(M3.mul(M3.trans(P1), M3.trans(P2))));
+  u32 P1 = 167772161, G1 = 3;
+  u32 P2 = 469762049, G2 = 3;
+  u32 P3 = 754974721, G3 = 11;
+  Mont32 M1{P1}, M2{P2}, M3{P3};
+  u32 ivm2 = M2.inv(M2.trans(P1));
+  u32 ivm3 = M3.inv(M3.trans(P2));
+  u32 ivm23 = M3.inv(M3.mul(M3.trans(P1), M3.trans(P2)));
   NTT ntt1{M1, G1}, ntt2{M2, G2}, ntt3{M3, G3};
-  auto conv(std::span<const u32> f, std::span<const u32> g, u32 mod) {
+  auto conv(std::span<const u32> f, std::span<const u32> g, const u32 mod) {
 
     u32 L = std::bit_ceil(f.size() + g.size() - 1);
     auto conv3 = [L, &f, &g](auto &&ntt) {
@@ -34,12 +35,14 @@ struct CRT3Convolution {
     auto f2 = conv3(ntt2);
     auto f3 = conv3(ntt3);
 
-    u64 M12 = u64(P1) * P2 % mod;
+    Barrett64 bm(mod);
+    const u64 M12 = u64(P1) * P2 % mod;
     for (u32 i = 0; i != L; ++i) {
-      u64 a1 = f1[i], a2 = f2[i], a3 = f3[i];
-      u64 x1 = (a2 - a1 + P2) * iv2 % P2;
-      u64 x2 = ((a3 - a1 + P3) * iv23 + (P3 - x1) * iv3) % P3;
-      f1[i] = (x2 * M12 + x1 * P1 + a1) % mod;
+      u32 a1 = f1[i], a2 = f2[i], a3 = f3[i];
+      u32 x1 = M2.norm(M2.mul(M2.sub(a2, a1), ivm2));
+      u32 x2 = M3.norm(M3.sub(M3.mul(ivm23, M3.sub(a3, a1)), M3.mul(x1, ivm3)));
+      f1[i] = bm.calc(x2 * u64(M12) + x1 * u64(P1) + a1);
+      // f1[i] = ((x2 * u64(P2) + x1) % mod * u64(P1) + a1) % mod;
     }
     f1.resize(f.size() + g.size() - 1);
     return f1;
